@@ -1,0 +1,5 @@
+*.exe
+database.yml
+.env
+.todo
+cover.out
