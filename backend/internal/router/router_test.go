@@ -4,12 +4,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 )
 
 func TestNewRouter(t *testing.T) {
 	var db *database.DB
-	router := NewRouter(db)
+	var c *config.AppConfig
+	router := NewRouter(c, db)
 
 	typeString := reflect.TypeOf(router).String()
 	if typeString != "*router.router" {
@@ -19,7 +21,8 @@ func TestNewRouter(t *testing.T) {
 
 func TestRouter_Routes(t *testing.T) {
 	var db *database.DB
-	router := NewRouter(db)
+	var c *config.AppConfig
+	router := NewRouter(c, db)
 
 	mux := router.Routes()
 

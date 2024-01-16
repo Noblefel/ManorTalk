@@ -16,20 +16,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config := config.Default()
+	c := config.Default()
 
-	db, err := database.Connect(config)
+	db, err := database.Connect(c)
 	if err != nil {
-		log.Fatalln("Error connecting to the database", err)
+		log.Fatal(err)
 	}
 	defer db.Sql.Close()
+	defer db.Redis.Close()
 
-	log.Println("Starting server at port:", config.Port)
+	log.Println("Starting server at port:", c.Port)
 
-	router := router.NewRouter(db)
+	router := router.NewRouter(c, db)
 
 	server := &http.Server{
-		Addr:    fmt.Sprint("localhost:", config.Port),
+		Addr:    fmt.Sprint("localhost:", c.Port),
 		Handler: router.Routes(),
 	}
 

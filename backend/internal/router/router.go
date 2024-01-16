@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/handlers"
 	"github.com/go-chi/chi/v5"
@@ -10,10 +11,16 @@ import (
 	"github.com/go-chi/cors"
 )
 
-type router struct{}
+type router struct {
+	m    *Middleware
+	auth *handlers.AuthHandlers
+}
 
-func NewRouter(db *database.DB) *router {
-	return &router{}
+func NewRouter(c *config.AppConfig, db *database.DB) *router {
+	return &router{
+		m:    NewMiddleware(c, db),
+		auth: handlers.NewAuthHandlers(c, db),
+	}
 }
 
 func (r *router) Routes() http.Handler {
@@ -33,12 +40,21 @@ func (r *router) Routes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello"))
-	})
-
 	mux.NotFound(handlers.NotFound)
 	mux.MethodNotAllowed(handlers.MethodNotAllowed)
+
+	mux.Route("/auth", func(mux chi.Router) {
+		mux.Post("/register", r.auth.Register)
+		mux.Post("/login", r.auth.Login)
+		mux.Post("/refresh", r.auth.Refresh)
+	})
+
+	mux.Group(func(mux chi.Router) {
+		mux.Use(r.m.Auth)
+		mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("Hello"))
+		})
+	})
 
 	return mux
 }
