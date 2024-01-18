@@ -20,3 +20,10 @@ type UserRepo interface {
 	GetUserById(id int) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
 }
+
+type PostRepo interface {
+	CreatePost(p models.Post) (models.Post, error)
+	GetPostBySlug(slug string) (models.Post, error)
+	UpdatePost(p models.Post) error
+	DeletePost(id int) error
+}

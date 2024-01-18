@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -11,20 +10,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
-	"github.com/go-chi/chi/v5"
 )
-
-type params map[string]string
-
-func getCtxWithParam(r *http.Request, p params) context.Context {
-	ctx := r.Context()
-	chiCtx := chi.NewRouteContext()
-	for k, v := range p {
-		chiCtx.URLParams.Add(k, v)
-	}
-	ctx = context.WithValue(ctx, chi.RouteCtxKey, chiCtx)
-	return ctx
-}
 
 func TestNewMiddleware(t *testing.T) {
 	var db *database.DB

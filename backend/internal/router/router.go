@@ -14,12 +14,14 @@ import (
 type router struct {
 	m    *Middleware
 	auth *handlers.AuthHandlers
+	post *handlers.PostHandlers
 }
 
 func NewRouter(c *config.AppConfig, db *database.DB) *router {
 	return &router{
 		m:    NewMiddleware(c, db),
 		auth: handlers.NewAuthHandlers(c, db),
+		post: handlers.NewPostHandlers(c, db),
 	}
 }
 
@@ -43,17 +45,24 @@ func (r *router) Routes() http.Handler {
 	mux.NotFound(handlers.NotFound)
 	mux.MethodNotAllowed(handlers.MethodNotAllowed)
 
-	mux.Route("/auth", func(mux chi.Router) {
-		mux.Post("/register", r.auth.Register)
-		mux.Post("/login", r.auth.Login)
-		mux.Post("/refresh", r.auth.Refresh)
+	api := chi.NewRouter()
+	mux.Mount("/api/", api)
+
+	api.Route("/auth", func(api chi.Router) {
+		api.Post("/register", r.auth.Register)
+		api.Post("/login", r.auth.Login)
+		api.Post("/refresh", r.auth.Refresh)
 	})
 
-	mux.Group(func(mux chi.Router) {
-		mux.Use(r.m.Auth)
-		mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello"))
-		})
+	api.Route("/posts", func(api chi.Router) {
+		api.Put("/", r.post.Create)
+		api.Get("/{slug}", r.post.Get)
+		api.Patch("/{slug}", r.post.Update)
+		api.Delete("/{slug}", r.post.Delete)
+	})
+
+	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello"))
 	})
 
 	return mux

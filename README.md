@@ -10,6 +10,7 @@ A mini-forum application built using Vue, Go & PostgreSQL
 - [jwt-go](https://github.com/golang-jwt/jwt)
 - [uuid](https://github.com/google/uuid)
 - [go-redis](https://github.com/redis/go-redis)
+- [slug](https://github.com/gosimple/slug)
 
 # Installation
 ```bash
