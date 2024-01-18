@@ -1,4 +1,4 @@
-package router
+package middleware
 
 import (
 	"net/http"
@@ -15,15 +15,15 @@ import (
 func TestNewMiddleware(t *testing.T) {
 	var db *database.DB
 	var c *config.AppConfig
-	middleware := NewMiddleware(c, db)
+	middleware := New(c, db)
 
 	typeString := reflect.TypeOf(middleware).String()
-	if typeString != "*router.Middleware" {
-		t.Error("NewMiddleware() did not get the correct type, wanted *router.Middleware")
+	if typeString != "*middleware.Middleware" {
+		t.Error("middleware.New() did not get the correct type, wanted *middleware.Middleware")
 	}
 }
 
-var m = NewTestMiddleware(&config.AppConfig{
+var m = NewTest(&config.AppConfig{
 	AccessTokenKey: "test",
 	AccessTokenExp: 5 * time.Minute,
 })

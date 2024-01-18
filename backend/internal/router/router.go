@@ -6,20 +6,21 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/handlers"
+	"github.com/Noblefel/ManorTalk/backend/internal/middleware"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
 
 type router struct {
-	m    *Middleware
+	m    *middleware.Middleware
 	auth *handlers.AuthHandlers
 	post *handlers.PostHandlers
 }
 
 func NewRouter(c *config.AppConfig, db *database.DB) *router {
 	return &router{
-		m:    NewMiddleware(c, db),
+		m:    middleware.New(c, db),
 		auth: handlers.NewAuthHandlers(c, db),
 		post: handlers.NewPostHandlers(c, db),
 	}
@@ -28,10 +29,10 @@ func NewRouter(c *config.AppConfig, db *database.DB) *router {
 func (r *router) Routes() http.Handler {
 	mux := chi.NewRouter()
 
-	mux.Use(middleware.Logger)
-	mux.Use(middleware.RealIP)
-	mux.Use(middleware.Recoverer)
-	mux.Use(middleware.AllowContentType("application/json"))
+	mux.Use(chiMiddleware.Logger)
+	mux.Use(chiMiddleware.RealIP)
+	mux.Use(chiMiddleware.Recoverer)
+	mux.Use(chiMiddleware.AllowContentType("application/json"))
 
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},

@@ -1,4 +1,4 @@
-package router
+package middleware
 
 import (
 	"context"
@@ -16,14 +16,14 @@ type Middleware struct {
 	db *database.DB
 }
 
-func NewMiddleware(c *config.AppConfig, db *database.DB) *Middleware {
+func New(c *config.AppConfig, db *database.DB) *Middleware {
 	return &Middleware{
 		c:  c,
 		db: db,
 	}
 }
 
-func NewTestMiddleware(c *config.AppConfig) *Middleware {
+func NewTest(c *config.AppConfig) *Middleware {
 	return &Middleware{
 		c: c,
 	}
