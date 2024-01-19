@@ -30,55 +30,55 @@ elit. Nulla posuere neque id magna pretium rutrum. Sed ornare nunc arcu.
 Cras pharetra, nibh ac ultricies blandit, purus sapien mattis turpis, et 
 congue felis ligula sit amet mi`
 
-var postCreateTests = []struct {
-	name       string
-	payload    *models.PostCreateInput
-	statusCode int
-}{
-	{
-		name: "postCreate-ok",
-		payload: &models.PostCreateInput{
-			Title:      "The new post title",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusCreated,
-	},
-	{
-		name:       "postCreate-error-decode-json",
-		payload:    nil,
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "postCreate-error-validation",
-		payload: &models.PostCreateInput{
-			Title:   "",
-			Content: "",
-		},
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "postCreate-error-duplicate-title-or-slug",
-		payload: &models.PostCreateInput{
-			Title:      "already-exists",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusConflict,
-	},
-	{
-		name: "postCreate-error-creating-post",
-		payload: &models.PostCreateInput{
-			Title:      "unexpected-error",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestPost_Create(t *testing.T) {
-	for _, tt := range postCreateTests {
+	var tests = []struct {
+		name       string
+		payload    *models.PostCreateInput
+		statusCode int
+	}{
+		{
+			name: "postCreate-ok",
+			payload: &models.PostCreateInput{
+				Title:      "The new post title",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusCreated,
+		},
+		{
+			name:       "postCreate-error-decode-json",
+			payload:    nil,
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "postCreate-error-validation",
+			payload: &models.PostCreateInput{
+				Title:   "",
+				Content: "",
+			},
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "postCreate-error-duplicate-title-or-slug",
+			payload: &models.PostCreateInput{
+				Title:      "already-exists",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusConflict,
+		},
+		{
+			name: "postCreate-error-creating-post",
+			payload: &models.PostCreateInput{
+				Title:      "unexpected-error",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
 		var r *http.Request
 		if tt.payload == nil {
 			r = httptest.NewRequest("PUT", "/posts", nil)
@@ -97,30 +97,30 @@ func TestPost_Create(t *testing.T) {
 	}
 }
 
-var postGetTests = []struct {
-	name       string
-	slugRoute  string
-	statusCode int
-}{
-	{
-		name:       "postGet-ok",
-		slugRoute:  "post-title",
-		statusCode: http.StatusOK,
-	},
-	{
-		name:       "postGet-error-post-not-found",
-		slugRoute:  "not-found-error",
-		statusCode: http.StatusNotFound,
-	},
-	{
-		name:       "postGet-error-getting-post",
-		slugRoute:  "unexpected-error",
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestPost_Get(t *testing.T) {
-	for _, tt := range postGetTests {
+	var tests = []struct {
+		name       string
+		slugRoute  string
+		statusCode int
+	}{
+		{
+			name:       "postGet-ok",
+			slugRoute:  "post-title",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "postGet-error-post-not-found",
+			slugRoute:  "not-found-error",
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       "postGet-error-getting-post",
+			slugRoute:  "unexpected-error",
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
 
 		r := httptest.NewRequest("GET", "/posts/{slug}", nil)
 		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
@@ -135,79 +135,79 @@ func TestPost_Get(t *testing.T) {
 	}
 }
 
-var postUpdateTests = []struct {
-	name       string
-	slugRoute  string
-	payload    *models.PostUpdateInput
-	statusCode int
-}{
-	{
-		name:      "postUpdate-ok",
-		slugRoute: "post-title",
-		payload: &models.PostUpdateInput{
-			Title:      "The updated post title",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusOK,
-	},
-	{
-		name:       "postCreate-error-decode-json",
-		payload:    nil,
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "postCreate-error-validation",
-		payload: &models.PostUpdateInput{
-			Title:   "",
-			Content: "",
-		},
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name:      "postUpdate-error-post-not-found",
-		slugRoute: "not-found-error",
-		payload: &models.PostUpdateInput{
-			Title:      "The updated post title",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusNotFound,
-	},
-	{
-		name:      "postUpdate-error-getting-post",
-		slugRoute: "unexpected-error",
-		payload: &models.PostUpdateInput{
-			Title:      "The updated post title",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-	{
-		name:      "postUpdate-error-duplicate-title-or-post",
-		slugRoute: "post-title",
-		payload: &models.PostUpdateInput{
-			Title:      "already-exists",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusConflict,
-	},
-	{
-		name:      "postUpdate-error-updating-post",
-		slugRoute: "post-title",
-		payload: &models.PostUpdateInput{
-			Title:      "unexpected-error",
-			Content:    longText,
-			CategoryId: 1,
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestPost_Update(t *testing.T) {
-	for _, tt := range postUpdateTests {
+	var tests = []struct {
+		name       string
+		slugRoute  string
+		payload    *models.PostUpdateInput
+		statusCode int
+	}{
+		{
+			name:      "postUpdate-ok",
+			slugRoute: "post-title",
+			payload: &models.PostUpdateInput{
+				Title:      "The updated post title",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "postCreate-error-decode-json",
+			payload:    nil,
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "postCreate-error-validation",
+			payload: &models.PostUpdateInput{
+				Title:   "",
+				Content: "",
+			},
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name:      "postUpdate-error-post-not-found",
+			slugRoute: "not-found-error",
+			payload: &models.PostUpdateInput{
+				Title:      "The updated post title",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:      "postUpdate-error-getting-post",
+			slugRoute: "unexpected-error",
+			payload: &models.PostUpdateInput{
+				Title:      "The updated post title",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			name:      "postUpdate-error-duplicate-title-or-post",
+			slugRoute: "post-title",
+			payload: &models.PostUpdateInput{
+				Title:      "already-exists",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusConflict,
+		},
+		{
+			name:      "postUpdate-error-updating-post",
+			slugRoute: "post-title",
+			payload: &models.PostUpdateInput{
+				Title:      "unexpected-error",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
 		var r *http.Request
 		if tt.payload == nil {
 			r = httptest.NewRequest("PATCH", "/posts/{slug}", nil)
@@ -227,36 +227,35 @@ func TestPost_Update(t *testing.T) {
 		}
 	}
 }
-
-var postDeleteTests = []struct {
-	name       string
-	slugRoute  string
-	statusCode int
-}{
-	{
-		name:       "postDelete-ok",
-		slugRoute:  "post-title",
-		statusCode: http.StatusOK,
-	},
-	{
-		name:       "postDelete-error-post-not-found",
-		slugRoute:  "not-found-error",
-		statusCode: http.StatusNotFound,
-	},
-	{
-		name:       "postDelete-error-getting-post",
-		slugRoute:  "unexpected-error",
-		statusCode: http.StatusInternalServerError,
-	},
-	{
-		name:       "postDelete-error-deleting-post",
-		slugRoute:  "get-invalid-post",
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestPost_Delete(t *testing.T) {
-	for _, tt := range postDeleteTests {
+	var tests = []struct {
+		name       string
+		slugRoute  string
+		statusCode int
+	}{
+		{
+			name:       "postDelete-ok",
+			slugRoute:  "post-title",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "postDelete-error-post-not-found",
+			slugRoute:  "not-found-error",
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       "postDelete-error-getting-post",
+			slugRoute:  "unexpected-error",
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			name:       "postDelete-error-deleting-post",
+			slugRoute:  "get-invalid-post",
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
 
 		r := httptest.NewRequest("DELETE", "/posts/{slug}", nil)
 		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})

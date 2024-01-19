@@ -27,52 +27,52 @@ func TestNewAuthHandlers(t *testing.T) {
 	}
 }
 
-var authRegisterTests = []struct {
-	name       string
-	payload    *models.UserRegisterInput
-	statusCode int
-}{
-	{
-		name: "authRegister-ok",
-		payload: &models.UserRegisterInput{
-			Email:    "test@example.com",
-			Password: "password123",
-		},
-		statusCode: http.StatusOK,
-	},
-	{
-		name:       "authRegister-error-decode-json",
-		payload:    nil,
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "authRegister-error-validation",
-		payload: &models.UserRegisterInput{
-			Email:    "not-an-email",
-			Password: "",
-		},
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "authRegister-error-duplicate-email",
-		payload: &models.UserRegisterInput{
-			Email:    "alreadyexists@error.com",
-			Password: "password123",
-		},
-		statusCode: http.StatusConflict,
-	},
-	{
-		name: "authRegister-error-creating-user",
-		payload: &models.UserRegisterInput{
-			Email:    "unexpected@error.com",
-			Password: "password123",
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestAuth_Register(t *testing.T) {
-	for _, tt := range authRegisterTests {
+	var tests = []struct {
+		name       string
+		payload    *models.UserRegisterInput
+		statusCode int
+	}{
+		{
+			name: "authRegister-ok",
+			payload: &models.UserRegisterInput{
+				Email:    "test@example.com",
+				Password: "password123",
+			},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "authRegister-error-decode-json",
+			payload:    nil,
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "authRegister-error-validation",
+			payload: &models.UserRegisterInput{
+				Email:    "not-an-email",
+				Password: "",
+			},
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "authRegister-error-duplicate-email",
+			payload: &models.UserRegisterInput{
+				Email:    "alreadyexists@error.com",
+				Password: "password123",
+			},
+			statusCode: http.StatusConflict,
+		},
+		{
+			name: "authRegister-error-creating-user",
+			payload: &models.UserRegisterInput{
+				Email:    "unexpected@error.com",
+				Password: "password123",
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
 		var r *http.Request
 		if tt.payload == nil {
 			r = httptest.NewRequest("POST", "/auth/register", nil)
@@ -92,68 +92,68 @@ func TestAuth_Register(t *testing.T) {
 	}
 }
 
-var authLoginTests = []struct {
-	name       string
-	payload    *models.UserLoginInput
-	statusCode int
-}{
-	{
-		name: "authLogin-ok",
-		payload: &models.UserLoginInput{
-			Email:    "test@example.com",
-			Password: "password",
-		},
-		statusCode: http.StatusOK,
-	},
-	{
-		name:       "authLogin-error-decode-json",
-		payload:    nil,
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "authLogin-error-validation",
-		payload: &models.UserLoginInput{
-			Email:    "not-an-email",
-			Password: "",
-		},
-		statusCode: http.StatusBadRequest,
-	},
-	{
-		name: "authLogin-error-invalid-credentials",
-		payload: &models.UserLoginInput{
-			Email:    "test@example.com",
-			Password: "incorrectpassword",
-		},
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name: "authLogin-error-user-not-found",
-		payload: &models.UserLoginInput{
-			Email:    "notfound@error.com",
-			Password: "password",
-		},
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name: "authLogin-error-authenticating",
-		payload: &models.UserLoginInput{
-			Email:    "unexpected@error.com",
-			Password: "password",
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-	{
-		name: "authLogin-error-saving-token",
-		payload: &models.UserLoginInput{
-			Email:    "invaliduser@example.com",
-			Password: "password",
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestAuth_Login(t *testing.T) {
-	for _, tt := range authLoginTests {
+	var tests = []struct {
+		name       string
+		payload    *models.UserLoginInput
+		statusCode int
+	}{
+		{
+			name: "authLogin-ok",
+			payload: &models.UserLoginInput{
+				Email:    "test@example.com",
+				Password: "password",
+			},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "authLogin-error-decode-json",
+			payload:    nil,
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "authLogin-error-validation",
+			payload: &models.UserLoginInput{
+				Email:    "not-an-email",
+				Password: "",
+			},
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name: "authLogin-error-invalid-credentials",
+			payload: &models.UserLoginInput{
+				Email:    "test@example.com",
+				Password: "incorrectpassword",
+			},
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name: "authLogin-error-user-not-found",
+			payload: &models.UserLoginInput{
+				Email:    "notfound@error.com",
+				Password: "password",
+			},
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name: "authLogin-error-authenticating",
+			payload: &models.UserLoginInput{
+				Email:    "unexpected@error.com",
+				Password: "password",
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "authLogin-error-saving-token",
+			payload: &models.UserLoginInput{
+				Email:    "invaliduser@example.com",
+				Password: "password",
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
 		var r *http.Request
 		if tt.payload == nil {
 			r = httptest.NewRequest("POST", "/auth/login", nil)
@@ -207,61 +207,60 @@ var refreshTokenUserUnexpectedError, _ = token.Generate(token.Details{
 	Duration:  1 * time.Minute,
 })
 
-var authRefreshTests = []struct {
-	name       string
-	cookie     *http.Cookie
-	statusCode int
-}{
-	{
-		name: "authRefresh-ok",
-		cookie: &http.Cookie{
-			Name:  "refresh_token",
-			Value: refreshToken,
-		},
-		statusCode: http.StatusOK,
-	},
-	{
-		name:       "authRefresh-error-missing-cookie",
-		cookie:     nil,
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name: "authRefresh-error-parsing-token",
-		cookie: &http.Cookie{
-			Name:  "refresh_token",
-			Value: refreshTokenInvalid,
-		},
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name: "authRefresh-error-getting-token-redis",
-		cookie: &http.Cookie{
-			Name:  "refresh_token",
-			Value: refreshTokenInvalid2,
-		},
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name: "authRefresh-error-user-not-found",
-		cookie: &http.Cookie{
-			Name:  "refresh_token",
-			Value: refreshTokenUserNotFound,
-		},
-		statusCode: http.StatusNotFound,
-	},
-	{
-		name: "authRefresh-error-getting-user",
-		cookie: &http.Cookie{
-			Name:  "refresh_token",
-			Value: refreshTokenUserUnexpectedError,
-		},
-		statusCode: http.StatusInternalServerError,
-	},
-}
-
 func TestAuth_Refresh(t *testing.T) {
-	for _, tt := range authRefreshTests {
+	var tests = []struct {
+		name       string
+		cookie     *http.Cookie
+		statusCode int
+	}{
+		{
+			name: "authRefresh-ok",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: refreshToken,
+			},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "authRefresh-error-missing-cookie",
+			cookie:     nil,
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name: "authRefresh-error-parsing-token",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: refreshTokenInvalid,
+			},
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name: "authRefresh-error-getting-token-redis",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: refreshTokenInvalid2,
+			},
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name: "authRefresh-error-user-not-found",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: refreshTokenUserNotFound,
+			},
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name: "authRefresh-error-getting-user",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: refreshTokenUserUnexpectedError,
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+	}
 
+	for _, tt := range tests {
 		r := httptest.NewRequest("POST", "/auth/refresh", nil)
 		r.Header.Set("Content-Type", "application/json")
 

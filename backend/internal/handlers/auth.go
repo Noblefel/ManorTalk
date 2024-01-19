@@ -215,6 +215,8 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Password = ""
+
 	res.JSON(w, r, http.StatusOK, res.Response{
 		Data: map[string]interface{}{
 			"user":         user,

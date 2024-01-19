@@ -29,7 +29,7 @@ func NewRouter(c *config.AppConfig, db *database.DB) *router {
 func (r *router) Routes() http.Handler {
 	mux := chi.NewRouter()
 
-	mux.Use(chiMiddleware.Logger)
+	// mux.Use(chiMiddleware.Logger)
 	mux.Use(chiMiddleware.RealIP)
 	mux.Use(chiMiddleware.Recoverer)
 	mux.Use(chiMiddleware.AllowContentType("application/json"))
@@ -49,22 +49,33 @@ func (r *router) Routes() http.Handler {
 	api := chi.NewRouter()
 	mux.Mount("/api/", api)
 
-	api.Route("/auth", func(api chi.Router) {
-		api.Post("/register", r.auth.Register)
-		api.Post("/login", r.auth.Login)
-		api.Post("/refresh", r.auth.Refresh)
-	})
-
-	api.Route("/posts", func(api chi.Router) {
-		api.Put("/", r.post.Create)
-		api.Get("/{slug}", r.post.Get)
-		api.Patch("/{slug}", r.post.Update)
-		api.Delete("/{slug}", r.post.Delete)
-	})
+	r.authRouter(api)
+	r.postRouter(api)
 
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello"))
 	})
 
 	return mux
+}
+
+func (r *router) authRouter(api *chi.Mux) {
+	api.Route("/auth", func(api chi.Router) {
+		api.Post("/register", r.auth.Register)
+		api.Post("/login", r.auth.Login)
+		api.Post("/refresh", r.auth.Refresh)
+	})
+}
+
+func (r *router) postRouter(api *chi.Mux) {
+	api.Route("/posts", func(api chi.Router) {
+		api.Get("/{slug}", r.post.Get)
+
+		api.Group(func(api chi.Router) {
+			api.Use(r.m.Auth)
+			api.Put("/", r.post.Create)
+			api.Patch("/{slug}", r.post.Update)
+			api.Delete("/{slug}", r.post.Delete)
+		})
+	})
 }

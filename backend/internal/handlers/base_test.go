@@ -6,31 +6,31 @@ import (
 	"testing"
 )
 
-var baseTests = []struct {
-	name       string
-	url        string
-	method     string
-	handler    http.HandlerFunc
-	statusCode int
-}{
-	{
-		name:       "not-found",
-		url:        "/xmo02v3o2cm3ro",
-		method:     "GET",
-		handler:    NotFound,
-		statusCode: http.StatusNotFound,
-	},
-	{
-		name:       "method-not-allowed",
-		url:        "/users",
-		method:     "asjcaosjdcoa",
-		handler:    MethodNotAllowed,
-		statusCode: http.StatusMethodNotAllowed,
-	},
-}
-
 func TestBaseHandlers(t *testing.T) {
-	for _, tt := range baseTests {
+	var tests = []struct {
+		name       string
+		url        string
+		method     string
+		handler    http.HandlerFunc
+		statusCode int
+	}{
+		{
+			name:       "not-found",
+			url:        "/xmo02v3o2cm3ro",
+			method:     "GET",
+			handler:    NotFound,
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       "method-not-allowed",
+			url:        "/users",
+			method:     "asjcaosjdcoa",
+			handler:    MethodNotAllowed,
+			statusCode: http.StatusMethodNotAllowed,
+		},
+	}
+
+	for _, tt := range tests {
 		r, _ := http.NewRequest(tt.method, tt.url, nil)
 		w := httptest.NewRecorder()
 

@@ -46,47 +46,47 @@ var sampleToken3, _ = token.Generate(token.Details{
 	UserId:    2,
 })
 
-var middlewareAuthTests = []struct {
-	name               string
-	authorization      string
-	expectedUserId     int
-	expectedErrMessage string
-	statusCode         int
-}{
-	{
-		name:           "middlewareAuth-ok",
-		authorization:  sampleToken,
-		expectedUserId: 1,
-		statusCode:     http.StatusOK,
-	},
-	{
-		name:           "middlewareAuth-ok-2",
-		authorization:  sampleToken2,
-		expectedUserId: 2,
-		statusCode:     http.StatusOK,
-	},
-	{
-		name:          "middlewareAuth-empty-authorization-header",
-		authorization: "",
-		// expectedErrMessage: "You need to login first",
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name:          "middlewareAuth-expired-token",
-		authorization: sampleToken3,
-		// expectedErrMessage: "Token Expired",
-		statusCode: http.StatusUnauthorized,
-	},
-	{
-		name:          "middlewareAuth-invalid-token",
-		authorization: "asdcapsdjapcjsdpoajd",
-		// expectedErrMessage: "Invalid Token",
-		statusCode: http.StatusUnauthorized,
-	},
-}
-
 func TestMiddleware_Auth(t *testing.T) {
-	for _, tt := range middlewareAuthTests {
+	var tests = []struct {
+		name               string
+		authorization      string
+		expectedUserId     int
+		expectedErrMessage string
+		statusCode         int
+	}{
+		{
+			name:           "middlewareAuth-ok",
+			authorization:  sampleToken,
+			expectedUserId: 1,
+			statusCode:     http.StatusOK,
+		},
+		{
+			name:           "middlewareAuth-ok-2",
+			authorization:  sampleToken2,
+			expectedUserId: 2,
+			statusCode:     http.StatusOK,
+		},
+		{
+			name:          "middlewareAuth-empty-authorization-header",
+			authorization: "",
+			// expectedErrMessage: "You need to login first",
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name:          "middlewareAuth-expired-token",
+			authorization: sampleToken3,
+			// expectedErrMessage: "Token Expired",
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name:          "middlewareAuth-invalid-token",
+			authorization: "asdcapsdjapcjsdpoajd",
+			// expectedErrMessage: "Invalid Token",
+			statusCode: http.StatusUnauthorized,
+		},
+	}
+
+	for _, tt := range tests {
 		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userId := r.Context().Value("user_id")
 			if userId == nil {
