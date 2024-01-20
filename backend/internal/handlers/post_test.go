@@ -11,6 +11,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 )
 
 func TestNewPostHandlers(t *testing.T) {
@@ -63,7 +64,7 @@ func TestPost_Create(t *testing.T) {
 			payload: &models.PostCreateInput{
 				Title:      "The new post title",
 				Content:    longText,
-				CategoryId: 999999,
+				CategoryId: repository.ErrNotFoundKeyInt,
 			},
 			statusCode: http.StatusNotFound,
 		},
@@ -72,14 +73,14 @@ func TestPost_Create(t *testing.T) {
 			payload: &models.PostCreateInput{
 				Title:      "The new post title",
 				Content:    longText,
-				CategoryId: -1,
+				CategoryId: repository.ErrUnexpectedKeyInt,
 			},
 			statusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "postCreate-error-duplicate-title-or-slug",
 			payload: &models.PostCreateInput{
-				Title:      "already-exists",
+				Title:      repository.ErrDuplicateKeyString,
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -88,7 +89,7 @@ func TestPost_Create(t *testing.T) {
 		{
 			name: "postCreate-error-creating-post",
 			payload: &models.PostCreateInput{
-				Title:      "unexpected-error",
+				Title:      repository.ErrUnexpectedKeyString,
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -128,12 +129,12 @@ func TestPost_Get(t *testing.T) {
 		},
 		{
 			name:       "postGet-error-post-not-found",
-			slugRoute:  "not-found-error",
+			slugRoute:  repository.ErrNotFoundKeyString,
 			statusCode: http.StatusNotFound,
 		},
 		{
 			name:       "postGet-error-getting-post",
-			slugRoute:  "unexpected-error",
+			slugRoute:  repository.ErrUnexpectedKeyString,
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -166,12 +167,12 @@ func TestPost_GetByCategory(t *testing.T) {
 		},
 		{
 			name:       "postGetByCategory-ok-even-with-invalid-category",
-			category:   "invalid-asdcoashdcisaohdnashdonahscdaosha",
+			category:   "asdcoashdcisaohdnashdonahscdaosha",
 			statusCode: http.StatusOK,
 		},
 		{
 			name:       "postGetByCategory-error-getting-posts",
-			category:   "unexpected-error",
+			category:   repository.ErrUnexpectedKeyString,
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -222,7 +223,7 @@ func TestPost_Update(t *testing.T) {
 		},
 		{
 			name:      "postUpdate-error-post-not-found",
-			slugRoute: "not-found-error",
+			slugRoute: repository.ErrNotFoundKeyString,
 			payload: &models.PostUpdateInput{
 				Title:      "The updated post title",
 				Content:    longText,
@@ -232,7 +233,7 @@ func TestPost_Update(t *testing.T) {
 		},
 		{
 			name:      "postUpdate-error-getting-post",
-			slugRoute: "unexpected-error",
+			slugRoute: repository.ErrUnexpectedKeyString,
 			payload: &models.PostUpdateInput{
 				Title:      "The updated post title",
 				Content:    longText,
@@ -244,7 +245,7 @@ func TestPost_Update(t *testing.T) {
 			name:      "postUpdate-error-duplicate-title-or-post",
 			slugRoute: "post-title",
 			payload: &models.PostUpdateInput{
-				Title:      "already-exists",
+				Title:      repository.ErrDuplicateKeyString,
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -254,7 +255,7 @@ func TestPost_Update(t *testing.T) {
 			name:      "postUpdate-error-updating-post",
 			slugRoute: "post-title",
 			payload: &models.PostUpdateInput{
-				Title:      "unexpected-error",
+				Title:      repository.ErrUnexpectedKeyString,
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -295,12 +296,12 @@ func TestPost_Delete(t *testing.T) {
 		},
 		{
 			name:       "postDelete-error-post-not-found",
-			slugRoute:  "not-found-error",
+			slugRoute:  repository.ErrNotFoundKeyString,
 			statusCode: http.StatusNotFound,
 		},
 		{
 			name:       "postDelete-error-getting-post",
-			slugRoute:  "unexpected-error",
+			slugRoute:  repository.ErrUnexpectedKeyString,
 			statusCode: http.StatusInternalServerError,
 		},
 		{

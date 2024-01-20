@@ -3,11 +3,12 @@ package redis
 import (
 	"errors"
 
+	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
 func (r *testRedisRepo) SetRefreshToken(td token.Details) error {
-	if td.UserId <= -1 {
+	if td.UserId == repository.ErrUnexpectedKeyInt {
 		return errors.New("Some error")
 	}
 
@@ -15,7 +16,7 @@ func (r *testRedisRepo) SetRefreshToken(td token.Details) error {
 }
 
 func (r *testRedisRepo) GetRefreshToken(td token.Details) (string, error) {
-	if td.UniqueId == "incorrect" {
+	if td.UniqueId == repository.ErrIncorrectKey {
 		return "", errors.New("Some error")
 	}
 

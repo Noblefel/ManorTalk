@@ -5,16 +5,17 @@ import (
 	"errors"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (r *testUserRepo) CreateUser(email, password string) (models.User, error) {
 	var user models.User
-	if email == "alreadyexists@error.com" {
+	if email == repository.ErrDuplicateKeyString+"@example.com" {
 		return user, errors.New("duplicate key value")
 	}
 
-	if email == "unexpected@error.com" {
+	if email == repository.ErrUnexpectedKeyString+"@example.com" {
 		return user, errors.New("unexpected error")
 	}
 
@@ -35,7 +36,7 @@ func (r *testUserRepo) Register(payload models.UserRegisterInput) (models.User, 
 func (r *testUserRepo) Login(payload models.UserLoginInput) (models.User, error) {
 	var user models.User
 
-	if payload.Password == "incorrectpassword" {
+	if payload.Password == repository.ErrIncorrectKey {
 		return user, bcrypt.ErrMismatchedHashAndPassword
 	}
 
@@ -50,11 +51,11 @@ func (r *testUserRepo) Login(payload models.UserLoginInput) (models.User, error)
 func (r *testUserRepo) GetUserById(id int) (models.User, error) {
 	var user models.User
 
-	if id > 9999 {
+	if id == repository.ErrNotFoundKeyInt {
 		return user, sql.ErrNoRows
 	}
 
-	if id <= 0 {
+	if id == repository.ErrUnexpectedKeyInt {
 		return user, errors.New("unexpected error")
 	}
 
@@ -64,16 +65,16 @@ func (r *testUserRepo) GetUserById(id int) (models.User, error) {
 func (r *testUserRepo) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 
-	if email == "invaliduser@example.com" {
-		user.Id = -1
+	if email == "get-invalid-user@example.com" {
+		user.Id = repository.ErrUnexpectedKeyInt
 		return user, nil
 	}
 
-	if email == "notfound@error.com" {
+	if email == repository.ErrNotFoundKeyString+"@example.com" {
 		return user, sql.ErrNoRows
 	}
 
-	if email == "unexpected@error.com" {
+	if email == repository.ErrUnexpectedKeyString+"@example.com" {
 		return user, errors.New("unexpected error")
 	}
 

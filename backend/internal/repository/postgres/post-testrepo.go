@@ -5,16 +5,17 @@ import (
 	"errors"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 )
 
 func (r *testPostRepo) CreatePost(p models.Post) (models.Post, error) {
 	var post models.Post
 
-	if p.Title == "already-exists" {
+	if p.Title == repository.ErrDuplicateKeyString {
 		return post, errors.New("duplicate key value")
 	}
 
-	if p.Title == "unexpected-error" {
+	if p.Title == repository.ErrUnexpectedKeyString {
 		return post, errors.New("some error")
 	}
 
@@ -24,16 +25,16 @@ func (r *testPostRepo) CreatePost(p models.Post) (models.Post, error) {
 func (r *testPostRepo) GetPostBySlug(slug string) (models.Post, error) {
 	var post models.Post
 
-	if slug == "not-found-error" {
+	if slug == repository.ErrNotFoundKeyString {
 		return post, sql.ErrNoRows
 	}
 
-	if slug == "unexpected-error" {
+	if slug == repository.ErrUnexpectedKeyString {
 		return post, errors.New("some error")
 	}
 
 	if slug == "get-invalid-post" {
-		post.Id = -1
+		post.Id = repository.ErrUnexpectedKeyInt
 		return post, nil
 	}
 
@@ -43,7 +44,7 @@ func (r *testPostRepo) GetPostBySlug(slug string) (models.Post, error) {
 func (r *testPostRepo) GetPostsByCategory(category string) ([]models.Post, error) {
 	posts := []models.Post{}
 
-	if category == "unexpected-error" {
+	if category == repository.ErrUnexpectedKeyString {
 		return posts, errors.New("some error")
 	}
 
@@ -52,15 +53,15 @@ func (r *testPostRepo) GetPostsByCategory(category string) ([]models.Post, error
 
 func (r *testPostRepo) UpdatePost(p models.Post) error {
 
-	if p.Title == "already-exists" {
+	if p.Title == repository.ErrDuplicateKeyString {
 		return errors.New("duplicate key value")
 	}
 
-	if p.Title == "unexpected-error" {
+	if p.Title == repository.ErrUnexpectedKeyString {
 		return errors.New("some error")
 	}
 
-	if p.Title == "not-found-error" {
+	if p.Title == repository.ErrNotFoundKeyString {
 		return sql.ErrNoRows
 	}
 
@@ -68,7 +69,7 @@ func (r *testPostRepo) UpdatePost(p models.Post) error {
 }
 
 func (r *testPostRepo) DeletePost(id int) error {
-	if id < 0 {
+	if id == repository.ErrUnexpectedKeyInt {
 		return errors.New("some error")
 	}
 
@@ -82,11 +83,11 @@ func (r *testPostRepo) GetCategories() ([]models.Category, error) {
 func (r *testPostRepo) GetCategoryById(id int) (models.Category, error) {
 	var category models.Category
 
-	if id > 9999 {
+	if id == repository.ErrNotFoundKeyInt {
 		return category, sql.ErrNoRows
 	}
 
-	if id <= 0 {
+	if id == repository.ErrUnexpectedKeyInt {
 		return category, errors.New("some error")
 	}
 

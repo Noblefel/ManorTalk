@@ -12,6 +12,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
@@ -57,7 +58,7 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-error-duplicate-email",
 			payload: &models.UserRegisterInput{
-				Email:    "alreadyexists@error.com",
+				Email:    repository.ErrDuplicateKeyString + "@example.com",
 				Password: "password123",
 			},
 			statusCode: http.StatusConflict,
@@ -65,7 +66,7 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-error-creating-user",
 			payload: &models.UserRegisterInput{
-				Email:    "unexpected@error.com",
+				Email:    repository.ErrUnexpectedKeyString + "@example.com",
 				Password: "password123",
 			},
 			statusCode: http.StatusInternalServerError,
@@ -123,14 +124,14 @@ func TestAuth_Login(t *testing.T) {
 			name: "authLogin-error-invalid-credentials",
 			payload: &models.UserLoginInput{
 				Email:    "test@example.com",
-				Password: "incorrectpassword",
+				Password: repository.ErrIncorrectKey,
 			},
 			statusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "authLogin-error-user-not-found",
 			payload: &models.UserLoginInput{
-				Email:    "notfound@error.com",
+				Email:    repository.ErrNotFoundKeyString + "@example.com",
 				Password: "password",
 			},
 			statusCode: http.StatusUnauthorized,
@@ -138,7 +139,7 @@ func TestAuth_Login(t *testing.T) {
 		{
 			name: "authLogin-error-authenticating",
 			payload: &models.UserLoginInput{
-				Email:    "unexpected@error.com",
+				Email:    repository.ErrUnexpectedKeyString + "@example.com",
 				Password: "password",
 			},
 			statusCode: http.StatusInternalServerError,
@@ -146,7 +147,7 @@ func TestAuth_Login(t *testing.T) {
 		{
 			name: "authLogin-error-saving-token",
 			payload: &models.UserLoginInput{
-				Email:    "invaliduser@example.com",
+				Email:    "get-invalid-user@example.com",
 				Password: "password",
 			},
 			statusCode: http.StatusInternalServerError,
@@ -188,20 +189,20 @@ var refreshTokenInvalid, _ = token.Generate(token.Details{
 
 var refreshTokenInvalid2, _ = token.Generate(token.Details{
 	UserId:    -1,
-	UniqueId:  "incorrect",
+	UniqueId:  repository.ErrIncorrectKey,
 	SecretKey: h.auth.c.RefreshTokenKey,
 	Duration:  1 * time.Minute,
 })
 
 var refreshTokenUserNotFound, _ = token.Generate(token.Details{
-	UserId:    9999999,
+	UserId:    repository.ErrNotFoundKeyInt,
 	UniqueId:  "uuid",
 	SecretKey: h.auth.c.RefreshTokenKey,
 	Duration:  1 * time.Minute,
 })
 
 var refreshTokenUserUnexpectedError, _ = token.Generate(token.Details{
-	UserId:    -1,
+	UserId:    repository.ErrUnexpectedKeyInt,
 	UniqueId:  "uuid",
 	SecretKey: h.auth.c.RefreshTokenKey,
 	Duration:  1 * time.Minute,

@@ -5,6 +5,17 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
+// Default values to maintain consistency throughout test repos.
+// Will use the equal "==" operator
+const (
+	ErrNotFoundKeyInt      = -1
+	ErrNotFoundKeyString   = "not-found"
+	ErrUnexpectedKeyInt    = -2
+	ErrUnexpectedKeyString = "unexpected-error"
+	ErrIncorrectKey        = "something-incorrect"
+	ErrDuplicateKeyString  = "already-exists"
+)
+
 type RedisRepo interface {
 	SetRefreshToken(td token.Details) error
 	GetRefreshToken(td token.Details) (string, error)
