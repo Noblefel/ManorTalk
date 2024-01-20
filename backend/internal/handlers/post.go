@@ -63,6 +63,21 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	category, err := h.postRepo.GetCategoryById(payload.CategoryId)
+	if err != nil {
+		if errors.Is(sql.ErrNoRows, err) {
+			res.JSON(w, r, http.StatusNotFound, res.Response{
+				Message: "Category not found",
+			})
+			return
+		}
+
+		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+			Message: "Unexpected error when getting category",
+		})
+		return
+	}
+
 	post := models.Post{
 		UserId:     1,
 		Title:      payload.Title,
@@ -72,7 +87,7 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 		CategoryId: payload.CategoryId,
 	}
 
-	post, err := h.postRepo.CreatePost(post)
+	post, err = h.postRepo.CreatePost(post)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
 			res.JSON(w, r, http.StatusConflict, res.Response{
@@ -86,6 +101,8 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	post.Category = category
 
 	res.JSON(w, r, http.StatusCreated, res.Response{
 		Message: "Post has been created",
@@ -111,6 +128,20 @@ func (h *PostHandlers) Get(w http.ResponseWriter, r *http.Request) {
 
 	res.JSON(w, r, http.StatusOK, res.Response{
 		Data: post,
+	})
+}
+
+func (h *PostHandlers) GetByCategory(w http.ResponseWriter, r *http.Request) {
+	posts, err := h.postRepo.GetPostsByCategory(chi.URLParam(r, "category"))
+	if err != nil && !errors.Is(sql.ErrNoRows, err) {
+		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+			Message: "Error when retrieving posts",
+		})
+		return
+	}
+
+	res.JSON(w, r, http.StatusOK, res.Response{
+		Data: posts,
 	})
 }
 
@@ -205,5 +236,19 @@ func (h *PostHandlers) Delete(w http.ResponseWriter, r *http.Request) {
 
 	res.JSON(w, r, http.StatusOK, res.Response{
 		Message: "Post has been deleted",
+	})
+}
+
+func (h *PostHandlers) GetCategories(w http.ResponseWriter, r *http.Request) {
+	categories, err := h.postRepo.GetCategories()
+	if err != nil && !errors.Is(sql.ErrNoRows, err) {
+		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+			Message: "Error when retrieving post categories",
+		})
+		return
+	}
+
+	res.JSON(w, r, http.StatusOK, res.Response{
+		Data: categories,
 	})
 }

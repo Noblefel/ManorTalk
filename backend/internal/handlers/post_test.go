@@ -59,6 +59,24 @@ func TestPost_Create(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 		},
 		{
+			name: "postCreate-error-category-not-found",
+			payload: &models.PostCreateInput{
+				Title:      "The new post title",
+				Content:    longText,
+				CategoryId: 999999,
+			},
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name: "postCreate-error-getting-category",
+			payload: &models.PostCreateInput{
+				Title:      "The new post title",
+				Content:    longText,
+				CategoryId: -1,
+			},
+			statusCode: http.StatusInternalServerError,
+		},
+		{
 			name: "postCreate-error-duplicate-title-or-slug",
 			payload: &models.PostCreateInput{
 				Title:      "already-exists",
@@ -81,10 +99,10 @@ func TestPost_Create(t *testing.T) {
 	for _, tt := range tests {
 		var r *http.Request
 		if tt.payload == nil {
-			r = httptest.NewRequest("PUT", "/posts", nil)
+			r = httptest.NewRequest("POST", "/posts", nil)
 		} else {
 			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("PUT", "/posts", bytes.NewBuffer(jsonBytes))
+			r = httptest.NewRequest("POST", "/posts", bytes.NewBuffer(jsonBytes))
 		}
 
 		w := httptest.NewRecorder()
@@ -127,6 +145,43 @@ func TestPost_Get(t *testing.T) {
 		r = r.WithContext(ctx)
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.post.Get)
+		handler.ServeHTTP(w, r)
+
+		if w.Code != tt.statusCode {
+			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
+		}
+	}
+}
+
+func TestPost_GetByCategory(t *testing.T) {
+	var tests = []struct {
+		name       string
+		category   string
+		statusCode int
+	}{
+		{
+			name:       "postGetByCategory-ok",
+			category:   "other",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "postGetByCategory-ok-even-with-invalid-category",
+			category:   "invalid-asdcoashdcisaohdnashdonahscdaosha",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "postGetByCategory-error-getting-posts",
+			category:   "unexpected-error",
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		r := httptest.NewRequest("GET", "/posts/c/{category}", nil)
+		ctx := getCtxWithParam(r, params{"category": tt.category})
+		r = r.WithContext(ctx)
+		w := httptest.NewRecorder()
+		handler := http.HandlerFunc(h.post.GetByCategory)
 		handler.ServeHTTP(w, r)
 
 		if w.Code != tt.statusCode {
@@ -262,6 +317,29 @@ func TestPost_Delete(t *testing.T) {
 		r = r.WithContext(ctx)
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.post.Delete)
+		handler.ServeHTTP(w, r)
+
+		if w.Code != tt.statusCode {
+			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
+		}
+	}
+}
+
+func TestPost_GetCategories(t *testing.T) {
+	var tests = []struct {
+		name       string
+		statusCode int
+	}{
+		{
+			name:       "postGetCategories-ok",
+			statusCode: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		r := httptest.NewRequest("GET", "/posts/categories", nil)
+		w := httptest.NewRecorder()
+		handler := http.HandlerFunc(h.post.GetCategories)
 		handler.ServeHTTP(w, r)
 
 		if w.Code != tt.statusCode {

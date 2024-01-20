@@ -24,6 +24,10 @@ type UserRepo interface {
 type PostRepo interface {
 	CreatePost(p models.Post) (models.Post, error)
 	GetPostBySlug(slug string) (models.Post, error)
+	GetPostsByCategory(slug string) ([]models.Post, error)
 	UpdatePost(p models.Post) error
 	DeletePost(id int) error
+
+	GetCategories() ([]models.Category, error)
+	GetCategoryById(id int) (models.Category, error)
 }

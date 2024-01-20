@@ -12,6 +12,7 @@ type Post struct {
 	CategoryId int       `json:"category_id"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
+	Category   Category  `json:"category"`
 }
 
 type PostCreateInput struct {
@@ -26,4 +27,12 @@ type PostUpdateInput struct {
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`
+}
+
+type Category struct {
+	Id        *int       `json:"id,omitempty"`
+	Name      string     `json:"name"`
+	Slug      string     `json:"slug"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
