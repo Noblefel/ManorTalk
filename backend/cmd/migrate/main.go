@@ -30,6 +30,7 @@ func main() {
 		log.Fatal("Error connecting to the database\n", err)
 	}
 	defer db.Sql.Close()
+	defer db.Redis.Close()
 
 	driver, err := postgres.WithInstance(db.Sql, &postgres.Config{})
 	if err != nil {
@@ -39,6 +40,17 @@ func main() {
 	m, err := migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
 	if err != nil {
 		log.Fatal("Error setting up migration\n", err)
+	}
+
+	version, dirty, err := m.Version()
+	if err != nil {
+		log.Fatal("Error checking migration version")
+	}
+
+	if dirty {
+		if err = m.Force(int(version)); err != nil {
+			log.Fatal("Error when fixing the migration version")
+		}
 	}
 
 	switch os.Args[1] {
