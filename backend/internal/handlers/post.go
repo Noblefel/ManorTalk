@@ -47,7 +47,7 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	var payload models.PostCreateInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Error decoding json",
 		})
 		return
@@ -57,7 +57,7 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	payload.Content = strings.TrimSpace(payload.Content)
 
 	if err := validate.Struct(payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Some fields are invalid",
 			Errors:  err,
 		})
@@ -67,13 +67,13 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	category, err := h.postRepo.GetCategoryById(payload.CategoryId)
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusNotFound, res.Response{
+			res.JSON(w, http.StatusNotFound, res.Response{
 				Message: "Category not found",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when getting category",
 		})
 		return
@@ -91,13 +91,13 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	post, err = h.postRepo.CreatePost(post)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
-			res.JSON(w, r, http.StatusConflict, res.Response{
+			res.JSON(w, http.StatusConflict, res.Response{
 				Message: "Title has already been used",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when creating the post",
 		})
 		return
@@ -105,7 +105,7 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 
 	post.Category = category
 
-	res.JSON(w, r, http.StatusCreated, res.Response{
+	res.JSON(w, http.StatusCreated, res.Response{
 		Message: "Post has been created",
 		Data:    post,
 	})
@@ -115,19 +115,19 @@ func (h *PostHandlers) Get(w http.ResponseWriter, r *http.Request) {
 	post, err := h.postRepo.GetPostBySlug(chi.URLParam(r, "slug"))
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusNotFound, res.Response{
+			res.JSON(w, http.StatusNotFound, res.Response{
 				Message: "Post not found",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when getting post",
 		})
 		return
 	}
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Data: post,
 	})
 }
@@ -143,7 +143,7 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 	if filters.Category != "" {
 		c, err := h.postRepo.GetCategoryBySlug(q.Get("category"))
 		if err != nil {
-			res.JSON(w, r, http.StatusBadRequest, res.Response{
+			res.JSON(w, http.StatusBadRequest, res.Response{
 				Message: "Cannot find category",
 			})
 			return
@@ -154,7 +154,7 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 
 	pgMeta, err := pagination.NewMeta(q)
 	if err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: err.Error(),
 		})
 		return
@@ -165,7 +165,7 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 	if pgMeta.Total == 0 {
 		total, err := h.postRepo.CountPosts(filters)
 		if err != nil && !errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusInternalServerError, res.Response{
+			res.JSON(w, http.StatusInternalServerError, res.Response{
 				Message: "Error when counting posts",
 			})
 			return
@@ -176,13 +176,13 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := h.postRepo.GetPosts(pgMeta, filters)
 	if err != nil {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Error getting posts",
 		})
 		return
 	}
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Data: map[string]interface{}{
 			"pagination_meta": pgMeta,
 			"posts":           posts,
@@ -194,7 +194,7 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	var payload models.PostUpdateInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Error decoding json",
 		})
 		return
@@ -204,7 +204,7 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	payload.Content = strings.TrimSpace(payload.Content)
 
 	if err := validate.Struct(payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Some fields are invalid",
 			Errors:  err,
 		})
@@ -214,13 +214,13 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	post, err := h.postRepo.GetPostBySlug(chi.URLParam(r, "slug"))
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusNotFound, res.Response{
+			res.JSON(w, http.StatusNotFound, res.Response{
 				Message: "Post not found",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when getting the post",
 		})
 		return
@@ -238,19 +238,19 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	err = h.postRepo.UpdatePost(post)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
-			res.JSON(w, r, http.StatusConflict, res.Response{
+			res.JSON(w, http.StatusConflict, res.Response{
 				Message: "Title has already been used",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when updating the post",
 		})
 		return
 	}
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Message: "Post has been updated",
 	})
 }
@@ -259,13 +259,13 @@ func (h *PostHandlers) Delete(w http.ResponseWriter, r *http.Request) {
 	post, err := h.postRepo.GetPostBySlug(chi.URLParam(r, "slug"))
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusNotFound, res.Response{
+			res.JSON(w, http.StatusNotFound, res.Response{
 				Message: "Post not found",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when getting the post",
 		})
 		return
@@ -273,13 +273,13 @@ func (h *PostHandlers) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = h.postRepo.DeletePost(post.Id)
 	if err != nil {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when deleting the post",
 		})
 		return
 	}
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Message: "Post has been deleted",
 	})
 }
@@ -287,13 +287,13 @@ func (h *PostHandlers) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandlers) GetCategories(w http.ResponseWriter, r *http.Request) {
 	categories, err := h.postRepo.GetCategories()
 	if err != nil && !errors.Is(sql.ErrNoRows, err) {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Error when retrieving post categories",
 		})
 		return
 	}
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Data: categories,
 	})
 }

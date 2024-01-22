@@ -7,13 +7,13 @@ import (
 )
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
-	res.JSON(w, r, http.StatusNotFound, res.Response{
+	res.JSON(w, http.StatusNotFound, res.Response{
 		Message: "Not Found",
 	})
 }
 
 func MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	res.JSON(w, r, http.StatusMethodNotAllowed, res.Response{
+	res.JSON(w, http.StatusMethodNotAllowed, res.Response{
 		Message: "Method Not Allowed",
 	})
 }

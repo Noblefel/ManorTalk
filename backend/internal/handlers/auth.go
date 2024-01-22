@@ -46,14 +46,14 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	var payload models.UserRegisterInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Error decoding json",
 		})
 		return
 	}
 
 	if err := validate.Struct(payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Some fields are invalid",
 			Errors:  err,
 		})
@@ -63,19 +63,19 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	user, err := h.userRepo.Register(payload)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value") {
-			res.JSON(w, r, http.StatusConflict, res.Response{
+			res.JSON(w, http.StatusConflict, res.Response{
 				Message: "Email already in use",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when registering user",
 		})
 		return
 	}
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Message: "User succesfully registered",
 		Data:    user,
 	})
@@ -85,14 +85,14 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	var payload models.UserLoginInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Error decoding json",
 		})
 		return
 	}
 
 	if err := validate.Struct(payload); err != nil {
-		res.JSON(w, r, http.StatusBadRequest, res.Response{
+		res.JSON(w, http.StatusBadRequest, res.Response{
 			Message: "Some fields are invalid",
 			Errors:  err,
 		})
@@ -102,13 +102,13 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := h.userRepo.Login(payload)
 	if err != nil {
 		if errors.Is(bcrypt.ErrMismatchedHashAndPassword, err) || errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusUnauthorized, res.Response{
+			res.JSON(w, http.StatusUnauthorized, res.Response{
 				Message: "Invalid credentials",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when getting user",
 		})
 		return
@@ -122,7 +122,7 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := token.Generate(accessTD)
 	if err != nil {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Something went wrong",
 		})
 		return
@@ -137,14 +137,14 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken, err := token.Generate(refreshTD)
 	if err != nil {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Something went wrong",
 		})
 		return
 	}
 
 	if err = h.redisRepo.SetRefreshToken(refreshTD); err != nil {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when saving token",
 		})
 		return
@@ -155,7 +155,7 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		Value: refreshToken,
 	})
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Data: map[string]string{
 			"access_token": accessToken,
 		},
@@ -165,7 +165,7 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := r.Cookie("refresh_token")
 	if err != nil {
-		res.JSON(w, r, http.StatusUnauthorized, res.Response{
+		res.JSON(w, http.StatusUnauthorized, res.Response{
 			Message: "You need to log in first",
 		})
 		return
@@ -173,7 +173,7 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	tokenDetails, err := token.Parse(h.c.RefreshTokenKey, refreshToken.Value)
 	if err != nil {
-		res.JSON(w, r, http.StatusUnauthorized, res.Response{
+		res.JSON(w, http.StatusUnauthorized, res.Response{
 			Message: "Unauthorized",
 		})
 		return
@@ -181,7 +181,7 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	uuid, err := h.redisRepo.GetRefreshToken(*tokenDetails)
 	if err != nil || uuid != tokenDetails.UniqueId {
-		res.JSON(w, r, http.StatusUnauthorized, res.Response{
+		res.JSON(w, http.StatusUnauthorized, res.Response{
 			Message: "Unauthorized",
 		})
 		return
@@ -190,13 +190,13 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	user, err := h.userRepo.GetUserById(tokenDetails.UserId)
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, r, http.StatusNotFound, res.Response{
+			res.JSON(w, http.StatusNotFound, res.Response{
 				Message: "User not found",
 			})
 			return
 		}
 
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Unexpected error when getting user",
 		})
 		return
@@ -209,7 +209,7 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		res.JSON(w, r, http.StatusInternalServerError, res.Response{
+		res.JSON(w, http.StatusInternalServerError, res.Response{
 			Message: "Something went wrong",
 		})
 		return
@@ -217,7 +217,7 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	user.Password = ""
 
-	res.JSON(w, r, http.StatusOK, res.Response{
+	res.JSON(w, http.StatusOK, res.Response{
 		Data: map[string]interface{}{
 			"user":         user,
 			"access_token": accessToken,

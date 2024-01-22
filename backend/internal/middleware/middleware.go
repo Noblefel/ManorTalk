@@ -34,7 +34,7 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		accessToken := r.Header.Get("Authorization")
 
 		if accessToken == "" {
-			res.JSON(w, r, http.StatusUnauthorized, res.Response{
+			res.JSON(w, http.StatusUnauthorized, res.Response{
 				Message: "You need to login first",
 			})
 			return
@@ -44,13 +44,13 @@ func (m *Middleware) Auth(next http.Handler) http.Handler {
 		if err != nil {
 			// if errors.Is(jwt.ErrTokenExpired, err) {
 			if strings.Contains(err.Error(), "expired") {
-				res.JSON(w, r, http.StatusUnauthorized, res.Response{
+				res.JSON(w, http.StatusUnauthorized, res.Response{
 					Message: "Token Expired",
 				})
 				return
 			}
 
-			res.JSON(w, r, http.StatusUnauthorized, res.Response{
+			res.JSON(w, http.StatusUnauthorized, res.Response{
 				Message: "Invalid Token",
 			})
 			return

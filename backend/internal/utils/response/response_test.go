@@ -40,10 +40,9 @@ var jsonTests = []struct {
 
 func TestJSON(t *testing.T) {
 	for _, tt := range jsonTests {
-		r := httptest.NewRequest("GET", "/", nil)
 		w := httptest.NewRecorder()
 
-		JSON(w, r, tt.inputStatusCode, tt.payload)
+		JSON(w, tt.inputStatusCode, tt.payload)
 
 		if w.Code != tt.expectedStatusCode {
 			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.expectedStatusCode)
