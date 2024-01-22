@@ -2,11 +2,12 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"time"
 )
 
 type AppConfig struct {
-	InDevelopment   bool
+	InProduction    bool
 	Port            int
 	AccessTokenKey  string
 	AccessTokenExp  time.Duration
@@ -16,33 +17,42 @@ type AppConfig struct {
 }
 
 type dbConfig struct {
-	Host, Port, Name, User, Password, RedisHost, RedisPort string
-	MaxOpenConns, MaxIdleConns                             int
-	MaxLifetime                                            time.Duration
+	Host, Name, User, Password, RedisHost       string
+	Port, RedisPort, MaxOpenConns, MaxIdleConns int
+	MaxLifetime                                 time.Duration
 }
 
 func Default() *AppConfig {
 	accessTokenExp, _ := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXP"))
 	refreshTokenExp, _ := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXP"))
 
+	port, _ := strconv.Atoi(os.Getenv("APPLICATION_PORT"))
+	dbPort, _ := strconv.Atoi(os.Getenv("DB_PORT"))
+	redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
+
 	return &AppConfig{
-		InDevelopment:   false,
-		Port:            8080,
+		InProduction:    false,
+		Port:            port,
 		AccessTokenKey:  os.Getenv("ACCESS_TOKEN_KEY"),
 		AccessTokenExp:  accessTokenExp,
-		RefreshTokenKey: os.Getenv("JWT_REFRESH_KEY"),
+		RefreshTokenKey: os.Getenv("REFRESH_TOKEN_KEY"),
 		RefreshTokenExp: refreshTokenExp,
 		DB: dbConfig{
 			Host:         os.Getenv("DB_HOST"),
-			Port:         os.Getenv("DB_PORT"),
+			Port:         dbPort,
 			Name:         os.Getenv("DB_NAME"),
 			User:         os.Getenv("DB_USER"),
 			Password:     os.Getenv("DB_PASSWORD"),
 			RedisHost:    os.Getenv("REDIS_HOST"),
-			RedisPort:    os.Getenv("REDIS_PORT"),
+			RedisPort:    redisPort,
 			MaxOpenConns: 10,
 			MaxIdleConns: 5,
 			MaxLifetime:  5 * time.Minute,
 		},
 	}
+}
+
+func (c *AppConfig) WithProductionMode(b bool) *AppConfig {
+	c.InProduction = b
+	return c
 }

@@ -29,6 +29,8 @@ go mod download
 ### ENV
 Configure the environment variables
 ```sh
+APPLICATION_PORT=8080
+
 DB_HOST=localhost
 DB_NAME=manortalk
 DB_PORT=5432

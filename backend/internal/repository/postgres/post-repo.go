@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
@@ -48,13 +47,14 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 		query += "ORDER BY p.id ASC\n"
 	}
 
-	query += fmt.Sprint("OFFSET $1 LIMIT $2")
+	query += "OFFSET $1 LIMIT $2"
 
 	rows, err := r.db.Sql.Query(query,
 		pgMeta.Offset,
 		pgMeta.Limit,
 		filters.Category,
 	)
+	defer rows.Close()
 
 	if err != nil {
 		return posts, err
