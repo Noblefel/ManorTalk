@@ -1,11 +1,13 @@
 package postgres
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
+	"github.com/Noblefel/ManorTalk/backend/internal/utils/pagination"
 )
 
 type PostRepo struct {
@@ -24,52 +26,36 @@ func NewTestPostRepo() repository.PostRepo {
 	return &testPostRepo{}
 }
 
-func (r *PostRepo) GetPostBySlug(slug string) (models.Post, error) {
-	var post models.Post
-
-	query := `
-		SELECT 
-			p.id, p.user_id, p.title, p.slug, p.excerpt, p.content, p.category_id, p.created_at, p.updated_at,
-			c.name, c.slug 
-		FROM posts p
-		LEFT JOIN categories c ON (p.category_id = c.id)
-		WHERE p.slug = $1 
-	`
-
-	err := r.db.Sql.QueryRow(query, slug).Scan(
-		&post.Id,
-		&post.UserId,
-		&post.Title,
-		&post.Slug,
-		&post.Excerpt,
-		&post.Content,
-		&post.CategoryId,
-		&post.CreatedAt,
-		&post.UpdatedAt,
-		&post.Category.Name,
-		&post.Category.Slug,
-	)
-
-	if err != nil {
-		return post, err
-	}
-
-	return post, nil
-}
-
-func (r *PostRepo) GetPostsByCategory(slug string) ([]models.Post, error) {
+func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters) ([]models.Post, error) {
 	posts := []models.Post{}
 
 	query := `
 		SELECT 
-			p.id, p.user_id, p.title, p.slug, p.excerpt, p.content, p.category_id, p.created_at, p.updated_at,
+			p.id, p.user_id, p.title, p.slug, COALESCE(p.excerpt, ''), p.content, p.category_id, p.created_at, p.updated_at,
 			c.name, c.slug 
 		FROM posts p
-		LEFT JOIN categories c ON (p.category_id = c.id)
-		WHERE c.slug = $1
-	`
+		LEFT JOIN categories c ON (p.category_id = c.id)`
 
-	rows, err := r.db.Sql.Query(query, slug)
+	if filters.Category != "" {
+		query += "WHERE c.slug = $3\n"
+	} else {
+		query += "WHERE c.slug != $3\n"
+	}
+
+	if filters.Order == "desc" {
+		query += "ORDER BY p.id DESC\n"
+	} else {
+		query += "ORDER BY p.id ASC\n"
+	}
+
+	query += fmt.Sprint("OFFSET $1 LIMIT $2")
+
+	rows, err := r.db.Sql.Query(query,
+		pgMeta.Offset,
+		pgMeta.Limit,
+		filters.Category,
+	)
+
 	if err != nil {
 		return posts, err
 	}
@@ -104,6 +90,39 @@ func (r *PostRepo) GetPostsByCategory(slug string) ([]models.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func (r *PostRepo) GetPostBySlug(slug string) (models.Post, error) {
+	var post models.Post
+
+	query := `
+		SELECT 
+			p.id, p.user_id, p.title, p.slug, COALESCE(p.excerpt, ''), p.content, p.category_id, p.created_at, p.updated_at,
+			c.name, c.slug 
+		FROM posts p
+		LEFT JOIN categories c ON (p.category_id = c.id)
+		WHERE p.slug = $1 
+	`
+
+	err := r.db.Sql.QueryRow(query, slug).Scan(
+		&post.Id,
+		&post.UserId,
+		&post.Title,
+		&post.Slug,
+		&post.Excerpt,
+		&post.Content,
+		&post.CategoryId,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+		&post.Category.Name,
+		&post.Category.Slug,
+	)
+
+	if err != nil {
+		return post, err
+	}
+
+	return post, nil
 }
 
 func (r *PostRepo) CreatePost(p models.Post) (models.Post, error) {
@@ -184,6 +203,29 @@ func (r *PostRepo) DeletePost(id int) error {
 	return nil
 }
 
+func (r *PostRepo) CountPosts(filters models.PostsFilters) (int, error) {
+	var count int
+	query := `		
+	SELECT 
+		COUNT(*)
+	FROM posts p
+	LEFT JOIN categories c ON (p.category_id = c.id)
+	`
+
+	if filters.Category != "" {
+		query += "WHERE c.slug = $1\n"
+	} else {
+		query += "WHERE c.slug != $1\n"
+	}
+
+	err := r.db.Sql.QueryRow(query, filters.Category).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (r *PostRepo) GetCategories() ([]models.Category, error) {
 	categories := []models.Category{}
 
@@ -224,6 +266,24 @@ func (r *PostRepo) GetCategoryById(id int) (models.Category, error) {
 	query := `SELECT id, name, slug FROM categories WHERE id = $1`
 
 	err := r.db.Sql.QueryRow(query, id).Scan(
+		&category.Id,
+		&category.Name,
+		&category.Slug,
+	)
+
+	if err != nil {
+		return category, err
+	}
+
+	return category, nil
+}
+
+func (r *PostRepo) GetCategoryBySlug(slug string) (models.Category, error) {
+	var category models.Category
+
+	query := `SELECT id, name, slug FROM categories WHERE slug = $1`
+
+	err := r.db.Sql.QueryRow(query, slug).Scan(
 		&category.Id,
 		&category.Name,
 		&category.Slug,

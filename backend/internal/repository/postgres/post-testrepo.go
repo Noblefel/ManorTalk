@@ -6,6 +6,7 @@ import (
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
+	"github.com/Noblefel/ManorTalk/backend/internal/utils/pagination"
 )
 
 func (r *testPostRepo) CreatePost(p models.Post) (models.Post, error) {
@@ -20,6 +21,16 @@ func (r *testPostRepo) CreatePost(p models.Post) (models.Post, error) {
 	}
 
 	return post, nil
+}
+
+func (r *testPostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters) ([]models.Post, error) {
+	posts := []models.Post{}
+
+	if filters.Order == repository.ErrUnexpectedKeyString {
+		return posts, errors.New("some error")
+	}
+
+	return posts, nil
 }
 
 func (r *testPostRepo) GetPostBySlug(slug string) (models.Post, error) {
@@ -39,16 +50,6 @@ func (r *testPostRepo) GetPostBySlug(slug string) (models.Post, error) {
 	}
 
 	return post, nil
-}
-
-func (r *testPostRepo) GetPostsByCategory(category string) ([]models.Post, error) {
-	posts := []models.Post{}
-
-	if category == repository.ErrUnexpectedKeyString {
-		return posts, errors.New("some error")
-	}
-
-	return posts, nil
 }
 
 func (r *testPostRepo) UpdatePost(p models.Post) error {
@@ -76,6 +77,10 @@ func (r *testPostRepo) DeletePost(id int) error {
 	return nil
 }
 
+func (r *testPostRepo) CountPosts(filters models.PostsFilters) (int, error) {
+	return 1, nil
+}
+
 func (r *testPostRepo) GetCategories() ([]models.Category, error) {
 	return nil, nil
 }
@@ -88,6 +93,20 @@ func (r *testPostRepo) GetCategoryById(id int) (models.Category, error) {
 	}
 
 	if id == repository.ErrUnexpectedKeyInt {
+		return category, errors.New("some error")
+	}
+
+	return category, nil
+}
+
+func (r *testPostRepo) GetCategoryBySlug(slug string) (models.Category, error) {
+	var category models.Category
+
+	if slug == repository.ErrNotFoundKeyString {
+		return category, sql.ErrNoRows
+	}
+
+	if slug == repository.ErrUnexpectedKeyString {
 		return category, errors.New("some error")
 	}
 

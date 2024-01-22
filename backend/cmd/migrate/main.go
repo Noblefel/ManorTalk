@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 
@@ -43,13 +44,13 @@ func main() {
 	}
 
 	version, dirty, err := m.Version()
-	if err != nil {
-		log.Fatal("Error checking migration version")
+	if err != nil && !errors.Is(migrate.ErrNilVersion, err) {
+		log.Fatal("Error checking migration version", err)
 	}
 
 	if dirty {
 		if err = m.Force(int(version)); err != nil {
-			log.Fatal("Error when fixing the migration version")
+			log.Fatal("Error when fixing the migration version", err)
 		}
 	}
 

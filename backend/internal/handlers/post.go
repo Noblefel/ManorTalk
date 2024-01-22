@@ -13,6 +13,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
+	"github.com/Noblefel/ManorTalk/backend/internal/utils/pagination"
 	res "github.com/Noblefel/ManorTalk/backend/internal/utils/response"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/validate"
 	"github.com/go-chi/chi/v5"
@@ -131,17 +132,61 @@ func (h *PostHandlers) Get(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *PostHandlers) GetByCategory(w http.ResponseWriter, r *http.Request) {
-	posts, err := h.postRepo.GetPostsByCategory(chi.URLParam(r, "category"))
-	if err != nil && !errors.Is(sql.ErrNoRows, err) {
+func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+
+	filters := models.PostsFilters{
+		Order:    q.Get("order"),
+		Category: q.Get("category"),
+	}
+
+	if filters.Category != "" {
+		c, err := h.postRepo.GetCategoryBySlug(q.Get("category"))
+		if err != nil {
+			res.JSON(w, r, http.StatusBadRequest, res.Response{
+				Message: "Cannot find category",
+			})
+			return
+		}
+
+		filters.Category = c.Slug
+	}
+
+	pgMeta, err := pagination.NewMeta(q)
+	if err != nil {
+		res.JSON(w, r, http.StatusBadRequest, res.Response{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// When navigating to the next page, client should attach the total rows to the url.
+	// This will skip the below statement to reduce further bottleneck
+	if pgMeta.Total == 0 {
+		total, err := h.postRepo.CountPosts(filters)
+		if err != nil && !errors.Is(sql.ErrNoRows, err) {
+			res.JSON(w, r, http.StatusInternalServerError, res.Response{
+				Message: "Error when counting posts",
+			})
+			return
+		}
+
+		pgMeta.SetNewTotal(total)
+	}
+
+	posts, err := h.postRepo.GetPosts(pgMeta, filters)
+	if err != nil {
 		res.JSON(w, r, http.StatusInternalServerError, res.Response{
-			Message: "Error when retrieving posts",
+			Message: "Error getting posts",
 		})
 		return
 	}
 
 	res.JSON(w, r, http.StatusOK, res.Response{
-		Data: posts,
+		Data: map[string]interface{}{
+			"pagination_meta": pgMeta,
+			"posts":           posts,
+		},
 	})
 }
 

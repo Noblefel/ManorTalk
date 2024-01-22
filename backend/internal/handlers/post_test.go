@@ -154,35 +154,38 @@ func TestPost_Get(t *testing.T) {
 	}
 }
 
-func TestPost_GetByCategory(t *testing.T) {
+func TestPost_GetMany(t *testing.T) {
 	var tests = []struct {
 		name       string
-		category   string
+		query      string
 		statusCode int
 	}{
 		{
-			name:       "postGetByCategory-ok",
-			category:   "other",
+			name:       "postGetMany-ok",
+			query:      "?page=1&limit=10",
 			statusCode: http.StatusOK,
 		},
 		{
-			name:       "postGetByCategory-ok-even-with-invalid-category",
-			category:   "asdcoashdcisaohdnashdonahscdaosha",
-			statusCode: http.StatusOK,
+			name:       "postGetMany-error-category-not-found",
+			query:      "?category=" + repository.ErrNotFoundKeyString,
+			statusCode: http.StatusBadRequest,
 		},
 		{
-			name:       "postGetByCategory-error-getting-posts",
-			category:   repository.ErrUnexpectedKeyString,
+			name:       "postGetMany-error-creating-pagination-meta",
+			query:      "?page=-1",
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name:       "postGetMany-error-getting-posts",
+			query:      "?order=" + repository.ErrUnexpectedKeyString,
 			statusCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("GET", "/posts/c/{category}", nil)
-		ctx := getCtxWithParam(r, params{"category": tt.category})
-		r = r.WithContext(ctx)
+		r := httptest.NewRequest("GET", "/posts"+tt.query, nil)
 		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.post.GetByCategory)
+		handler := http.HandlerFunc(h.post.GetMany)
 		handler.ServeHTTP(w, r)
 
 		if w.Code != tt.statusCode {
