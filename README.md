@@ -1,5 +1,5 @@
 ### ManorTalk
-A mini-forum application built using Vue, Go & PostgreSQL
+A mini-forum application built in Go 1.20
 
 ### Dependencies
 - [Chi Router](https://github.com/go-chi/chi)
@@ -65,4 +65,13 @@ go run cmd/api/main.go
 (Make sure to have redis server running)
 
 # Usage (Frontend)
-Not implemented
+Navigate inside the directory and download all the dependencies
+```bash
+cd frontend
+npm install 
+```
+
+Start development
+```sh
+npm run dev 
+```

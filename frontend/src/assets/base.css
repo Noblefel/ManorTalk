@@ -1,0 +1,106 @@
+@font-face {
+  font-family: DMSans;
+  src: url("./fonts/DMSans-VariableFont_opsz,wght.ttf")
+    format("truetype-variations");
+}
+
+:root {
+  body {
+    min-height: 100vh;
+    /* background-color: var(--background);
+    color: var(--on-background); */
+    font-size: 1.02rem;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    --font: DMSans;
+    --elevate1: 0 !important;
+    --elevate2: 0 !important;
+    --elevate3: 0 !important;
+
+    &.light {
+      --primary: #ff9d48;
+      --on-primary: white;
+      --secondary: #ffeec6;
+      --on-secondary: var(--primary);
+      --tertiary: #79705f;
+      --on-tertiary: white;
+      --surface: white;
+      --on-surface: rgba(0, 0, 0, 0.85);
+    }
+
+    &.dark {
+      --primary: #79512e;
+      --on-primary: white;
+      --secondary: #6b643e4f;
+      --on-secondary: color-mix(in srgb, var(--primary), white 65%);
+      --tertiary: #79705f;
+      --on-tertiary: white;
+      --surface: #181818;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+  }
+
+  button,
+  .button {
+    &,
+    &.small,
+    &.large {
+      font-weight: 600;
+      border-radius: 7px;
+    }
+
+    &.large {
+      padding: 0.5rem 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    &.inverted {
+      background-color: transparent;
+      color: var(--on-surface);
+      border: 1px solid var(--primary);
+      transition: 0.2s all ease;
+
+      &:hover {
+        background-color: var(--primary);
+        color: var(--on-primary);
+      }
+    }
+
+    &.border {
+      border: 2px solid color-mix(in srgb, var(--on-surface), transparent 70%);
+      box-sizing: unset;
+      color: var(--on-surface);
+    }
+
+    &::after {
+      background-image: radial-gradient(
+        circle,
+        rgba(0, 0, 0, 0.025) 1%,
+        transparent 1%
+      ) !important;
+    }
+  }
+
+  article {
+    /* background-color: color-mix(in srgb, var(--on-surface), transparent 99.5%); */
+    background-color: var(--surface);
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--on-surface), transparent 85%);
+    box-shadow: 0 0;
+  }
+
+  section {
+    padding: 1rem;
+  }
+}
