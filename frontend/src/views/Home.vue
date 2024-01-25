@@ -1,52 +1,102 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Hero from "@/components/home/Hero.vue";
+import Topics from "@/components/home/Topics.vue";
+import Contact from "@/components/home/Contact.vue"
+import NewestPosts from "@/components/home/NewestPosts.vue"
+import PostCard from "@/components/PostCard.vue";
+</script>
 
 <template>
-  <section id="hero">
-    <div class="grid">
-      <div class="s12 s m center-align">
-        <img src="@/assets/images/hero.png" alt="Hero Vector" />
-      </div>
-      <div class="s12 m12 l6">
-        <div class="text-wrapper middle">
-          <h1>Welcome</h1>
-          <p class="font-size-1-25 font-500">
-            Temp Text: Manage your reservations, dine in the grand hall, and
-            schedule activities, all with a few clicks. Navigate the fiery
-            challenges of planning a stay with our
-            <span class="orange-text font-600">InnOne</span> app
-          </p>
-          <div class="space"></div>
-          <button class="large no-margin">Get Started&nbsp; ✏️</button>
+  <div>
+    <Hero />
+    <Topics />
+    <div class="divider"></div>
+
+    <section id="home-featured">
+      <div class="wrapper">
+        <h4 class="font-size-title wrap">
+          <span class="orange-text">Featured</span>
+          Posts This Week
+        </h4>
+        <div class="grid">
+          <PostCard
+            class="s12 m6 l6"
+            image="/src/assets/images/stock_1.jpg"
+            :with-border="true"
+            :with-excerpt="true"
+            :with-author="true"
+            :with-stats="true"
+          />
+          <PostCard
+            class="s12 m6 l6"
+            :with-border="true"
+            :with-excerpt="true"
+            :with-author="true"
+            :with-stats="true"
+          />
         </div>
       </div>
-      <div class="l6 l">
-        <img src="@/assets/images/hero.png" alt="Hero Vector" />
+    </section>
+
+    <div class="large-space"></div>
+
+    <NewestPosts />
+
+    <div class="large-space"></div>
+
+    <section id="home-discussions">
+      <div class="wrapper">
+        <h4 class="font-size-title wrap">
+          <span class="orange-text">Trending</span>
+          Discussions
+        </h4>
+        <div class="grid">
+          <article class="glow s12 m6 l6 no-margin">
+            <h6>Discussion #1</h6>
+            <p class="small-opacity">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in
+              sapien luctus libero ultricies egestas vel vitae ligula. Aliquam
+              posuere condimentum ex, quis luctus libero interdum eget
+            </p>
+          </article>
+          <article class="glow s12 m6 l6 no-margin">
+            <h6>Discussion #2</h6>
+            <p class="small-opacity">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in
+              sapien luctus libero ultricies egestas vel vitae ligula. Aliquam
+              posuere condimentum ex, quis luctus libero interdum eget
+            </p>
+          </article>
+          <article class="glow s12 m6 l6 no-margin">
+            <h6>Discussion #3</h6>
+            <p class="small-opacity">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in
+              sapien luctus libero ultricies egestas vel vitae ligula. Aliquam
+              posuere condimentum ex, quis luctus libero interdum eget
+            </p>
+          </article>
+          <article class="glow s12 m6 l6 no-margin">
+            <h6>Discussion #4</h6>
+            <p class="small-opacity">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in
+              sapien luctus libero ultricies egestas vel vitae ligula. Aliquam
+              posuere condimentum ex, quis luctus libero interdum eget
+            </p>
+          </article>
+        </div>
       </div>
-    </div>
-  </section>
+      <div class="padding center-align">
+        <button class="inverted">
+          View More
+          <i class="font-size-2">arrow_right</i>
+        </button>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+    
+    <div class="large-space"></div>
+
+    <Contact />
+  </div>
 </template>
-
-<style scoped>
-#hero {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  & .grid {
-    width: 100%;
-    max-width: 1000px;
-  }
-
-  & img {
-    width: clamp(15rem, calc(13rem + 17vw), 40rem);
-    max-width: 95%;
-  }
-
-  & .text-wrapper {
-    max-width: 750px;
-    margin: auto;
-    padding-bottom: 3rem;
-    padding-left: clamp(0.5rem, calc(0.5rem + 1.5vw), 3rem);
-  }
-}
-</style>

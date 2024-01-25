@@ -19,8 +19,12 @@
     </article>
 
     <div class="padding center-align">
-      <a href="https://github.com/Noblefel/ManorTalk" class="button tertiary" target="_blank">
-          <img src="@/assets/images/github.png" height="75px" alt="Github logo" /> 
+      <a
+        href="https://github.com/Noblefel/ManorTalk"
+        class="button background"
+        target="_blank"
+      >
+        <img src="@/assets/images/github.png" height="75px" alt="Github logo" />
       </a>
     </div>
   </footer>
@@ -29,7 +33,7 @@
 <style scoped>
 footer {
   background-color: black;
-  min-height: 14rem;  
+  min-height: 14rem;
 }
 
 article {
@@ -37,8 +41,8 @@ article {
   color: #ff9d48;
   width: 45rem;
   max-width: 100%;
-  top: -7.5rem;  
-  margin-bottom: -7.5rem; 
+  top: -7.5rem;
+  margin-bottom: -7.5rem;
   .text-wrapper {
     max-width: 80%;
     margin: auto;

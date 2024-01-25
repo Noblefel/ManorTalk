@@ -36,7 +36,7 @@ func Connect(c *config.AppConfig) (*DB, error) {
 }
 
 func connectSQL(c *config.AppConfig) (*sql.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s",
+	dsn := fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s",
 		c.DB.Host,
 		c.DB.Port,
 		c.DB.Name,

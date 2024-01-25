@@ -1,5 +1,6 @@
 .wrapper {
-  max-width: 1440px;
+  max-width: 1200px;
+  margin: auto;
 }
 
 .font-300 {
@@ -37,4 +38,18 @@
 
 .font-size-2 {
   font-size: 2rem !important;
+}
+
+.font-size-title {
+  font-size: clamp(1rem, calc(0.9rem + 1.5vw), 1.8rem);
+}
+
+.glow { 
+  border: 1px solid transparent; 
+
+  &:hover {
+    border: 1px solid var(--primary);
+    box-shadow: color-mix(in srgb, var(--primary), transparent 50%) 0px 1px
+    24px;
+  }
 }

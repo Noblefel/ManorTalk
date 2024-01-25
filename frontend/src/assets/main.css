@@ -2,13 +2,13 @@
 @import "./helper.css";
 
 body.light {
-  & #hero {
+  & #home-hero {
     background-color: var(--secondary); 
   }
 }
 
 body.dark {
-  & #hero {
-    background-color: color-mix(in srgb, var(--tertiary), transparent 90%);
+  & #home-hero {
+    background-color: var(--surface);
   }
 }

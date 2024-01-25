@@ -160,8 +160,13 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// When navigating to the next page, client should attach the total rows to the url.
+	// After the initial query and wants to navigate to the next page,
+	// client should attach the "total" parameter to the url.
 	// This will skip the below statement to reduce further bottleneck
+	// Or
+	// if the requested posts doesn't need pagination, for example to get the
+	// latest posts to be displayed on the sidebar. In this case, feel free
+	// to put any number on the "total" param as long as it's not 0.
 	if pgMeta.Total == 0 {
 		total, err := h.postRepo.CountPosts(filters)
 		if err != nil && !errors.Is(sql.ErrNoRows, err) {
