@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import { ref, type Ref } from "vue";
+import { ref } from "vue";
 
 const Api: AxiosInstance = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -24,7 +24,7 @@ export function useApi(url: string) {
       if (e.response) {
         message.value = e.response.data.message;
         status.value = e.response.status;
-        errors.value = e.response.data.errors;
+        errors.value = e.response.data.errors ?? 1;
       } else {
         errors.value = e;
       }

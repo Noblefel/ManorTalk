@@ -28,10 +28,10 @@ export const usePostStore = defineStore("post", () => {
   function fetchLatestPosts() {
     let data = ref<{posts: Post[]} | null>(null);
     let errors = ref(null);
-    let status = ref(0);
-
+    let status = ref(0); 
+    
     if (latestPosts.value.length == 0) {
-      ({ data, errors, status } = useApi("/posts?order=desc&limit=5&total=5"));      
+      ({data, errors, status} = useApi("/posts?order=desc&limit=5&total=5")); 
       setLatestPosts(data.value?.posts);
     }
 
