@@ -3,12 +3,24 @@
 
 body.light {
   & #home-hero {
-    background-color: var(--secondary); 
+    background-color: var(--secondary);
+  }
+
+  & .auth-background {
+    background-image: linear-gradient(
+      to bottom right,
+      var(--secondary),
+      rgba(175, 255, 228, 0.5)
+    );
   }
 }
 
 body.dark {
   & #home-hero {
     background-color: var(--surface);
+  }
+
+  & .auth-background {
+    background-color: var(--background);
   }
 }

@@ -23,6 +23,9 @@
   font-weight: 700 !important;
 }
 
+.font-size-0-9 {
+  font-size: 0.9rem !important;
+}
 
 .font-size-1 {
   font-size: 1rem !important;
@@ -52,4 +55,12 @@
     box-shadow: color-mix(in srgb, var(--primary), transparent 50%) 0px 1px
     24px;
   }
+}
+
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+.z-2 {
+  z-index: 2 !important;
 }

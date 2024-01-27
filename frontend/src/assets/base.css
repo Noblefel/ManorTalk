@@ -27,7 +27,7 @@
       --on-secondary: var(--primary);
       --tertiary: #79705f;
       --on-tertiary: white;
-      --surface: white;
+      --surface: color-mix(in srgb, white, black 1%);
       --on-surface: rgba(0, 0, 0, 0.85);
       --background: white;
     }
@@ -107,7 +107,17 @@
   }
 
   .divider {
-    max-width: 1000px; 
+    max-width: 1000px;
     margin: auto;
+  }
+  
+  .field {
+    & input:not(:focus) {
+      border-color: color-mix(
+        in srgb,
+        var(--on-surface),
+        transparent 80%
+      ) !important;
+    }
   }
 }

@@ -155,9 +155,11 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		Value: refreshToken,
 	})
 
+	user.Password = ""
 	res.JSON(w, http.StatusOK, res.Response{
-		Data: map[string]string{
+		Data: map[string]interface{}{
 			"access_token": accessToken,
+			"user":         user,
 		},
 	})
 }

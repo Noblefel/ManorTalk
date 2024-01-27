@@ -1,4 +1,5 @@
-import { useApi } from "@/utils/api";
+// import { useApi } from "@/utils/api";
+import type { RequestResponse } from "@/utils/api";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
@@ -24,18 +25,14 @@ export const usePostStore = defineStore("post", () => {
     latestPosts.value = posts;
   }
 
-  /** fetchLatestPosts is a small wrapper around useApi and setLatestPosts */
-  function fetchLatestPosts() {
-    let data = ref<{posts: Post[]} | null>(null);
-    let errors = ref(null);
-    let status = ref(0); 
-    
+  /** fetchLatestPosts is a small wrapper around rr.useApi and setLatestPosts */
+  function fetchLatestPosts(rr: RequestResponse) {
     if (latestPosts.value.length == 0) {
-      ({data, errors, status} = useApi("/posts?order=desc&limit=5&total=5")); 
-      setLatestPosts(data.value?.posts);
+      rr.useApi("get", "/posts?order=desc&limit=5&total=5").then(() => {
+        const posts = (rr.data as null | { posts: Post[] })?.posts;
+        setLatestPosts(posts);
+      });
     }
-
-    return { data, errors, status };
   }
 
   return {

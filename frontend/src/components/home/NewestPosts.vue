@@ -1,23 +1,28 @@
 <script setup lang="ts">
+import { RequestResponse } from "@/utils/api";
 import PostCard from "../PostCard.vue";
 import { usePostStore } from "@/stores/post";
+import { onMounted, ref } from "vue";
 
-const postStore = usePostStore();
+const rr = ref(new RequestResponse())
+const postStore = usePostStore(); 
 
-const { data, errors, status } = postStore.fetchLatestPosts();
+onMounted(() => {
+  postStore.fetchLatestPosts(rr.value)
+})
 </script>
 
 <template>
-  <section id="home-new">
+  <section id="home-new"> 
     <div class="wrapper"> 
       <h4 class="font-size-title wrap">
         <span class="orange-text">Newest</span>
         Posts
       </h4>
-      <div v-if="errors">
+      <div v-if="rr.errors">
         <div class="space"></div>
         <article class="small-height middle-align center-align">
-          <div class="small-opacity" v-if="status == 404">
+          <div class="small-opacity" v-if="rr.status == 404">
             <i>error</i>
             <h6>Empty</h6>
           </div>
@@ -27,9 +32,18 @@ const { data, errors, status } = postStore.fetchLatestPosts();
           </div>
         </article>
       </div>
-      <div class="row scroll" v-else-if="data">
+      <div v-else-if="rr.loading">
+        <div class="space"></div>
+        <article class="small-height middle-align center-align">
+          <div class="small-opacity">
+            <progress class="loader circle surface"></progress>
+            <h6>Please wait...</h6>
+          </div>
+        </article>
+      </div>
+      <div class="row scroll" v-else>
         <PostCard
-        v-for="post in data.posts"
+        v-for="post in postStore.latestPosts"
           class="s6 m4 l3"
           :key="post.id"
           :post="post"
@@ -40,15 +54,6 @@ const { data, errors, status } = postStore.fetchLatestPosts();
           background-color="var(--surface)"
           image="/src/assets/images/stock_1.jpg"
         />
-      </div>
-      <div v-else>
-        <div class="space"></div>
-        <article class="small-height middle-align center-align">
-          <div class="small-opacity">
-            <progress class="loader circle surface"></progress>
-            <h6>Please wait...</h6>
-          </div>
-        </article>
       </div>
 
       <button class="inverted absolute top right">
