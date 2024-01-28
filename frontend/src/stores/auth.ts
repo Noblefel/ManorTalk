@@ -19,6 +19,12 @@ export interface LoginForm {
   remember_me: boolean;
 }
 
+export interface RegisterForm {
+  email: string;
+  password: string;
+  password_repeat: string;
+}
+
 export const useAuthStore = defineStore("auth", () => {
   const router = useRouter();
 
@@ -58,9 +64,34 @@ export const useAuthStore = defineStore("auth", () => {
     });
   }
 
+    /** login validates the form and creates new user */
+  function register(form: RegisterForm, rr: RequestResponse) {
+    const f = new Validator(form)
+    .required("email", "password")
+    .email("email")
+    .strMinLength("password", 8)
+    .strMaxLength("password", 255)
+    .equal("password_repeat", "password")
+
+    if (!f.isValid()){
+      rr.errors = f.errors;
+      toast("Some fields are invalid");
+      return;
+    }
+
+    rr.useApi("post", "/auth/register", form).then(() => {
+      if (rr.status != 200) return;
+
+      if (rr.message) toast(rr.message, "green white-text")
+
+      router.push({name: "login"})
+    });
+  }
+
   return {
     authUser,
     isAuth,
     login,
+    register
   };
 });

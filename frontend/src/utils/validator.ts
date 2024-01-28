@@ -12,12 +12,12 @@ export class Validator {
 
   /** required will checks the given fields if they are empty */
   required(...fields: string[]) {
-    for (const field of fields) {  
+    for (const field of fields) {
       if (this.form[field] == "" || this.form[field] == undefined) {
         this.addError(field, "This field cannot be blank");
       }
     }
-    return this
+    return this;
   }
 
   /** email checks if the field value contains "@" symbol */
@@ -43,6 +43,14 @@ export class Validator {
     const str = this.form[field] as String;
     if (str.length > n) {
       this.addError(field, `Must not exceeds ${n} characters`);
+    }
+    return this;
+  }
+
+  /** equal checks if a field has similar value to another*/
+  equal(field: string, target: string) {
+    if (this.form[field] != this.form[target]) {
+      this.addError(field, `${field} does not match with ${target}`);
     }
     return this;
   }
