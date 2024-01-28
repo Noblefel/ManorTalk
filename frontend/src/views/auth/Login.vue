@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import AuthCard from "@/components/auth/AuthCard.vue";
-import { ref, type Ref } from "vue";
+import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { RequestResponse } from "@/utils/api";
-import { type LoginForm, type User, useAuthStore } from "@/stores/auth";
-import type { FormErrors } from "@/utils/validator";
+import { type LoginForm, useAuthStore } from "@/stores/auth";
 
 const authStore = useAuthStore();
 const showPassword = ref(false);

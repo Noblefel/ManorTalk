@@ -1,5 +1,6 @@
 // import { useApi } from "@/utils/api";
 import type { RequestResponse } from "@/utils/api";
+import { toast } from "@/utils/helper";
 import { Validator } from "@/utils/validator";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
@@ -36,6 +37,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     if (!f.isValid()) {
       rr.errors = f.errors;
+      toast("Some fields are invalid");
       return;
     }
 
@@ -50,9 +52,9 @@ export const useAuthStore = defineStore("auth", () => {
       authUser.value = user;
       form.remember_me
         ? localStorage.setItem("access_token", access_token)
-        : sessionStorage.setItem("access_token", access_token); 
+        : sessionStorage.setItem("access_token", access_token);
 
-      router.push({name: 'home'})
+      router.push({ name: "home" });
     });
   }
 

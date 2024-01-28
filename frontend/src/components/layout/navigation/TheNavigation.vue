@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import { toggleUi, activeRoute } from "@/utils/helper";
+import { beerUi, activeRoute } from "@/utils/helper";
 import MobileMenu from "./MobileMenu.vue";
 import DesktopMenu from "./DesktopMenu.vue";
 import TheThemeSwitch from "@/components/TheThemeSwitch.vue";
@@ -45,7 +45,7 @@ import TheThemeSwitch from "@/components/TheThemeSwitch.vue";
 
       <!-- MOBILE -->
       <div class="m s">
-        <button class="menu-button" @click="toggleUi('nav-mobile-menu')">
+        <button class="menu-button" @click="beerUi('nav-mobile-menu')">
           <i>menu</i>
         </button>
         <MobileMenu />

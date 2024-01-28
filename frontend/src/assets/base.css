@@ -30,6 +30,7 @@
       --surface: color-mix(in srgb, white, black 1%);
       --on-surface: rgba(0, 0, 0, 0.85);
       --background: white;
+      --error: #d41f1f; 
     }
 
     &.dark {
@@ -41,6 +42,8 @@
       --on-tertiary: white;
       --surface: #242424;
       --backgronud: #181818;
+      --error: #d41f1f;
+      --on-error: white;
     }
   }
 

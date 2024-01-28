@@ -1,6 +1,7 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
 import type { FormErrors } from "./validator";
+import { toast } from "./helper";
 
 const Api: AxiosInstance = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -23,7 +24,12 @@ export class RequestResponse {
     this.loading = false;
   }
 
-  async useApi(method: string, url: string, body: any = null) {
+  async useApi(
+    method: string,
+    url: string,
+    body: any = null,
+    errToast: boolean = true
+  ) {
     this.loading = true;
 
     let req;
@@ -51,9 +57,15 @@ export class RequestResponse {
           this.message = e.response.data.message;
           this.status = e.response.status;
           this.errors = e.response.data.errors ?? 1;
+        } else if (e.request) {
+          this.message = e.message;
+          this.errors = e;
         } else {
+          this.message = "Unexpected Error";
           this.errors = e;
         }
+
+        if (errToast && this.message) toast(this.message);
       })
       .finally(() => {
         this.loading = false;

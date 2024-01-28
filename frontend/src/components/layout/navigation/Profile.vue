@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toggleUi } from "@/utils/helper";
+import { beerUi } from "@/utils/helper";
 </script>
 
 <template>
@@ -18,7 +18,7 @@ import { toggleUi } from "@/utils/helper";
         </button>
         <button
           class="no-margin circle m s"
-          @click="toggleUi('nav-mobile-menu')"
+          @click="beerUi('nav-mobile-menu')"
         >
           <i>close</i>
         </button>
