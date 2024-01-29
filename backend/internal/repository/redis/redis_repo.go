@@ -13,16 +13,16 @@ type RedisRepo struct {
 	db *database.DB
 }
 
-type testRedisRepo struct{}
+type mockRedisRepo struct{}
 
-func NewRepo(db *database.DB) repository.RedisRepo {
+func NewRepo(db *database.DB) repository.CacheRepo {
 	return &RedisRepo{
 		db: db,
 	}
 }
 
-func NewTestRepo() repository.RedisRepo {
-	return &testRedisRepo{}
+func NewMockRepo() repository.CacheRepo {
+	return &mockRedisRepo{}
 }
 
 func (r *RedisRepo) SetRefreshToken(td token.Details) error {

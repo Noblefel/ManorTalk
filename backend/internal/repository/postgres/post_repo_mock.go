@@ -9,7 +9,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/pagination"
 )
 
-func (r *testPostRepo) CreatePost(p models.Post) (models.Post, error) {
+func (r *mockPostRepo) CreatePost(p models.Post) (models.Post, error) {
 	var post models.Post
 
 	if p.Title == repository.ErrDuplicateKeyString {
@@ -23,7 +23,7 @@ func (r *testPostRepo) CreatePost(p models.Post) (models.Post, error) {
 	return post, nil
 }
 
-func (r *testPostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters) ([]models.Post, error) {
+func (r *mockPostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters) ([]models.Post, error) {
 	posts := []models.Post{}
 
 	if filters.Order == repository.ErrUnexpectedKeyString {
@@ -33,7 +33,7 @@ func (r *testPostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFil
 	return posts, nil
 }
 
-func (r *testPostRepo) GetPostBySlug(slug string) (models.Post, error) {
+func (r *mockPostRepo) GetPostBySlug(slug string) (models.Post, error) {
 	var post models.Post
 
 	if slug == repository.ErrNotFoundKeyString {
@@ -52,7 +52,7 @@ func (r *testPostRepo) GetPostBySlug(slug string) (models.Post, error) {
 	return post, nil
 }
 
-func (r *testPostRepo) UpdatePost(p models.Post) error {
+func (r *mockPostRepo) UpdatePost(p models.Post) error {
 
 	if p.Title == repository.ErrDuplicateKeyString {
 		return errors.New("duplicate key value")
@@ -69,7 +69,7 @@ func (r *testPostRepo) UpdatePost(p models.Post) error {
 	return nil
 }
 
-func (r *testPostRepo) DeletePost(id int) error {
+func (r *mockPostRepo) DeletePost(id int) error {
 	if id == repository.ErrUnexpectedKeyInt {
 		return errors.New("some error")
 	}
@@ -77,15 +77,19 @@ func (r *testPostRepo) DeletePost(id int) error {
 	return nil
 }
 
-func (r *testPostRepo) CountPosts(filters models.PostsFilters) (int, error) {
+func (r *mockPostRepo) CountPosts(filters models.PostsFilters) (int, error) {
+	if filters.Order == repository.ErrUnexpectedKeyString {
+		return 0, errors.New("some error")
+	}
+
 	return 1, nil
 }
 
-func (r *testPostRepo) GetCategories() ([]models.Category, error) {
+func (r *mockPostRepo) GetCategories() ([]models.Category, error) {
 	return nil, nil
 }
 
-func (r *testPostRepo) GetCategoryById(id int) (models.Category, error) {
+func (r *mockPostRepo) GetCategoryById(id int) (models.Category, error) {
 	var category models.Category
 
 	if id == repository.ErrNotFoundKeyInt {
@@ -99,7 +103,7 @@ func (r *testPostRepo) GetCategoryById(id int) (models.Category, error) {
 	return category, nil
 }
 
-func (r *testPostRepo) GetCategoryBySlug(slug string) (models.Category, error) {
+func (r *mockPostRepo) GetCategoryBySlug(slug string) (models.Category, error) {
 	var category models.Category
 
 	if slug == repository.ErrNotFoundKeyString {

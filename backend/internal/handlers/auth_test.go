@@ -7,19 +7,22 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
-	"github.com/Noblefel/ManorTalk/backend/internal/repository"
-	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
+	service "github.com/Noblefel/ManorTalk/backend/internal/service/auth"
 )
 
 func TestNewAuthHandlers(t *testing.T) {
 	var db *database.DB
 	var c *config.AppConfig
-	auth := NewAuthHandlers(c, db)
+	cr := redis.NewRepo(db)
+	ur := postgres.NewUserRepo(db)
+	s := service.NewAuthService(c, cr, ur)
+	auth := NewAuthHandlers(s)
 
 	typeString := reflect.TypeOf(auth).String()
 
@@ -58,16 +61,16 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-error-duplicate-email",
 			payload: &models.UserRegisterInput{
-				Email:    repository.ErrDuplicateKeyString + "@example.com",
-				Password: "password123",
+				Email:    "test@example.com",
+				Password: service.ErrDuplicateEmail.Error(),
 			},
 			statusCode: http.StatusConflict,
 		},
 		{
-			name: "authRegister-error-creating-user",
+			name: "authRegister-error-unexpected",
 			payload: &models.UserRegisterInput{
-				Email:    repository.ErrUnexpectedKeyString + "@example.com",
-				Password: "password123",
+				Email:    "test@example.com",
+				Password: http.StatusText(http.StatusInternalServerError),
 			},
 			statusCode: http.StatusInternalServerError,
 		},
@@ -124,31 +127,23 @@ func TestAuth_Login(t *testing.T) {
 			name: "authLogin-error-invalid-credentials",
 			payload: &models.UserLoginInput{
 				Email:    "test@example.com",
-				Password: repository.ErrIncorrectKey,
+				Password: service.ErrInvalidCredentials.Error(),
 			},
 			statusCode: http.StatusUnauthorized,
 		},
 		{
-			name: "authLogin-error-user-not-found",
+			name: "authLogin-error-no-user",
 			payload: &models.UserLoginInput{
-				Email:    repository.ErrNotFoundKeyString + "@example.com",
-				Password: "password",
+				Email:    "test@example.com",
+				Password: service.ErrNoUser.Error(),
 			},
 			statusCode: http.StatusUnauthorized,
 		},
 		{
-			name: "authLogin-error-authenticating",
+			name: "authLogin-error-unexpected",
 			payload: &models.UserLoginInput{
-				Email:    repository.ErrUnexpectedKeyString + "@example.com",
-				Password: "password",
-			},
-			statusCode: http.StatusInternalServerError,
-		},
-		{
-			name: "authLogin-error-saving-token",
-			payload: &models.UserLoginInput{
-				Email:    "get-invalid-user@example.com",
-				Password: "password",
+				Email:    "test@example.com",
+				Password: http.StatusText(http.StatusInternalServerError),
 			},
 			statusCode: http.StatusInternalServerError,
 		},
@@ -174,40 +169,6 @@ func TestAuth_Login(t *testing.T) {
 	}
 }
 
-// Sample refresh tokens
-var refreshToken, _ = token.Generate(token.Details{
-	UserId:    1,
-	UniqueId:  "uuid",
-	SecretKey: h.auth.c.RefreshTokenKey,
-	Duration:  1 * time.Minute,
-})
-
-var refreshTokenInvalid, _ = token.Generate(token.Details{
-	UserId:   1,
-	UniqueId: "uuid",
-})
-
-var refreshTokenInvalid2, _ = token.Generate(token.Details{
-	UserId:    -1,
-	UniqueId:  repository.ErrIncorrectKey,
-	SecretKey: h.auth.c.RefreshTokenKey,
-	Duration:  1 * time.Minute,
-})
-
-var refreshTokenUserNotFound, _ = token.Generate(token.Details{
-	UserId:    repository.ErrNotFoundKeyInt,
-	UniqueId:  "uuid",
-	SecretKey: h.auth.c.RefreshTokenKey,
-	Duration:  1 * time.Minute,
-})
-
-var refreshTokenUserUnexpectedError, _ = token.Generate(token.Details{
-	UserId:    repository.ErrUnexpectedKeyInt,
-	UniqueId:  "uuid",
-	SecretKey: h.auth.c.RefreshTokenKey,
-	Duration:  1 * time.Minute,
-})
-
 func TestAuth_Refresh(t *testing.T) {
 	var tests = []struct {
 		name       string
@@ -218,7 +179,7 @@ func TestAuth_Refresh(t *testing.T) {
 			name: "authRefresh-ok",
 			cookie: &http.Cookie{
 				Name:  "refresh_token",
-				Value: refreshToken,
+				Value: "refresh_token",
 			},
 			statusCode: http.StatusOK,
 		},
@@ -228,34 +189,26 @@ func TestAuth_Refresh(t *testing.T) {
 			statusCode: http.StatusUnauthorized,
 		},
 		{
-			name: "authRefresh-error-parsing-token",
+			name: "authRefresh-error-unauthorized",
 			cookie: &http.Cookie{
 				Name:  "refresh_token",
-				Value: refreshTokenInvalid,
+				Value: service.ErrUnauthorized.Error(),
 			},
 			statusCode: http.StatusUnauthorized,
 		},
 		{
-			name: "authRefresh-error-getting-token-redis",
+			name: "authRefresh-error-no-user",
 			cookie: &http.Cookie{
 				Name:  "refresh_token",
-				Value: refreshTokenInvalid2,
+				Value: service.ErrNoUser.Error(),
 			},
 			statusCode: http.StatusUnauthorized,
 		},
 		{
-			name: "authRefresh-error-user-not-found",
+			name: "authRefresh-error-unexpected",
 			cookie: &http.Cookie{
 				Name:  "refresh_token",
-				Value: refreshTokenUserNotFound,
-			},
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name: "authRefresh-error-getting-user",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: refreshTokenUserUnexpectedError,
+				Value: http.StatusText(http.StatusInternalServerError),
 			},
 			statusCode: http.StatusInternalServerError,
 		},

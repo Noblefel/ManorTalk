@@ -13,7 +13,7 @@ type PostRepo struct {
 	db *database.DB
 }
 
-type testPostRepo struct{}
+type mockPostRepo struct{}
 
 func NewPostRepo(db *database.DB) repository.PostRepo {
 	return &PostRepo{
@@ -21,8 +21,8 @@ func NewPostRepo(db *database.DB) repository.PostRepo {
 	}
 }
 
-func NewTestPostRepo() repository.PostRepo {
-	return &testPostRepo{}
+func NewMockPostRepo() repository.PostRepo {
+	return &mockPostRepo{}
 }
 
 func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters) ([]models.Post, error) {

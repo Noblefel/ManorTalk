@@ -1,44 +1,24 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
-	"strings"
 
-	"github.com/Noblefel/ManorTalk/backend/internal/config"
-	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
-	"github.com/Noblefel/ManorTalk/backend/internal/repository"
-	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
-	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
+	service "github.com/Noblefel/ManorTalk/backend/internal/service/auth"
 	res "github.com/Noblefel/ManorTalk/backend/internal/utils/response"
-	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/validate"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthHandlers struct {
-	c         *config.AppConfig
-	redisRepo repository.RedisRepo
-	userRepo  repository.UserRepo
+	service service.AuthService
 }
 
-func NewAuthHandlers(c *config.AppConfig, db *database.DB) *AuthHandlers {
+func NewAuthHandlers(s service.AuthService) *AuthHandlers {
 	return &AuthHandlers{
-		c:         c,
-		redisRepo: redis.NewRepo(db),
-		userRepo:  postgres.NewUserRepo(db),
-	}
-}
-
-func NewTestAuthHandlers(c *config.AppConfig) *AuthHandlers {
-	return &AuthHandlers{
-		c:         c,
-		redisRepo: redis.NewTestRepo(),
-		userRepo:  postgres.NewTestUserRepo(),
+		service: s,
 	}
 }
 
@@ -60,19 +40,21 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userRepo.Register(payload)
+	user, err := h.service.Register(payload)
 	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value") {
+		switch {
+		case errors.Is(err, service.ErrDuplicateEmail):
 			res.JSON(w, http.StatusConflict, res.Response{
-				Message: "Email already in use",
+				Message: err.Error(),
+			})
+			return
+		default:
+			log.Println(err)
+			res.JSON(w, http.StatusInternalServerError, res.Response{
+				Message: "Sorry, we had some problems creating your account",
 			})
 			return
 		}
-
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Unexpected error when registering user",
-		})
-		return
 	}
 
 	res.JSON(w, http.StatusOK, res.Response{
@@ -99,55 +81,21 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userRepo.Login(payload)
+	user, accessToken, refreshToken, err := h.service.Login(payload)
 	if err != nil {
-		if errors.Is(bcrypt.ErrMismatchedHashAndPassword, err) || errors.Is(sql.ErrNoRows, err) {
+		switch {
+		case errors.Is(service.ErrInvalidCredentials, err), errors.Is(service.ErrNoUser, err):
 			res.JSON(w, http.StatusUnauthorized, res.Response{
-				Message: "Invalid credentials",
+				Message: service.ErrInvalidCredentials.Error(),
+			})
+			return
+		default:
+			log.Println(err)
+			res.JSON(w, http.StatusInternalServerError, res.Response{
+				Message: "Sorry, we had some problems when authenticating",
 			})
 			return
 		}
-
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Unexpected error when getting user",
-		})
-		return
-	}
-
-	accessTD := token.Details{
-		UserId:    user.Id,
-		SecretKey: h.c.AccessTokenKey,
-		Duration:  h.c.AccessTokenExp,
-	}
-
-	accessToken, err := token.Generate(accessTD)
-	if err != nil {
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Something went wrong",
-		})
-		return
-	}
-
-	refreshTD := token.Details{
-		UserId:    user.Id,
-		SecretKey: h.c.RefreshTokenKey,
-		UniqueId:  uuid.NewString(),
-		Duration:  h.c.RefreshTokenExp,
-	}
-
-	refreshToken, err := token.Generate(refreshTD)
-	if err != nil {
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Something went wrong",
-		})
-		return
-	}
-
-	if err = h.redisRepo.SetRefreshToken(refreshTD); err != nil {
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Unexpected error when saving token",
-		})
-		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
@@ -155,7 +103,6 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		Value: refreshToken,
 	})
 
-	user.Password = ""
 	res.JSON(w, http.StatusOK, res.Response{
 		Data: map[string]interface{}{
 			"access_token": accessToken,
@@ -168,56 +115,27 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := r.Cookie("refresh_token")
 	if err != nil {
 		res.JSON(w, http.StatusUnauthorized, res.Response{
-			Message: "You need to log in first",
+			Message: service.ErrUnauthorized.Error(),
 		})
 		return
 	}
 
-	tokenDetails, err := token.Parse(h.c.RefreshTokenKey, refreshToken.Value)
+	user, accessToken, err := h.service.Refresh(refreshToken.Value)
 	if err != nil {
-		res.JSON(w, http.StatusUnauthorized, res.Response{
-			Message: "Unauthorized",
-		})
-		return
-	}
-
-	uuid, err := h.redisRepo.GetRefreshToken(*tokenDetails)
-	if err != nil || uuid != tokenDetails.UniqueId {
-		res.JSON(w, http.StatusUnauthorized, res.Response{
-			Message: "Unauthorized",
-		})
-		return
-	}
-
-	user, err := h.userRepo.GetUserById(tokenDetails.UserId)
-	if err != nil {
-		if errors.Is(sql.ErrNoRows, err) {
-			res.JSON(w, http.StatusNotFound, res.Response{
-				Message: "User not found",
+		switch {
+		case errors.Is(service.ErrUnauthorized, err), errors.Is(service.ErrNoUser, err):
+			res.JSON(w, http.StatusUnauthorized, res.Response{
+				Message: service.ErrUnauthorized.Error(),
+			})
+			return
+		default:
+			log.Println(err)
+			res.JSON(w, http.StatusInternalServerError, res.Response{
+				Message: "Sorry, we had some problems verifying your request",
 			})
 			return
 		}
-
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Unexpected error when getting user",
-		})
-		return
 	}
-
-	accessToken, err := token.Generate(token.Details{
-		SecretKey: h.c.AccessTokenKey,
-		UserId:    user.Id,
-		Duration:  h.c.AccessTokenExp,
-	})
-
-	if err != nil {
-		res.JSON(w, http.StatusInternalServerError, res.Response{
-			Message: "Something went wrong",
-		})
-		return
-	}
-
-	user.Password = ""
 
 	res.JSON(w, http.StatusOK, res.Response{
 		Data: map[string]interface{}{

@@ -7,7 +7,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
-func (r *testRedisRepo) SetRefreshToken(td token.Details) error {
+func (r *mockRedisRepo) SetRefreshToken(td token.Details) error {
 	if td.UserId == repository.ErrUnexpectedKeyInt {
 		return errors.New("Some error")
 	}
@@ -15,7 +15,7 @@ func (r *testRedisRepo) SetRefreshToken(td token.Details) error {
 	return nil
 }
 
-func (r *testRedisRepo) GetRefreshToken(td token.Details) (string, error) {
+func (r *mockRedisRepo) GetRefreshToken(td token.Details) (string, error) {
 	if td.UniqueId == repository.ErrIncorrectKey {
 		return "", errors.New("Some error")
 	}

@@ -7,6 +7,8 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/handlers"
 	"github.com/Noblefel/ManorTalk/backend/internal/middleware"
+	"github.com/Noblefel/ManorTalk/backend/internal/service/auth"
+	"github.com/Noblefel/ManorTalk/backend/internal/service/post"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -18,11 +20,11 @@ type router struct {
 	post *handlers.PostHandlers
 }
 
-func NewRouter(c *config.AppConfig, db *database.DB) *router {
+func NewRouter(c *config.AppConfig, db *database.DB, as auth.AuthService, ps post.PostService) *router {
 	return &router{
 		m:    middleware.New(c, db),
-		auth: handlers.NewAuthHandlers(c, db),
-		post: handlers.NewPostHandlers(c, db),
+		auth: handlers.NewAuthHandlers(as),
+		post: handlers.NewPostHandlers(ps),
 	}
 }
 

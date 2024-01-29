@@ -12,23 +12,30 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
+	service "github.com/Noblefel/ManorTalk/backend/internal/service/post"
+	"github.com/gosimple/slug"
 )
 
 func TestNewPostHandlers(t *testing.T) {
 	var db *database.DB
 	var c *config.AppConfig
-	auth := NewPostHandlers(c, db)
+	cr := redis.NewRepo(db)
+	pr := postgres.NewPostRepo(db)
+	s := service.NewPostService(c, cr, pr)
+	post := NewPostHandlers(s)
 
-	typeString := reflect.TypeOf(auth).String()
+	typeString := reflect.TypeOf(post).String()
 
 	if typeString != "*handlers.PostHandlers" {
 		t.Error("NewPostHandlers() did not get the correct type, wanted *handlers.PostHandlers")
 	}
 }
 
-var longText = `A long text: Lorem ipsum dolor sit amet, consectetur adipiscing 
-elit. Nulla posuere neque id magna pretium rutrum. Sed ornare nunc arcu. 
-Cras pharetra, nibh ac ultricies blandit, purus sapien mattis turpis, et 
+var longText = `A long text: Lorem ipsum dolor sit amet, consectetur adipiscing
+elit. Nulla posuere neque id magna pretium rutrum. Sed ornare nunc arcu.
+Cras pharetra, nibh ac ultricies blandit, purus sapien mattis turpis, et
 congue felis ligula sit amet mi`
 
 func TestPost_Create(t *testing.T) {
@@ -60,36 +67,27 @@ func TestPost_Create(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name: "postCreate-error-category-not-found",
+			name: "postCreate-error-no-category",
 			payload: &models.PostCreateInput{
-				Title:      "The new post title",
+				Title:      service.ErrNoCategory.Error(),
 				Content:    longText,
-				CategoryId: repository.ErrNotFoundKeyInt,
+				CategoryId: 1,
 			},
 			statusCode: http.StatusNotFound,
 		},
 		{
-			name: "postCreate-error-getting-category",
+			name: "postCreate-error-duplicate-title",
 			payload: &models.PostCreateInput{
-				Title:      "The new post title",
-				Content:    longText,
-				CategoryId: repository.ErrUnexpectedKeyInt,
-			},
-			statusCode: http.StatusInternalServerError,
-		},
-		{
-			name: "postCreate-error-duplicate-title-or-slug",
-			payload: &models.PostCreateInput{
-				Title:      repository.ErrDuplicateKeyString,
+				Title:      service.ErrDuplicateTitle.Error(),
 				Content:    longText,
 				CategoryId: 1,
 			},
 			statusCode: http.StatusConflict,
 		},
 		{
-			name: "postCreate-error-creating-post",
+			name: "postCreate-error-unexpected",
 			payload: &models.PostCreateInput{
-				Title:      repository.ErrUnexpectedKeyString,
+				Title:      http.StatusText(http.StatusInternalServerError),
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -128,13 +126,13 @@ func TestPost_Get(t *testing.T) {
 			statusCode: http.StatusOK,
 		},
 		{
-			name:       "postGet-error-post-not-found",
-			slugRoute:  repository.ErrNotFoundKeyString,
+			name:       "postGet-error-no-post",
+			slugRoute:  service.ErrNoPost.Error(),
 			statusCode: http.StatusNotFound,
 		},
 		{
-			name:       "postGet-error-getting-post",
-			slugRoute:  repository.ErrUnexpectedKeyString,
+			name:       "postGet-error-unexpected",
+			slugRoute:  http.StatusText(http.StatusInternalServerError),
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -162,28 +160,23 @@ func TestPost_GetMany(t *testing.T) {
 	}{
 		{
 			name:       "postGetMany-ok",
-			query:      "?page=1&limit=10",
+			query:      "page=1&limit=10",
 			statusCode: http.StatusOK,
 		},
 		{
-			name:       "postGetMany-error-category-not-found",
-			query:      "?category=" + repository.ErrNotFoundKeyString,
-			statusCode: http.StatusBadRequest,
+			name:       "postGetMany-error-no-category",
+			query:      slug.Make(service.ErrNoCategory.Error()) + "=1",
+			statusCode: http.StatusNotFound,
 		},
 		{
-			name:       "postGetMany-error-creating-pagination-meta",
-			query:      "?page=-1",
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:       "postGetMany-error-getting-posts",
-			query:      "?order=" + repository.ErrUnexpectedKeyString,
+			name:       "postGetMany-error-unexpected",
+			query:      slug.Make(http.StatusText(http.StatusInternalServerError)) + "=1",
 			statusCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("GET", "/posts"+tt.query, nil)
+		r := httptest.NewRequest("GET", "/posts?"+tt.query, nil)
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.post.GetMany)
 		handler.ServeHTTP(w, r)
@@ -225,8 +218,8 @@ func TestPost_Update(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name:      "postUpdate-error-post-not-found",
-			slugRoute: repository.ErrNotFoundKeyString,
+			name:      "postUpdate-error-no-post",
+			slugRoute: service.ErrNoPost.Error(),
 			payload: &models.PostUpdateInput{
 				Title:      "The updated post title",
 				Content:    longText,
@@ -235,18 +228,8 @@ func TestPost_Update(t *testing.T) {
 			statusCode: http.StatusNotFound,
 		},
 		{
-			name:      "postUpdate-error-getting-post",
-			slugRoute: repository.ErrUnexpectedKeyString,
-			payload: &models.PostUpdateInput{
-				Title:      "The updated post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusInternalServerError,
-		},
-		{
 			name:      "postUpdate-error-duplicate-title-or-post",
-			slugRoute: "post-title",
+			slugRoute: service.ErrDuplicateTitle.Error(),
 			payload: &models.PostUpdateInput{
 				Title:      repository.ErrDuplicateKeyString,
 				Content:    longText,
@@ -255,10 +238,10 @@ func TestPost_Update(t *testing.T) {
 			statusCode: http.StatusConflict,
 		},
 		{
-			name:      "postUpdate-error-updating-post",
-			slugRoute: "post-title",
+			name:      "postUpdate-error-unexpected",
+			slugRoute: http.StatusText(http.StatusInternalServerError),
 			payload: &models.PostUpdateInput{
-				Title:      repository.ErrUnexpectedKeyString,
+				Title:      "The updated post title",
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -286,6 +269,7 @@ func TestPost_Update(t *testing.T) {
 		}
 	}
 }
+
 func TestPost_Delete(t *testing.T) {
 	var tests = []struct {
 		name       string
@@ -298,18 +282,13 @@ func TestPost_Delete(t *testing.T) {
 			statusCode: http.StatusOK,
 		},
 		{
-			name:       "postDelete-error-post-not-found",
-			slugRoute:  repository.ErrNotFoundKeyString,
+			name:       "postDelete-error-no-post",
+			slugRoute:  service.ErrNoPost.Error(),
 			statusCode: http.StatusNotFound,
 		},
 		{
-			name:       "postDelete-error-getting-post",
-			slugRoute:  repository.ErrUnexpectedKeyString,
-			statusCode: http.StatusInternalServerError,
-		},
-		{
-			name:       "postDelete-error-deleting-post",
-			slugRoute:  "get-invalid-post",
+			name:       "postDelete-error-unexpected",
+			slugRoute:  http.StatusText(http.StatusInternalServerError),
 			statusCode: http.StatusInternalServerError,
 		},
 	}

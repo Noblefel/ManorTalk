@@ -17,17 +17,12 @@ const (
 	ErrDuplicateKeyString  = "already-exists"
 )
 
-type RedisRepo interface {
+type CacheRepo interface {
 	SetRefreshToken(td token.Details) error
 	GetRefreshToken(td token.Details) (string, error)
 }
 
 type UserRepo interface {
-	// Register is a small wrapper around CreateUser and bcrypt.GenerateFromPassword
-	Register(payload models.UserRegisterInput) (models.User, error)
-	// Login is a small wrapper around GetUserByEmail and bcrypt.CompareHashAndPassword
-	Login(payload models.UserLoginInput) (models.User, error)
-
 	CreateUser(email, password string) (models.User, error)
 	GetUserById(id int) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)

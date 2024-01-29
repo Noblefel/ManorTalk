@@ -6,14 +6,13 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepo struct {
 	db *database.DB
 }
 
-type testUserRepo struct{}
+type mockUserRepo struct{}
 
 func NewUserRepo(db *database.DB) repository.UserRepo {
 	return &UserRepo{
@@ -21,40 +20,8 @@ func NewUserRepo(db *database.DB) repository.UserRepo {
 	}
 }
 
-func NewTestUserRepo() repository.UserRepo {
-	return &testUserRepo{}
-}
-
-func (r *UserRepo) Register(payload models.UserRegisterInput) (models.User, error) {
-	var user models.User
-
-	hashed, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return user, err
-	}
-
-	user, err = r.CreateUser(payload.Email, string(hashed))
-	if err != nil {
-		return user, err
-	}
-
-	return user, nil
-}
-
-func (r *UserRepo) Login(payload models.UserLoginInput) (models.User, error) {
-	var user models.User
-
-	user, err := r.GetUserByEmail(payload.Email)
-	if err != nil {
-		return user, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
-	if err != nil {
-		return user, err
-	}
-
-	return user, nil
+func NewMockUserRepo() repository.UserRepo {
+	return &mockUserRepo{}
 }
 
 func (r *UserRepo) CreateUser(email, password string) (models.User, error) {

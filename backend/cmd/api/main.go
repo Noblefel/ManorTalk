@@ -7,7 +7,11 @@ import (
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
+	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
 	"github.com/Noblefel/ManorTalk/backend/internal/router"
+	"github.com/Noblefel/ManorTalk/backend/internal/service/auth"
+	"github.com/Noblefel/ManorTalk/backend/internal/service/post"
 	"github.com/joho/godotenv"
 )
 
@@ -27,7 +31,14 @@ func main() {
 
 	log.Println("Starting server at port:", c.Port)
 
-	router := router.NewRouter(c, db)
+	userRepo := postgres.NewUserRepo(db)
+	postRepo := postgres.NewPostRepo(db)
+	cacheRepo := redis.NewRepo(db)
+
+	authService := auth.NewAuthService(c, cacheRepo, userRepo)
+	postService := post.NewPostService(c, cacheRepo, postRepo)
+
+	router := router.NewRouter(c, db, authService, postService)
 
 	server := &http.Server{
 		Addr:    fmt.Sprint("localhost:", c.Port),
