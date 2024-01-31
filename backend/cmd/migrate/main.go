@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"log"
 	"os"
 
@@ -20,8 +21,14 @@ func main() {
 		return
 	}
 
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
+	// If not in production, the application loads the local .env file.
+	prod := flag.Bool("production", true, "Run in production mode")
+	flag.Parse()
+
+	if !*prod {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	config := config.Default()

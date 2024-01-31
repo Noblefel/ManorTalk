@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,11 +17,17 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
+	// If not in production, the application loads the local .env file.
+	prod := flag.Bool("production", true, "Run in production mode")
+	flag.Parse()
+
+	if !*prod {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	c := config.Default()
+	c := config.Default().WithProductionMode(*prod)
 
 	db, err := database.Connect(c)
 	if err != nil {

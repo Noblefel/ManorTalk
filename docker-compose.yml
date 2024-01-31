@@ -1,0 +1,51 @@
+version: "3"
+
+services: 
+  postgres:
+    image: postgres:15.4
+    container_name: postgres
+    volumes: 
+      - postgres_data:/var/lib/postgres/data 
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports: 
+      - ${DB_PORT}:${DB_PORT}
+
+  redis:
+    image: redis:7.2.4
+    volumes:
+      - redis_data:/data 
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+
+  backend:
+    build: ./backend
+    depends_on:
+      - postgres 
+    ports: 
+      - ${API_PORT}:${API_PORT}
+    environment:
+      - API_PORT=${API_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - ACCESS_TOKEN_KEY=${ACCESS_TOKEN_KEY} 
+      - REFRESH_TOKEN_KEY=${REFRESH_TOKEN_KEY} 
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/services
+      - /src/node_modules 
+    ports:
+      - 5173:5173
+
+volumes:
+  postgres_data:
+  redis_data:

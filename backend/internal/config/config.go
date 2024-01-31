@@ -23,9 +23,6 @@ type dbConfig struct {
 }
 
 func Default() *AppConfig {
-	accessTokenExp, _ := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXP"))
-	refreshTokenExp, _ := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXP"))
-
 	port, _ := strconv.Atoi(os.Getenv("APPLICATION_PORT"))
 	dbPort, _ := strconv.Atoi(os.Getenv("DB_PORT"))
 	redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
@@ -34,9 +31,9 @@ func Default() *AppConfig {
 		InProduction:    false,
 		Port:            port,
 		AccessTokenKey:  os.Getenv("ACCESS_TOKEN_KEY"),
-		AccessTokenExp:  accessTokenExp,
+		AccessTokenExp:  time.Duration(15 * time.Minute),
 		RefreshTokenKey: os.Getenv("REFRESH_TOKEN_KEY"),
-		RefreshTokenExp: refreshTokenExp,
+		RefreshTokenExp: time.Duration(240 * time.Hour),
 		DB: dbConfig{
 			Host:         os.Getenv("DB_HOST"),
 			Port:         dbPort,

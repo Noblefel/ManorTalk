@@ -12,12 +12,36 @@ A mini-forum application built in Go 1.20
 - [go-redis](https://github.com/redis/go-redis)
 - [slug](https://github.com/gosimple/slug)
 
-# Installation
+## Installation
 ```bash
 git clone https://github.com/Noblefel/ManorTalk
 ```  
 
-# Usage (Backend)
+# Usage (with Docker)
+
+Build our image and start the containers:
+
+```sh
+docker compose up --build 
+```
+
+### Required Environment Variables
+
+| Key | Sample |
+| -------- | ------- |
+| API_PORT | 8080 |
+| DB_HOST | localhost |
+| DB_NAME | manortalk |
+| DB_PORT | 5432 |
+| DB_USER | postgres |
+| DB_PASSWORD |  |
+| REDIS_HOST | localhost |
+| REDIS_PORT | 6379 |
+| ACCESS_TOKEN_KEY | access_key |
+| REFRES_TOKEN_KEY | refresh_key |
+
+# Usage (Local)
+### 1. Backend
 ### Setup
 Navigate inside the directory and download all the dependencies
 ```bash
@@ -26,45 +50,28 @@ go mod tidy
 go mod download 
 ``` 
 
-### ENV
-Configure the environment variables
-```sh
-APPLICATION_PORT=8080
-
-DB_HOST=localhost
-DB_NAME=manortalk
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=
-
-REDIS_HOST=localhost
-REDIS_PORT=6379 
-
-ACCESS_TOKEN_KEY=access_key
-ACCESS_TOKEN_EXP=15m
-REFRESH_TOKEN_KEY=refresh_key
-REFRESH_TOKEN_EXP=120h
-```
+### .env
+Configure the environment variables inside the backend directory 
 
 ### Migrations
 Run the migrations if you haven't already, this will create a users table and it's sample users:
 ```sh
-go run cmd/migrate/main.go up
+go run cmd/migrate/main.go up -production=false
 ``` 
 
 to revert the migrations:
 ```sh
-go run cmd/migrate/main.go down
+go run cmd/migrate/main.go down -production=false
 ``` 
 
 ### Start the server
 Simply run:
 ```sh
-go run cmd/api/main.go
+go run cmd/api/main.go -production=false
 ``` 
 (Make sure to have redis server running)
 
-# Usage (Frontend)
+### 2. Frontend
 Navigate inside the directory and download all the dependencies
 ```bash
 cd frontend

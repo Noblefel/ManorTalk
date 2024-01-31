@@ -9,7 +9,6 @@ import (
 
 func TestDefault(t *testing.T) {
 	os.Setenv("APPLICATION_PORT", "8080")
-	os.Setenv("ACCESS_TOKEN_EXP", "15m")
 
 	config := Default()
 
@@ -22,7 +21,7 @@ func TestDefault(t *testing.T) {
 	}
 
 	if config.AccessTokenExp != time.Duration(15*time.Minute) {
-		t.Error("Default().AccessTokenExp expecting 15 * time.Minute, but got", config.AccessTokenExp.String())
+		t.Error("Default().AccessTokenExp expecting time.Duration of 15 minutes, but got", config.AccessTokenExp.String())
 	}
 }
 
