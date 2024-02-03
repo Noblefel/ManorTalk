@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"log"
-	"os"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
@@ -16,14 +15,14 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		log.Println(`Missing argument. Use "up" or "down"`)
-		return
-	}
-
 	// If not in production, the application loads the local .env file.
 	prod := flag.Bool("production", true, "Run in production mode")
 	flag.Parse()
+
+	if len(flag.Args()) < 1 {
+		log.Println(`Missing argument. Use "up" or "down"`)
+		return
+	}
 
 	if !*prod {
 		if err := godotenv.Load(); err != nil {
@@ -61,7 +60,7 @@ func main() {
 		}
 	}
 
-	switch os.Args[1] {
+	switch flag.Args()[0] {
 	case "up":
 		if err := m.Up(); err != nil {
 			log.Fatal("Error when applying up migrations\n", err)
@@ -75,6 +74,6 @@ func main() {
 
 		log.Println("Down Migration Success")
 	default:
-		log.Printf(`Invalid command: %s. Use "up" or "down"`, os.Args[1])
+		log.Printf(`Invalid command: %s. Use "up" or "down"`, flag.Args()[0])
 	}
 }

@@ -12,6 +12,7 @@ import (
 	res "github.com/Noblefel/ManorTalk/backend/internal/utils/response"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/validate"
 	"github.com/go-chi/chi/v5"
+	"github.com/gosimple/slug"
 )
 
 type PostHandlers struct {
@@ -35,6 +36,7 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload.Title = strings.TrimSpace(payload.Title)
+	payload.Slug = slug.Make(payload.Title)
 	payload.Content = strings.TrimSpace(payload.Content)
 
 	if err := validate.Struct(payload); err != nil {
@@ -135,6 +137,7 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	payload.Title = strings.TrimSpace(payload.Title)
+	payload.Slug = slug.Make(payload.Title)
 	payload.Content = strings.TrimSpace(payload.Content)
 
 	if err := validate.Struct(payload); err != nil {

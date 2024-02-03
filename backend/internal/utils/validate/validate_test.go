@@ -58,6 +58,15 @@ var validateStructTests = []struct {
 		},
 		expectingError: true,
 	},
+	{
+		name: "validateStruct-fail-excludesall",
+		input: struct {
+			Title string `validate:"excludesall=~^<>"`
+		}{
+			Title: "Sample Title ~ < >",
+		},
+		expectingError: true,
+	},
 }
 
 func TestValidateStruct(t *testing.T) {
@@ -113,6 +122,24 @@ var getMessageTests = []struct {
 			Field4: "abcdefghij",
 		},
 		expectedMsg: "Field4 must not exceed 4 characters",
+	},
+	{
+		name: "validateStruct-correct-excludesall",
+		input: struct {
+			Field5 string `validate:"excludesall=#"`
+		}{
+			Field5: "#",
+		},
+		expectedMsg: "Field5 contains unwanted characters",
+	},
+	{
+		name: "validateStruct-correct-slug",
+		input: struct {
+			Slug string `validate:"required"`
+		}{
+			Slug: "",
+		},
+		expectedMsg: "This field cannot be empty",
 	},
 }
 

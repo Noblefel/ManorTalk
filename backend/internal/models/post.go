@@ -16,14 +16,16 @@ type Post struct {
 }
 
 type PostCreateInput struct {
-	Title      string `json:"title" validate:"required,min=10,max=255"`
+	Title      string `json:"title" validate:"required,min=10,max=255,excludesall=~%^;'<>"`
+	Slug       string `json:"slug" validate:"required,min=10,max=255"`
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`
 }
 
 type PostUpdateInput struct {
-	Title      string `json:"title" validate:"required,min=10,max=255"`
+	Title      string `json:"title" validate:"required,min=10,max=255,excludesall=~%^;'<>"`
+	Slug       string `json:"slug" validate:"required,min=10,max=255"`
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`

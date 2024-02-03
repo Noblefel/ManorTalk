@@ -64,16 +64,16 @@ export const useAuthStore = defineStore("auth", () => {
     });
   }
 
-    /** login validates the form and creates new user */
+  /** register validates the form and creates new user */
   function register(form: RegisterForm, rr: RequestResponse) {
     const f = new Validator(form)
-    .required("email", "password")
-    .email("email")
-    .strMinLength("password", 8)
-    .strMaxLength("password", 255)
-    .equal("password_repeat", "password")
+      .required("email", "password")
+      .email("email")
+      .strMinLength("password", 8)
+      .strMaxLength("password", 72)
+      .equal("password_repeat", "password");
 
-    if (!f.isValid()){
+    if (!f.isValid()) {
       rr.errors = f.errors;
       toast("Some fields are invalid");
       return;
@@ -82,9 +82,9 @@ export const useAuthStore = defineStore("auth", () => {
     rr.useApi("post", "/auth/register", form).then(() => {
       if (rr.status != 200) return;
 
-      if (rr.message) toast(rr.message, "green white-text")
+      if (rr.message) toast(rr.message, "green white-text");
 
-      router.push({name: "login"})
+      router.push({ name: "login" });
     });
   }
 
@@ -92,6 +92,6 @@ export const useAuthStore = defineStore("auth", () => {
     authUser,
     isAuth,
     login,
-    register
+    register,
   };
 });

@@ -38,7 +38,7 @@ docker compose up --build
 | REDIS_HOST | localhost |
 | REDIS_PORT | 6379 |
 | ACCESS_TOKEN_KEY | access_key |
-| REFRES_TOKEN_KEY | refresh_key |
+| REFRESH_TOKEN_KEY | refresh_key |
 
 # Usage (Local)
 ### 1. Backend
