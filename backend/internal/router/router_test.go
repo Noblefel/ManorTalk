@@ -8,14 +8,16 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/service/auth"
 	"github.com/Noblefel/ManorTalk/backend/internal/service/post"
+	"github.com/Noblefel/ManorTalk/backend/internal/service/user"
 )
 
 func TestNewRouter(t *testing.T) {
 	var db *database.DB
 	var c *config.AppConfig
 	var as auth.AuthService
+	var us user.UserService
 	var ps post.PostService
-	router := NewRouter(c, db, as, ps)
+	router := NewRouter(c, db, as, us, ps)
 
 	typeString := reflect.TypeOf(router).String()
 	if typeString != "*router.router" {
@@ -27,8 +29,9 @@ func TestRouter_Routes(t *testing.T) {
 	var db *database.DB
 	var c *config.AppConfig
 	var as auth.AuthService
+	var us user.UserService
 	var ps post.PostService
-	router := NewRouter(c, db, as, ps)
+	router := NewRouter(c, db, as, us, ps)
 
 	mux := router.Routes()
 

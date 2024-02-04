@@ -18,5 +18,5 @@ SELECT
     ceil(random() * 8),
     now() - interval '1 hour 14 minute' * (10000 - num),
     now() - interval '1 hour 14 minute' * (10000 - num)
-FROM generate_series(2, 10000, 1) as num;
+FROM generate_series(1, 10000, 1) as num;
 

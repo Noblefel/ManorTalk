@@ -99,7 +99,7 @@ func TestAuthService_Register(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		_, err := s.Register(tt.payload)
+		err := s.Register(tt.payload)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

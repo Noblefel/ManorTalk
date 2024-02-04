@@ -10,35 +10,32 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *authService) Register(payload models.UserRegisterInput) (models.User, error) {
-	var user models.User
-
+func (s *authService) Register(payload models.UserRegisterInput) error {
 	pw, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return user, fmt.Errorf("%s: %w", "Error hashing password", err)
+		return fmt.Errorf("%s: %w", "Error hashing password", err)
 	}
 
-	user, err = s.userRepo.CreateUser(payload.Email, string(pw))
+	_, err = s.userRepo.CreateUser(payload.Username, payload.Email, string(pw))
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
-			return user, ErrDuplicateEmail
+			return ErrDuplicateEmail // Could also be ErrDuplicateUsername
 		}
 
-		return user, fmt.Errorf("%s: %w", "Error creating user", err)
+		return fmt.Errorf("%s: %w", "Error creating user", err)
 	}
 
-	return user, nil
+	return nil
 }
 
-func (s *mockAuthService) Register(payload models.UserRegisterInput) (models.User, error) {
-	var user models.User
+func (s *mockAuthService) Register(payload models.UserRegisterInput) error {
 	if payload.Password == ErrDuplicateEmail.Error() {
-		return user, ErrDuplicateEmail
+		return ErrDuplicateEmail
 	}
 
 	if payload.Password == http.StatusText(http.StatusInternalServerError) {
-		return user, errors.New("unexpected error")
+		return errors.New("unexpected error")
 	}
 
-	return user, nil
+	return nil
 }

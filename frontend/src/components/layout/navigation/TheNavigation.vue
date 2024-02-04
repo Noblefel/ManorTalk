@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import { beerUi, activeRoute } from "@/utils/helper";
+import { beerUi, activeRoute, getAvatar } from "@/utils/helper";
 import MobileMenu from "./MobileMenu.vue";
 import DesktopMenu from "./DesktopMenu.vue";
 import TheThemeSwitch from "@/components/TheThemeSwitch.vue";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -35,9 +38,9 @@ import TheThemeSwitch from "@/components/TheThemeSwitch.vue";
       <div class="l">
         <button class="menu-button background">
           <img
-            src="@/assets/images/default_pfp_240.png"
+            :src="getAvatar(authStore.authUser)"
             class="circle medium"
-            alt=""
+            alt="Profile avatar"
           />
         </button>
         <DesktopMenu />

@@ -8,20 +8,24 @@ import (
 
 	auth_service "github.com/Noblefel/ManorTalk/backend/internal/service/auth"
 	post_service "github.com/Noblefel/ManorTalk/backend/internal/service/post"
+	user_service "github.com/Noblefel/ManorTalk/backend/internal/service/user"
 	"github.com/go-chi/chi/v5"
 )
 
 type testHandlers struct {
 	auth *AuthHandlers
+	user *UserHandlers
 	post *PostHandlers
 }
 
 func newTestHandlers() *testHandlers {
 	authMock := auth_service.NewMockAuthService()
+	userMock := user_service.NewMockUserService()
 	postMock := post_service.NewMockPostService()
 
 	return &testHandlers{
 		auth: NewAuthHandlers(authMock),
+		user: NewUserHandlers(userMock),
 		post: NewPostHandlers(postMock),
 	}
 }

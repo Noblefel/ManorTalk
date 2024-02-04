@@ -54,8 +54,6 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 		pgMeta.Limit,
 		filters.Category,
 	)
-	defer rows.Close()
-
 	if err != nil {
 		return posts, err
 	}

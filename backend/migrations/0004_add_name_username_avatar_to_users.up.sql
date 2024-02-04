@@ -1,0 +1,4 @@
+ALTER TABLE public.users
+    ADD COLUMN name VARCHAR(255),
+    ADD COLUMN username VARCHAR(40) NOT NULL UNIQUE,
+    ADD COLUMN avatar VARCHAR(255);

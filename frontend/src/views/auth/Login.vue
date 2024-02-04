@@ -18,7 +18,7 @@ const rr = ref(new RequestResponse());
 </script>
 
 <template>
-  <AuthCard title="Sign in to continue 📝"> 
+  <AuthCard title="Sign in to continue 📝">
     <form @submit.prevent="authStore.login(form, rr)">
       <div class="space"></div>
 
@@ -64,7 +64,11 @@ const rr = ref(new RequestResponse());
 
         <div class="row">
           <label class="checkbox">
-            <input type="checkbox" :checked="form.remember_me" />
+            <input
+              type="checkbox"
+              :checked="form.remember_me"
+              v-model="form.remember_me"
+            />
             <span class="font-500">Remember Me</span>
           </label>
           <div class="max right-align">

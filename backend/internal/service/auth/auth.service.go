@@ -18,7 +18,7 @@ var (
 )
 
 type AuthService interface {
-	Register(payload models.UserRegisterInput) (models.User, error)
+	Register(payload models.UserRegisterInput) error
 	Login(payload models.UserLoginInput) (models.User, string, string, error)
 	Refresh(refreshToken string) (models.User, string, error)
 }

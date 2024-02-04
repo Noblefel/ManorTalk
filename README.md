@@ -56,12 +56,12 @@ Configure the environment variables inside the backend directory
 ### Migrations
 Run the migrations if you haven't already, this will create a users table and it's sample users:
 ```sh
-go run cmd/migrate/main.go up -production=false
+go run cmd/migrate/main.go -production=false up
 ``` 
 
 to revert the migrations:
 ```sh
-go run cmd/migrate/main.go down -production=false
+go run cmd/migrate/main.go -production=false down
 ``` 
 
 ### Start the server

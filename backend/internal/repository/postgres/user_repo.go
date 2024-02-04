@@ -24,39 +24,43 @@ func NewMockUserRepo() repository.UserRepo {
 	return &mockUserRepo{}
 }
 
-func (r *UserRepo) CreateUser(email, password string) (models.User, error) {
+func (r *UserRepo) CreateUser(username, email, password string) (int, error) {
 	query := `
-		INSERT INTO users (email, password, created_at, updated_at) 
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, email, created_at
+		INSERT INTO users (username, email, password, created_at, updated_at) 
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id
 		`
 
-	var user models.User
+	var id int
 
 	err := r.db.Sql.QueryRow(query,
+		username,
 		email,
 		password,
 		time.Now(),
 		time.Now(),
-	).Scan(&user.Id, &user.Email, &user.CreatedAt)
+	).Scan(&id)
 
 	if err != nil {
-		return user, err
+		return 0, err
 	}
 
-	return user, nil
+	return id, nil
 }
 
 func (r *UserRepo) GetUserById(id int) (models.User, error) {
 	var user models.User
 
 	query := `
-	SELECT id, email, password, created_at, updated_at 
+	SELECT id, COALESCE(name,''), username, COALESCE(avatar,''), email, password, created_at, updated_at 
 	FROM users 
 	WHERE id = $1`
 
 	err := r.db.Sql.QueryRow(query, id).Scan(
 		&user.Id,
+		&user.Name,
+		&user.Username,
+		&user.Avatar,
 		&user.Email,
 		&user.Password,
 		&user.CreatedAt,
@@ -74,12 +78,41 @@ func (r *UserRepo) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 
 	query := `
-	SELECT id, email, password, created_at, updated_at 
+	SELECT id, COALESCE(name,''), username, COALESCE(avatar,''), email, password, created_at, updated_at 
 	FROM users 
 	WHERE email = $1`
 
 	err := r.db.Sql.QueryRow(query, email).Scan(
 		&user.Id,
+		&user.Name,
+		&user.Username,
+		&user.Avatar,
+		&user.Email,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepo) GetUserByUsername(username string) (models.User, error) {
+	var user models.User
+
+	query := `
+	SELECT id, COALESCE(name,''), username, COALESCE(avatar,''), email, password, created_at, updated_at 
+	FROM users 
+	WHERE username = $1`
+
+	err := r.db.Sql.QueryRow(query, username).Scan(
+		&user.Id,
+		&user.Name,
+		&user.Username,
+		&user.Avatar,
 		&user.Email,
 		&user.Password,
 		&user.CreatedAt,

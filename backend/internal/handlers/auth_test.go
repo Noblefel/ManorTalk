@@ -40,6 +40,7 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-ok",
 			payload: &models.UserRegisterInput{
+				Username: "test",
 				Email:    "test@example.com",
 				Password: "password123",
 			},
@@ -53,6 +54,7 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-error-validation",
 			payload: &models.UserRegisterInput{
+				Username: "test",
 				Email:    "not-an-email",
 				Password: "",
 			},
@@ -61,6 +63,7 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-error-duplicate-email",
 			payload: &models.UserRegisterInput{
+				Username: "test",
 				Email:    "test@example.com",
 				Password: service.ErrDuplicateEmail.Error(),
 			},
@@ -69,6 +72,7 @@ func TestAuth_Register(t *testing.T) {
 		{
 			name: "authRegister-error-unexpected",
 			payload: &models.UserRegisterInput{
+				Username: "test",
 				Email:    "test@example.com",
 				Password: http.StatusText(http.StatusInternalServerError),
 			},

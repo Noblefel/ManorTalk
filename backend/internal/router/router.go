@@ -9,6 +9,7 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/middleware"
 	"github.com/Noblefel/ManorTalk/backend/internal/service/auth"
 	"github.com/Noblefel/ManorTalk/backend/internal/service/post"
+	"github.com/Noblefel/ManorTalk/backend/internal/service/user"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -17,13 +18,21 @@ import (
 type router struct {
 	m    *middleware.Middleware
 	auth *handlers.AuthHandlers
+	user *handlers.UserHandlers
 	post *handlers.PostHandlers
 }
 
-func NewRouter(c *config.AppConfig, db *database.DB, as auth.AuthService, ps post.PostService) *router {
+func NewRouter(
+	c *config.AppConfig,
+	db *database.DB,
+	as auth.AuthService,
+	us user.UserService,
+	ps post.PostService,
+) *router {
 	return &router{
 		m:    middleware.New(c, db),
 		auth: handlers.NewAuthHandlers(as),
+		user: handlers.NewUserHandlers(us),
 		post: handlers.NewPostHandlers(ps),
 	}
 }
@@ -53,6 +62,7 @@ func (r *router) Routes() http.Handler {
 
 	r.authRouter(api)
 	r.postRouter(api)
+	r.userRouter(api)
 
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello"))
@@ -82,5 +92,11 @@ func (r *router) postRouter(api *chi.Mux) {
 			api.Patch("/{slug}", r.post.Update)
 			api.Delete("/{slug}", r.post.Delete)
 		})
+	})
+}
+
+func (r *router) userRouter(api *chi.Mux) {
+	api.Route("/user", func(api chi.Router) {
+		api.Post("/check-username", r.user.CheckUsername)
 	})
 }

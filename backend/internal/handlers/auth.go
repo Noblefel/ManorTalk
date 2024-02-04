@@ -40,12 +40,12 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.Register(payload)
+	err := h.service.Register(payload)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrDuplicateEmail):
 			res.JSON(w, http.StatusConflict, res.Response{
-				Message: err.Error(),
+				Message: "Username or " + err.Error(),
 			})
 			return
 		default:
@@ -57,10 +57,7 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res.JSON(w, http.StatusOK, res.Response{
-		Message: "User succesfully registered",
-		Data:    user,
-	})
+	res.JSON(w, http.StatusOK, res.Response{Message: "User succesfully registered"})
 }
 
 func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {

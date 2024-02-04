@@ -4,23 +4,58 @@ import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { RequestResponse } from "@/utils/api";
 import { useAuthStore, type RegisterForm } from "@/stores/auth";
+import { useUserStore } from "@/stores/user";
 
 const authStore = useAuthStore();
+const userStore = useUserStore();
 const showPassword = ref(false);
 
 const form = ref<RegisterForm>({
+  username: "",
   email: "",
   password: "",
   password_repeat: "",
 });
 
-const rr = ref(new RequestResponse());
+const rr = ref(new RequestResponse()); 
+const rrCheck = ref(new RequestResponse());
 </script>
 
 <template>
   <AuthCard title="Create new account 🎉">
     <form @submit.prevent="authStore.register(form, rr)"> 
       <div class="padding">
+        <label for="email" class="font-size-0-9 font-600">Username</label>
+        <div class="field border no-margin prefix suffix">
+          <i>tag</i>
+          <input
+            type="text"
+            name="username"
+            id="username"
+            autocomplete="off"
+            placeholder="test_user_123"
+            v-model.trim="form.username"
+          />
+          <i 
+            class="cursor-pointer z-2" 
+            @click="userStore.checkUsername(form.username, rrCheck)"
+            v-if="!rrCheck.loading"
+          >
+          search
+          </i>
+          <i v-else>
+            <progress class="circle surface small"></progress>
+          </i>
+          <span 
+            class="error" 
+            v-if="rr.errors?.username || rrCheck.errors?.username"
+          >
+            {{ rr.errors?.username[0] || rrCheck.errors?.username[0]  }}
+          </span>
+        </div>
+
+        <div class="space"></div>
+
         <label for="email" class="font-size-0-9 font-600">Email</label>
         <div class="field border no-margin prefix">
           <i>mail</i>
