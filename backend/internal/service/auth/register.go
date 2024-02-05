@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -29,13 +28,12 @@ func (s *authService) Register(payload models.UserRegisterInput) error {
 }
 
 func (s *mockAuthService) Register(payload models.UserRegisterInput) error {
-	if payload.Password == ErrDuplicateEmail.Error() {
+	switch payload.Password {
+	case ErrDuplicateEmail.Error():
 		return ErrDuplicateEmail
-	}
-
-	if payload.Password == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return errors.New("unexpected error")
+	default:
+		return nil
 	}
-
-	return nil
 }

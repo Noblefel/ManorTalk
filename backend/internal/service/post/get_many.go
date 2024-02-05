@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -63,14 +62,13 @@ func (s *postService) GetMany(q url.Values) ([]models.Post, *pagination.Meta, er
 }
 
 func (s *mockPostService) GetMany(q url.Values) ([]models.Post, *pagination.Meta, error) {
-	var posts []models.Post
-	pgMeta := &pagination.Meta{}
+	posts, pgMeta := []models.Post{}, &pagination.Meta{}
 
 	if q.Has(slug.Make(ErrNoCategory.Error())) {
 		return posts, nil, ErrNoCategory
 	}
 
-	if q.Has(slug.Make(http.StatusText(http.StatusInternalServerError))) {
+	if q.Has(slug.Make("unexpected error")) {
 		return posts, nil, errors.New("unexpected error")
 	}
 

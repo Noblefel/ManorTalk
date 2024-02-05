@@ -87,7 +87,7 @@ func TestPost_Create(t *testing.T) {
 		{
 			name: "postCreate-error-unexpected",
 			payload: &models.PostCreateInput{
-				Title:      http.StatusText(http.StatusInternalServerError),
+				Title:      "unexpected error",
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -132,7 +132,7 @@ func TestPost_Get(t *testing.T) {
 		},
 		{
 			name:       "postGet-error-unexpected",
-			slugRoute:  http.StatusText(http.StatusInternalServerError),
+			slugRoute:  "unexpected error",
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -170,7 +170,7 @@ func TestPost_GetMany(t *testing.T) {
 		},
 		{
 			name:       "postGetMany-error-unexpected",
-			query:      slug.Make(http.StatusText(http.StatusInternalServerError)) + "=1",
+			query:      slug.Make("unexpected error") + "=1",
 			statusCode: http.StatusInternalServerError,
 		},
 	}
@@ -239,7 +239,7 @@ func TestPost_Update(t *testing.T) {
 		},
 		{
 			name:      "postUpdate-error-unexpected",
-			slugRoute: http.StatusText(http.StatusInternalServerError),
+			slugRoute: "unexpected error",
 			payload: &models.PostUpdateInput{
 				Title:      "The updated post title",
 				Content:    longText,
@@ -288,7 +288,7 @@ func TestPost_Delete(t *testing.T) {
 		},
 		{
 			name:       "postDelete-error-unexpected",
-			slugRoute:  http.StatusText(http.StatusInternalServerError),
+			slugRoute:  "unexpected error",
 			statusCode: http.StatusInternalServerError,
 		},
 	}

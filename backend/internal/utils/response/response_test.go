@@ -49,3 +49,13 @@ func TestJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestMessageJSON(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	MessageJSON(w, 200, "message")
+
+	if w.Code != 200 {
+		t.Errorf("MessageJSON returned response code of %d, wanted 200", w.Code)
+	}
+}

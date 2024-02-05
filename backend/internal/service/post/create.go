@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -48,18 +47,14 @@ func (s *postService) Create(payload models.PostCreateInput) (models.Post, error
 
 func (s *mockPostService) Create(payload models.PostCreateInput) (models.Post, error) {
 	var post models.Post
-
-	if payload.Title == ErrNoCategory.Error() {
+	switch payload.Title {
+	case ErrNoCategory.Error():
 		return post, ErrNoCategory
-	}
-
-	if payload.Title == ErrDuplicateTitle.Error() {
+	case ErrDuplicateTitle.Error():
 		return post, ErrDuplicateTitle
-	}
-
-	if payload.Title == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return post, errors.New("unexpected error")
+	default:
+		return post, nil
 	}
-
-	return post, nil
 }

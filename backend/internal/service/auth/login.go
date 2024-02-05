@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
@@ -61,17 +60,15 @@ func (s *authService) Login(payload models.UserLoginInput) (models.User, string,
 
 func (s *mockAuthService) Login(payload models.UserLoginInput) (models.User, string, string, error) {
 	var user models.User
-	if payload.Password == ErrNoUser.Error() {
+
+	switch payload.Password {
+	case ErrNoUser.Error():
 		return user, "", "", ErrNoUser
-	}
-
-	if payload.Password == ErrInvalidCredentials.Error() {
+	case ErrInvalidCredentials.Error():
 		return user, "", "", ErrInvalidCredentials
-	}
-
-	if payload.Password == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return user, "", "", errors.New("unexpected error")
+	default:
+		return user, "", "", nil
 	}
-
-	return user, "", "", nil
 }

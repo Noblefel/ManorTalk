@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
@@ -50,17 +49,14 @@ func (s *authService) Refresh(refreshToken string) (models.User, string, error) 
 func (s *mockAuthService) Refresh(refreshToken string) (models.User, string, error) {
 	var user models.User
 
-	if refreshToken == ErrUnauthorized.Error() {
+	switch refreshToken {
+	case ErrUnauthorized.Error():
 		return user, "", ErrUnauthorized
-	}
-
-	if refreshToken == ErrNoUser.Error() {
+	case ErrNoUser.Error():
 		return user, "", ErrNoUser
-	}
-
-	if refreshToken == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return user, "", errors.New("unexpected error")
+	default:
+		return user, "", nil
 	}
-
-	return user, "", nil
 }

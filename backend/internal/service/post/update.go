@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -43,17 +42,14 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string) err
 }
 
 func (s *mockPostService) Update(payload models.PostUpdateInput, urlSlug string) error {
-	if urlSlug == ErrNoPost.Error() {
+	switch urlSlug {
+	case ErrNoPost.Error():
 		return ErrNoPost
-	}
-
-	if urlSlug == ErrDuplicateTitle.Error() {
+	case ErrDuplicateTitle.Error():
 		return ErrDuplicateTitle
-	}
-
-	if urlSlug == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return errors.New("unexpected error")
+	default:
+		return nil
 	}
-
-	return nil
 }

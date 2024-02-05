@@ -27,9 +27,7 @@ func (h *UserHandlers) CheckUsername(w http.ResponseWriter, r *http.Request) {
 	var payload models.CheckUsernameInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, http.StatusBadRequest, res.Response{
-			Message: "Error decoding json",
-		})
+		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
 		return
 	}
 
@@ -47,18 +45,14 @@ func (h *UserHandlers) CheckUsername(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrDuplicateUsername):
-			res.JSON(w, http.StatusConflict, res.Response{
-				Message: err.Error(),
-			})
+			res.MessageJSON(w, http.StatusConflict, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.JSON(w, http.StatusInternalServerError, res.Response{
-				Message: "Sorry, we had some problems checking usernames",
-			})
+			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems checking usernames")
 			return
 		}
 	}
 
-	res.JSON(w, http.StatusOK, res.Response{Message: "Username is available"})
+	res.MessageJSON(w, http.StatusOK, "Username is available")
 }

@@ -59,7 +59,7 @@ func TestUser_CheckUsername(t *testing.T) {
 		},
 		{
 			name:       "userCheckUsername-error-unexpected",
-			payload:    &models.CheckUsernameInput{Username: http.StatusText(http.StatusInternalServerError)},
+			payload:    &models.CheckUsernameInput{Username: "unexpected error"},
 			statusCode: http.StatusInternalServerError,
 		},
 	}

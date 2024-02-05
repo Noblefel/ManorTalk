@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/gosimple/slug"
 )
@@ -23,13 +22,12 @@ func (s *userService) CheckUsername(username string) error {
 }
 
 func (s *mockUserService) CheckUsername(username string) error {
-	if username == slug.Make(ErrDuplicateUsername.Error()) {
+	switch username {
+	case slug.Make(ErrDuplicateUsername.Error()):
 		return ErrDuplicateUsername
-	}
-
-	if username == slug.Make(http.StatusText(http.StatusInternalServerError)) {
+	case slug.Make("unexpected error"):
 		return errors.New("unexpected error")
+	default:
+		return nil
 	}
-
-	return nil
 }

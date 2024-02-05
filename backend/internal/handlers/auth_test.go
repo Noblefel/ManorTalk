@@ -74,7 +74,7 @@ func TestAuth_Register(t *testing.T) {
 			payload: &models.UserRegisterInput{
 				Username: "test",
 				Email:    "test@example.com",
-				Password: http.StatusText(http.StatusInternalServerError),
+				Password: "unexpected error",
 			},
 			statusCode: http.StatusInternalServerError,
 		},
@@ -147,7 +147,7 @@ func TestAuth_Login(t *testing.T) {
 			name: "authLogin-error-unexpected",
 			payload: &models.UserLoginInput{
 				Email:    "test@example.com",
-				Password: http.StatusText(http.StatusInternalServerError),
+				Password: "unexpected error",
 			},
 			statusCode: http.StatusInternalServerError,
 		},
@@ -212,7 +212,7 @@ func TestAuth_Refresh(t *testing.T) {
 			name: "authRefresh-error-unexpected",
 			cookie: &http.Cookie{
 				Name:  "refresh_token",
-				Value: http.StatusText(http.StatusInternalServerError),
+				Value: "unexpected error",
 			},
 			statusCode: http.StatusInternalServerError,
 		},

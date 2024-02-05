@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 )
 
 func (s *postService) Delete(slug string) error {
@@ -26,13 +25,12 @@ func (s *postService) Delete(slug string) error {
 }
 
 func (s *mockPostService) Delete(slug string) error {
-	if slug == ErrNoPost.Error() {
+	switch slug {
+	case ErrNoPost.Error():
 		return ErrNoPost
-	}
-
-	if slug == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return errors.New("unexpected error")
+	default:
+		return nil
 	}
-
-	return nil
 }

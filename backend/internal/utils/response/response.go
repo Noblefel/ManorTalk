@@ -22,3 +22,8 @@ func JSON(w http.ResponseWriter, code int, res Response) {
 	w.WriteHeader(code)
 	w.Write(jsonBytes)
 }
+
+// MessageJSON is a small wrapper around res.JSON
+func MessageJSON(w http.ResponseWriter, code int, msg string) {
+	JSON(w, code, Response{Message: msg})
+}

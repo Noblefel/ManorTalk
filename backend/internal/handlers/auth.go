@@ -26,9 +26,7 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	var payload models.UserRegisterInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, http.StatusBadRequest, res.Response{
-			Message: "Error decoding json",
-		})
+		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
 		return
 	}
 
@@ -44,29 +42,23 @@ func (h *AuthHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrDuplicateEmail):
-			res.JSON(w, http.StatusConflict, res.Response{
-				Message: "Username or " + err.Error(),
-			})
+			res.MessageJSON(w, http.StatusConflict, "Username or "+err.Error())
 			return
 		default:
 			log.Println(err)
-			res.JSON(w, http.StatusInternalServerError, res.Response{
-				Message: "Sorry, we had some problems creating your account",
-			})
+			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems creating your account")
 			return
 		}
 	}
 
-	res.JSON(w, http.StatusOK, res.Response{Message: "User succesfully registered"})
+	res.MessageJSON(w, http.StatusOK, "User succesfully registered")
 }
 
 func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	var payload models.UserLoginInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, http.StatusBadRequest, res.Response{
-			Message: "Error decoding json",
-		})
+		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
 		return
 	}
 
@@ -82,15 +74,11 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(service.ErrInvalidCredentials, err), errors.Is(service.ErrNoUser, err):
-			res.JSON(w, http.StatusUnauthorized, res.Response{
-				Message: service.ErrInvalidCredentials.Error(),
-			})
+			res.MessageJSON(w, http.StatusUnauthorized, service.ErrInvalidCredentials.Error())
 			return
 		default:
 			log.Println(err)
-			res.JSON(w, http.StatusInternalServerError, res.Response{
-				Message: "Sorry, we had some problems when authenticating",
-			})
+			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems when authenticating")
 			return
 		}
 	}
@@ -111,9 +99,7 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := r.Cookie("refresh_token")
 	if err != nil {
-		res.JSON(w, http.StatusUnauthorized, res.Response{
-			Message: service.ErrUnauthorized.Error(),
-		})
+		res.MessageJSON(w, http.StatusUnauthorized, service.ErrUnauthorized.Error())
 		return
 	}
 
@@ -121,15 +107,11 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(service.ErrUnauthorized, err), errors.Is(service.ErrNoUser, err):
-			res.JSON(w, http.StatusUnauthorized, res.Response{
-				Message: service.ErrUnauthorized.Error(),
-			})
+			res.MessageJSON(w, http.StatusUnauthorized, service.ErrUnauthorized.Error())
 			return
 		default:
 			log.Println(err)
-			res.JSON(w, http.StatusInternalServerError, res.Response{
-				Message: "Sorry, we had some problems verifying your request",
-			})
+			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems verifying your request")
 			return
 		}
 	}

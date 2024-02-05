@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 )
@@ -24,14 +23,12 @@ func (s *postService) Get(slug string) (models.Post, error) {
 
 func (s *mockPostService) Get(slug string) (models.Post, error) {
 	var post models.Post
-
-	if slug == ErrNoPost.Error() {
+	switch slug {
+	case ErrNoPost.Error():
 		return post, ErrNoPost
-	}
-
-	if slug == http.StatusText(http.StatusInternalServerError) {
+	case "unexpected error":
 		return post, errors.New("unexpected error")
+	default:
+		return post, nil
 	}
-
-	return post, nil
 }
