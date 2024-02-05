@@ -50,7 +50,7 @@ func (r *router) Routes() http.Handler {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           300,
 	}))
 
@@ -76,6 +76,7 @@ func (r *router) authRouter(api *chi.Mux) {
 		api.Post("/register", r.auth.Register)
 		api.Post("/login", r.auth.Login)
 		api.Post("/refresh", r.auth.Refresh)
+		api.Post("/logout", r.auth.Logout)
 	})
 }
 

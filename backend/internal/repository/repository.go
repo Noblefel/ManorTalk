@@ -20,6 +20,7 @@ const (
 type CacheRepo interface {
 	SetRefreshToken(td token.Details) error
 	GetRefreshToken(td token.Details) (string, error)
+	DelRefreshToken(td token.Details) error
 }
 
 type UserRepo interface {

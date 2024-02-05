@@ -86,6 +86,7 @@ func (h *AuthHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:  "refresh_token",
 		Value: refreshToken,
+		Path:  "/",
 	})
 
 	res.JSON(w, http.StatusOK, res.Response{
@@ -122,4 +123,22 @@ func (h *AuthHandlers) Refresh(w http.ResponseWriter, r *http.Request) {
 			"access_token": accessToken,
 		},
 	})
+}
+
+func (h *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
+	refreshToken, err := r.Cookie("refresh_token")
+	if err != nil {
+		log.Println(err)
+		res.MessageJSON(w, http.StatusUnauthorized, service.ErrUnauthorized.Error())
+		return
+	}
+
+	err = h.service.Logout(refreshToken.Value)
+	if err != nil {
+		log.Println(err)
+		res.MessageJSON(w, http.StatusUnauthorized, service.ErrUnauthorized.Error())
+		return
+	}
+
+	res.MessageJSON(w, http.StatusOK, "Logged out")
 }

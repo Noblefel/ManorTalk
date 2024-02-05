@@ -26,7 +26,6 @@ func NewMockRepo() repository.CacheRepo {
 }
 
 func (r *RedisRepo) SetRefreshToken(td token.Details) error {
-
 	_, err := r.db.Redis.Set(
 		context.Background(),
 		fmt.Sprint("refresh_token-", td.UserId),
@@ -52,4 +51,17 @@ func (r *RedisRepo) GetRefreshToken(td token.Details) (string, error) {
 	}
 
 	return uuid, nil
+}
+
+func (r *RedisRepo) DelRefreshToken(td token.Details) error {
+	_, err := r.db.Redis.Del(
+		context.Background(),
+		fmt.Sprint("refresh_token-", td.UserId),
+	).Result()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

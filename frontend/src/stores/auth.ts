@@ -1,4 +1,4 @@
-import type { RequestResponse } from "@/utils/api";
+import { RequestResponse } from "@/utils/api";
 import { toast } from "@/utils/helper";
 import { Validator } from "@/utils/validator";
 import { defineStore } from "pinia";
@@ -111,12 +111,29 @@ export const useAuthStore = defineStore("auth", () => {
     });
   }
 
+  /** logout will reset the authentication state */
+  function logout() {
+    // removes the refresh token from cache
+    const rr = new RequestResponse();
+
+    rr.useApi("post", "/auth/logout", null, false);
+
+    authUser.value = null;
+    localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("access_token");
+
+    toast("Logged out", "green white-text");
+  }
+
   return {
     authUser,
     isAuth,
-    login,
-    register,
     getAuthStorage,
     setAuthStorage,
+    login,
+    register,
+    logout,
   };
 });

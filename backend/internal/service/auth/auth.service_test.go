@@ -225,11 +225,6 @@ func TestAuthService_Refresh(t *testing.T) {
 			isError:      true,
 		},
 		{
-			name:         "refresh-error-parsing-token",
-			refreshToken: refreshTokenInvalid,
-			isError:      true,
-		},
-		{
 			name:         "refresh-error-no-user",
 			refreshToken: refreshTokenUserNotFound,
 			isError:      true,
@@ -243,6 +238,74 @@ func TestAuthService_Refresh(t *testing.T) {
 
 	for _, tt := range tests {
 		_, _, err := s.Refresh(tt.refreshToken)
+
+		if err != nil && !tt.isError {
+			t.Errorf("%s should not return error, but got %s", tt.name, err)
+		}
+
+		if err == nil && tt.isError {
+			t.Errorf("%s should return error", tt.name)
+		}
+	}
+}
+
+func TestAuthService_Logout(t *testing.T) {
+	// Sample refresh tokens
+	var refreshToken, _ = token.Generate(token.Details{
+		UserId:    1,
+		UniqueId:  "uuid",
+		SecretKey: tc.RefreshTokenKey,
+		Duration:  1 * time.Minute,
+	})
+
+	var refreshTokenInvalid, _ = token.Generate(token.Details{
+		UserId:   1,
+		UniqueId: "uuid",
+	})
+
+	var refreshTokenInvalid2, _ = token.Generate(token.Details{
+		UserId:    -1,
+		UniqueId:  repository.ErrIncorrectKey,
+		SecretKey: tc.RefreshTokenKey,
+		Duration:  1 * time.Minute,
+	})
+
+	var refreshTokenUnexpectedError, _ = token.Generate(token.Details{
+		UserId:    repository.ErrUnexpectedKeyInt,
+		UniqueId:  "uuid",
+		SecretKey: tc.RefreshTokenKey,
+		Duration:  1 * time.Minute,
+	})
+
+	var tests = []struct {
+		name         string
+		refreshToken string
+		isError      bool
+	}{
+		{
+			name:         "logout-ok",
+			refreshToken: refreshToken,
+			isError:      false,
+		},
+		{
+			name:         "logout-error-parsing-token",
+			refreshToken: refreshTokenInvalid,
+			isError:      true,
+		},
+		{
+			name:         "logout-error-getting-refresh-token",
+			refreshToken: refreshTokenInvalid2,
+			isError:      true,
+		},
+		{
+			name:         "logout-error-deleting-refresh-token",
+			refreshToken: refreshTokenUnexpectedError,
+			isError:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		err := s.Logout(tt.refreshToken)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

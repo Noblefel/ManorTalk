@@ -26,6 +26,11 @@ const router = createRouter({
       meta: { layout: AuthLayout, guest: true },
       component: () => import("@/views/auth/Register.vue"),
     },
+    {
+      path: "/logout",
+      name: "logout",
+      component: Home, // Placeholder
+    },
   ],
 });
 
@@ -38,6 +43,12 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.guest && !guest(ctx)) return;
 
   if (to.meta.auth && !auth(ctx)) return;
+
+  if (to.name == "logout") {
+    authStore.logout()
+    next(from)
+    return
+  }
 
   next();
 });

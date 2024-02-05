@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 import Profile from "./Profile.vue";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
 </script>
 
 <template>
   <menu id="nav-menu" class="left">
     <Profile />
 
-    <button class="responsive no-margin secondary">
+    <button class="responsive no-margin secondary" v-if="authStore.isAuth">
       Create Post
       <i>edit</i>
     </button>
@@ -16,19 +19,32 @@ import Profile from "./Profile.vue";
     <div class="divider"></div>
     <div class="space"></div>
 
-    <RouterLink :to="{ name: 'register' }" >
-      <button class="responsive no-margin inverted">
+    <div v-if="!authStore.isAuth">
+      <RouterLink
+        :to="{ name: 'register' }"
+        class="button responsive no-margin inverted"
+      >
         Register
         <i>person_add</i>
-      </button>
-    </RouterLink>
-    <div class="space"></div>
-    <RouterLink :to="{ name: 'login' }" >
-      <button class="responsive no-margin">
+      </RouterLink>
+      <div class="space"></div>
+      <RouterLink
+        :to="{ name: 'login' }"
+        class="button responsive no-margin primary"
+      >
         Login
         <i>login</i>
-      </button>
-    </RouterLink>
+      </RouterLink>
+    </div>
+    <div v-else>
+      <RouterLink
+        :to="{ name: 'logout' }"
+        class="button responsive no-margin inverted"
+      >
+        Logout
+        <i>Logout</i>
+      </RouterLink>
+    </div>
   </menu>
 </template>
 

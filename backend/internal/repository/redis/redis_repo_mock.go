@@ -22,3 +22,11 @@ func (r *mockRedisRepo) GetRefreshToken(td token.Details) (string, error) {
 
 	return "uuid", nil
 }
+
+func (r *mockRedisRepo) DelRefreshToken(td token.Details) error {
+	if td.UserId == repository.ErrUnexpectedKeyInt {
+		return errors.New("Some error")
+	}
+
+	return nil
+}

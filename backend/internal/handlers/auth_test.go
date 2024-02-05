@@ -235,3 +235,50 @@ func TestAuth_Refresh(t *testing.T) {
 		}
 	}
 }
+
+func TestAuth_Logout(t *testing.T) {
+	var tests = []struct {
+		name       string
+		cookie     *http.Cookie
+		statusCode int
+	}{
+		{
+			name: "authLogout-ok",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: "refresh_token",
+			},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "authLogout-error-missing-cookie",
+			cookie:     nil,
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name: "authLogout-error-unauthorized",
+			cookie: &http.Cookie{
+				Name:  "refresh_token",
+				Value: service.ErrUnauthorized.Error(),
+			},
+			statusCode: http.StatusUnauthorized,
+		},
+	}
+
+	for _, tt := range tests {
+		r := httptest.NewRequest("POST", "/auth/logout", nil)
+		r.Header.Set("Content-Type", "application/json")
+
+		if tt.cookie != nil {
+			r.AddCookie(tt.cookie)
+		}
+
+		w := httptest.NewRecorder()
+		handler := http.HandlerFunc(h.auth.Logout)
+		handler.ServeHTTP(w, r)
+
+		if w.Code != tt.statusCode {
+			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
+		}
+	}
+}

@@ -5,7 +5,7 @@ import { toast } from "./helper";
 
 const Api: AxiosInstance = axios.create({
   baseURL: "http://localhost:8080/api",
-  //   withCredentials: true,
+  withCredentials: true,
 });
 
 /** RequestResponse is a utility class for handling states while using the  API */

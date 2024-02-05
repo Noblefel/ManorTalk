@@ -1,6 +1,9 @@
-<script setup lang="ts"> 
-import { activeRoute } from "@/utils/helper"
-import Profile from "./Profile.vue"; 
+<script setup lang="ts">
+import { activeRoute } from "@/utils/helper";
+import Profile from "./Profile.vue";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
 </script>
 
 <template>
@@ -25,7 +28,7 @@ import Profile from "./Profile.vue";
         <i>newspaper</i>
         Blog
       </RouterLink>
-      <RouterLink  :to="{ name: 'home' }" :class="activeRoute('discussion')">
+      <RouterLink :to="{ name: 'home' }" :class="activeRoute('discussion')">
         <i>forum</i>
         Discussion
       </RouterLink>
@@ -34,25 +37,35 @@ import Profile from "./Profile.vue";
         Categories
       </RouterLink>
     </div>
-
-    <div class="large-space"></div>
-
+ 
     <div class="space"></div>
-    <RouterLink
-      :to="{ name: 'register' }"
-      class="button responsive no-margin inverted"
-    >
-      Register
-      <i>person_add</i>
-    </RouterLink>
-    <div class="space"></div>
-    <RouterLink
-      :to="{ name: 'login' }"
-      class="button responsive no-margin "
-    >
-      Login
-      <i>login</i>
-    </RouterLink>
+    
+    <div v-if="!authStore.isAuth">
+      <RouterLink
+        :to="{ name: 'register' }"
+        class="button responsive no-margin inverted"
+      >
+        Register
+        <i>person_add</i>
+      </RouterLink>
+      <div class="space"></div>
+      <RouterLink 
+        :to="{ name: 'login' }" 
+        class="button responsive no-margin"
+      >
+        Login
+        <i>login</i>
+      </RouterLink>
+    </div>
+    <div v-else>
+      <RouterLink 
+        :to="{ name: 'logout' }" 
+        class="button responsive no-margin inverted"
+      >
+        Logout
+        <i>logout</i>
+      </RouterLink>
+    </div>
   </dialog>
 </template>
 
