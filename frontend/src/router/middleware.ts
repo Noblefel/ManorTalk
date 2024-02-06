@@ -16,7 +16,8 @@ export const checkAuth = (ctx: MiddlewareCtx) => {
     const { user, access_token, remember } = ctx.authStore.getAuthStorage();
     if (user && access_token) {
       ctx.authStore.authUser = user;
-      ctx.authStore.setAuthStorage(access_token, remember);
+      ctx.authStore.remember = remember;
+      ctx.authStore.setAuthStorage(access_token);
     }
   }
 };

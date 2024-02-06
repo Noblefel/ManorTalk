@@ -14,7 +14,7 @@ var (
 	ErrDuplicateEmail     = errors.New("Email already in use")
 	ErrInvalidCredentials = errors.New("Invalid credentials")
 	ErrNoUser             = errors.New("User not found")
-	ErrUnauthorized       = errors.New("You need to login first")
+	ErrUnauthorized       = errors.New("Session invalid or expired, please login first")
 )
 
 type AuthService interface {

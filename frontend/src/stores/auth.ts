@@ -23,9 +23,20 @@ export const useAuthStore = defineStore("auth", () => {
   const router = useRouter();
 
   const authUser = ref<User | null>(null);
+  const remember = ref(false);
 
   /** isAuth checks if authUser store is not null */
   const isAuth = computed(() => authUser.value != null);
+
+  /** reset will remove authentication state */
+  function reset() {
+    authUser.value = null;
+    remember.value = false;
+    localStorage.removeItem("user");
+    localStorage.removeItem("access_token");
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("access_token");
+  }
 
   /** getAuthStorage will retrieve authenticated user data from the local/session storage */
   function getAuthStorage() {
@@ -45,14 +56,14 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   /** setAuthStorage will save authenticated user data in the local/session storage */
-  function setAuthStorage(access_token: string, remember: boolean) {
+  function setAuthStorage(access_token: string) {
     const userString = JSON.stringify(authUser.value);
 
-    remember
+    remember.value
       ? localStorage.setItem("user", userString)
       : sessionStorage.setItem("user", userString);
 
-    remember
+    remember.value
       ? localStorage.setItem("access_token", access_token)
       : sessionStorage.setItem("access_token", access_token);
   }
@@ -80,7 +91,8 @@ export const useAuthStore = defineStore("auth", () => {
       };
 
       authUser.value = user;
-      setAuthStorage(access_token, form.remember_me);
+      remember.value = form.remember_me;
+      setAuthStorage(access_token);
       router.push({ name: "home" });
     });
   }
@@ -111,25 +123,19 @@ export const useAuthStore = defineStore("auth", () => {
     });
   }
 
-  /** logout will reset the authentication state */
+  /** logout will reset the authentication state and delete the refresh token cache */
   function logout() {
-    // removes the refresh token from cache
     const rr = new RequestResponse();
-
     rr.useApi("post", "/auth/logout", null, false);
-
-    authUser.value = null;
-    localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
-    sessionStorage.removeItem("user");
-    sessionStorage.removeItem("access_token");
-
-    toast("Logged out", "green white-text");
+    reset();
+    window.location.reload();
   }
 
   return {
     authUser,
+    remember,
     isAuth,
+    reset,
     getAuthStorage,
     setAuthStorage,
     login,

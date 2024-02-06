@@ -45,9 +45,8 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.auth && !auth(ctx)) return;
 
   if (to.name == "logout") {
-    authStore.logout()
-    next(from)
-    return
+    authStore.logout();
+    return;
   }
 
   next();
