@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Post } from "@/stores/post";
+import { getAvatar } from "@/utils/helper";
 import type { PropType } from "vue";
 
 defineProps({
@@ -10,6 +11,7 @@ defineProps({
       title: "A sample post 0",
       slug: "a-sample-post-0",
       category: { name: "Sample" },
+      user: { username: "john-doe" }
     },
   },
   width: {
@@ -117,10 +119,17 @@ function cropText(text: String) {
         condimentum ex, quis luctus libero interdum eget"
       </p>
       <div class="author" v-if="withAuthor">
-        <img src="@/assets/images/default_pfp_240.png" alt="" />
+        <img 
+          :src="getAvatar(post.user)" 
+          :alt="`${post.user.username} profile avatar`" 
+        />
         <div>
-          <p class="font-700">John Doe</p>
-          <p class="small-text font-600">01 Jan 2024</p>
+          <p class="font-700">
+            {{ post.user.name ?? post.user.username }}
+          </p>
+          <p class="small-text font-600" v-if="post.created_at">
+            {{ new Date(post.created_at).toUTCString() }}
+          </p>
         </div>
       </div>
       <div class="stats" v-if="withStats">

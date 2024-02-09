@@ -31,6 +31,12 @@ const router = createRouter({
       name: "logout",
       component: Home, // Placeholder
     },
+    {
+      path: "/blog",
+      name: "blog",
+      meta: { layout: AppLayout },
+      component: () => import("@/views/blog/Index.vue"),
+    },
   ],
 });
 

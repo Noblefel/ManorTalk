@@ -20,26 +20,42 @@ const authStore = useAuthStore();
     <div class="divider"></div>
 
     <div class="links">
-      <RouterLink :to="{ name: 'home' }" :class="activeRoute('home')">
+      <RouterLink
+        :to="{ name: 'home' }"
+        :class="activeRoute('home')"
+        data-ui="#nav-mobile-menu"
+      >
         <i>cottage</i>
         Home
       </RouterLink>
-      <RouterLink :to="{ name: 'home' }" :class="activeRoute('blog')">
+      <RouterLink
+        :to="{ name: 'blog' }"
+        :class="activeRoute('blog')"
+        data-ui="#nav-mobile-menu"
+      >
         <i>newspaper</i>
         Blog
       </RouterLink>
-      <RouterLink :to="{ name: 'home' }" :class="activeRoute('discussion')">
+      <RouterLink
+        :to="{ name: 'home' }"
+        :class="activeRoute('discussion')"
+        data-ui="#nav-mobile-menu"
+      >
         <i>forum</i>
         Discussion
       </RouterLink>
-      <RouterLink :to="{ name: 'home' }" :class="activeRoute('categories')">
+      <RouterLink
+        :to="{ name: 'home' }"
+        :class="activeRoute('categories')"
+        data-ui="#nav-mobile-menu"
+      >
         <i>category</i>
         Categories
       </RouterLink>
     </div>
- 
+
     <div class="space"></div>
-    
+
     <div v-if="!authStore.isAuth">
       <RouterLink
         :to="{ name: 'register' }"
@@ -49,17 +65,14 @@ const authStore = useAuthStore();
         <i>person_add</i>
       </RouterLink>
       <div class="space"></div>
-      <RouterLink 
-        :to="{ name: 'login' }" 
-        class="button responsive no-margin"
-      >
+      <RouterLink :to="{ name: 'login' }" class="button responsive no-margin">
         Login
         <i>login</i>
       </RouterLink>
     </div>
     <div v-else>
-      <RouterLink 
-        :to="{ name: 'logout' }" 
+      <RouterLink
+        :to="{ name: 'logout' }"
         class="button responsive no-margin inverted"
       >
         Logout

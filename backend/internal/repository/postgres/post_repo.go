@@ -30,10 +30,24 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 
 	query := `
 		SELECT 
-			p.id, p.user_id, p.title, p.slug, COALESCE(p.excerpt, ''), p.content, p.category_id, p.created_at, p.updated_at,
-			c.name, c.slug 
+			p.id, 
+			p.user_id, 
+			p.title, 
+			p.slug, 
+			COALESCE(p.excerpt, ''), 
+			p.content, 
+			p.category_id, 
+			p.created_at, 
+			p.updated_at,
+			c.name, 
+			c.slug,
+			COALESCE(u.name, ''), 
+			u.username, 
+			COALESCE(u.avatar, '')
 		FROM posts p
-		LEFT JOIN categories c ON (p.category_id = c.id)`
+		LEFT JOIN categories c ON (p.category_id = c.id)
+		LEFT JOIN users u ON (p.user_id = u.id)	
+		`
 
 	if filters.Category != "" {
 		query += "WHERE c.slug = $3\n"
@@ -41,10 +55,10 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 		query += "WHERE c.slug != $3\n"
 	}
 
-	if filters.Order == "desc" {
-		query += "ORDER BY p.id DESC\n"
-	} else {
+	if filters.Order == "asc" {
 		query += "ORDER BY p.id ASC\n"
+	} else {
+		query += "ORDER BY p.id DESC\n"
 	}
 
 	query += "OFFSET $1 LIMIT $2"
@@ -74,6 +88,9 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 			&post.UpdatedAt,
 			&post.Category.Name,
 			&post.Category.Slug,
+			&post.User.Name,
+			&post.User.Username,
+			&post.User.Avatar,
 		)
 
 		if err != nil {

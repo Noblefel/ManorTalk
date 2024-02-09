@@ -23,7 +23,7 @@ type dbConfig struct {
 }
 
 func Default() *AppConfig {
-	port, _ := strconv.Atoi(os.Getenv("APPLICATION_PORT"))
+	port, _ := strconv.Atoi(os.Getenv("API_PORT"))
 	dbPort, _ := strconv.Atoi(os.Getenv("DB_PORT"))
 	redisPort, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
 

@@ -1,3 +1,7 @@
+WITH users_count AS (
+    SELECT COUNT(*) AS total FROM users 
+)
+
 INSERT INTO posts ( 
     user_id, 
     title, 
@@ -8,7 +12,7 @@ INSERT INTO posts (
     updated_at
 ) 
 SELECT 
-    1,
+    ceil(random() * (SELECT total FROM users_count)),
     concat('A Sample Post no.', num),
     concat('a-sample-post-',num), 
     'A long text: Lorem ipsum dolor sit amet, consectetur adipiscing 

@@ -1,14 +1,5 @@
 import type { User } from "@/stores/user";
-import { useRoute } from "vue-router";
-
-/**
- *  Very small wrapper around BeerCSS ui() function .
- *
- * see docs https://github.com/beercss/beercss/blob/main/docs/DIALOG.md#method-4
- */
-export const beerUi = (id: string): void => {
-  ui("#" + id);
-};
+import { useRoute, type Router } from "vue-router";
 
 /**  activeRoute returns "active" if the current route name match  .*/
 export const activeRoute = (routeName: string): string => {
@@ -53,4 +44,45 @@ export const getAvatar = (user: User | null) => {
   const name = (user.name ?? user.username).split(/[\s_\-]/).join("+");
 
   return `https://ui-avatars.com/api/?name=${name}&background=random&size=120&color=fff`;
+};
+
+/** changeParam will set new query parameter and modify the url */
+export const changeParam = (
+  router: Router,
+  key: string,
+  value: any,
+  scrollToTop: boolean = false
+) => {
+  let params = new URLSearchParams(window.location.search);
+  params.set(key, value);
+  if (scrollToTop) window.scrollTo(0, 150);
+  router.replace({ query: Object.fromEntries(params) });
+};
+
+/**  ============ NEED IMPROVEMENTS ============
+ *
+ * getPageNumbers will return array of numbers from before and after the current page
+ */
+export const getPageNumbers = (current: number, last: number) => {
+  let beforeNum = Math.max(current - 3, 1);
+  let afterNum = Math.min(current + 3, last);
+
+  let additionalNum = {
+    before: 3 + (current - afterNum),
+    after: 3 - (current - beforeNum),
+  };
+
+  let before = [];
+  for (let i = beforeNum - additionalNum.before; i < current; i++) {
+    if (i <= 0) continue;
+    before.push(i);
+  }
+
+  let after = [];
+  for (let i = current + 1; i <= afterNum + additionalNum.after; i++) {
+    if (i > last) break;
+    after.push(i);
+  }
+
+  return { before, after };
 };

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
-import { beerUi, getAvatar } from "@/utils/helper";
+import { getAvatar } from "@/utils/helper";
 
 const authStore = useAuthStore();
 </script>
@@ -20,7 +20,7 @@ const authStore = useAuthStore();
           <i class="fill">manage_accounts</i>
           <div class="tooltip bottom">Edit Profile</div>
         </button>
-        <button class="no-margin circle m s" @click="beerUi('nav-mobile-menu')">
+        <button class="no-margin circle m s" data-ui="#nav-mobile-menu">
           <i>close</i>
         </button>
       </div>

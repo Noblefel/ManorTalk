@@ -8,7 +8,7 @@ const rr = ref(new RequestResponse())
 const postStore = usePostStore(); 
 
 onMounted(() => {
-  postStore.fetchLatestPosts(rr.value)
+  postStore.fetchHomePosts(rr.value)
 })
 </script>
 

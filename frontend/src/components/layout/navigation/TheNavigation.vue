@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import { beerUi, activeRoute, getAvatar } from "@/utils/helper";
+import { activeRoute, getAvatar } from "@/utils/helper";
 import MobileMenu from "./MobileMenu.vue";
 import DesktopMenu from "./DesktopMenu.vue";
 import TheThemeSwitch from "@/components/TheThemeSwitch.vue";
@@ -20,7 +20,7 @@ const authStore = useAuthStore()
       <RouterLink :to="{ name: 'home' }" :class="activeRoute('home')">
         Home
       </RouterLink>
-      <RouterLink :to="{ name: 'home' }" :class="activeRoute('blog')">
+      <RouterLink :to="{ name: 'blog' }" :class="activeRoute('blog')">
         Blog
       </RouterLink>
       <RouterLink :to="{ name: 'home' }" :class="activeRoute('discussion')">
@@ -48,7 +48,7 @@ const authStore = useAuthStore()
 
       <!-- MOBILE -->
       <div class="m s">
-        <button class="menu-button" @click="beerUi('nav-mobile-menu')">
+        <button class="menu-button" data-ui="#nav-mobile-menu">
           <i>menu</i>
         </button>
         <MobileMenu />

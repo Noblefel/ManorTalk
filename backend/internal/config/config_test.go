@@ -8,7 +8,7 @@ import (
 )
 
 func TestDefault(t *testing.T) {
-	os.Setenv("APPLICATION_PORT", "8080")
+	os.Setenv("API_PORT", "8080")
 
 	config := Default()
 
