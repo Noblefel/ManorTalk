@@ -43,4 +43,5 @@ type Category struct {
 type PostsFilters struct {
 	Order    string
 	Category string
+	Search   string
 }

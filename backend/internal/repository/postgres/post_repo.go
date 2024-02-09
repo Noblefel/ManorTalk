@@ -55,6 +55,12 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 		query += "WHERE c.slug != $3\n"
 	}
 
+	if filters.Search != "" {
+		query += "AND p.title LIKE CONCAT('%', $4::text, '%')\n"
+	} else {
+		query += "AND p.title != $4\n"
+	}
+
 	if filters.Order == "asc" {
 		query += "ORDER BY p.id ASC\n"
 	} else {
@@ -67,6 +73,7 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 		pgMeta.Offset,
 		pgMeta.Limit,
 		filters.Category,
+		filters.Search,
 	)
 	if err != nil {
 		return posts, err
@@ -233,7 +240,13 @@ func (r *PostRepo) CountPosts(filters models.PostsFilters) (int, error) {
 		query += "WHERE c.slug != $1\n"
 	}
 
-	err := r.db.Sql.QueryRow(query, filters.Category).Scan(&count)
+	if filters.Search != "" {
+		query += "AND p.title LIKE CONCAT('%', $2::text, '%')\n"
+	} else {
+		query += "AND p.title != $2\n"
+	}
+
+	err := r.db.Sql.QueryRow(query, filters.Category, filters.Search).Scan(&count)
 	if err != nil {
 		return 0, err
 	}

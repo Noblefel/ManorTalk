@@ -25,12 +25,13 @@ defineProps({ loading: Boolean });
         @input="(e) => { search = (e.target as HTMLInputElement).value }"
         :value="search"
         @keydown.enter="changeParam(router, 'search', search)"
+        :disabled="loading"
       />
     </div>
     <div class="row wrap">
       <button class="inverted" :disabled="loading">
         <i>calendar_month</i>
-        {{ $route.query.order == "desc" ? "Oldest" : "Newest" }}
+        {{ $route.query.order == "asc" ? "Oldest" : "Newest" }}
         <i>arrow_drop_down</i>
         <menu>
           <a @click="changeParam(router, 'order', 'desc')">Newest</a>
@@ -45,7 +46,10 @@ defineProps({ loading: Boolean });
       >
         <i>category</i>
         <span class="capitalize">
-          {{ $route.query?.category ?? "All Categories" }}
+          {{
+            (!$route.query?.category ? null : $route.query?.category) ??
+            "All Categories"
+          }}
         </span>
         <i>arrow_drop_down</i>
 
@@ -54,7 +58,8 @@ defineProps({ loading: Boolean });
           <i>error</i>
           <div class="space"></div>
         </menu>
-        <menu v-else >
+        <menu v-else>
+          <a @click="changeParam(router, 'category', '')">All</a>
           <a
             v-for="c in postStore.categories"
             :key="c.slug"
@@ -69,7 +74,7 @@ defineProps({ loading: Boolean });
         <i>list_alt</i>
         {{ $route.query.limit ?? 10 }} per Page
         <i>arrow_drop_down</i>
-        <menu >
+        <menu>
           <a @click="changeParam(router, 'limit', 10)">10 per Page</a>
           <a @click="changeParam(router, 'limit', 20)">20 per Page</a>
           <a @click="changeParam(router, 'limit', 50)">50 per Page</a>

@@ -17,6 +17,7 @@ func (s *postService) GetMany(q url.Values) ([]models.Post, *pagination.Meta, er
 	filters := models.PostsFilters{
 		Order:    q.Get("order"),
 		Category: q.Get("category"),
+		Search:   q.Get("search"),
 	}
 
 	if filters.Category != "" {
