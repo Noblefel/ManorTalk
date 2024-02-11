@@ -9,6 +9,12 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/pagination"
 )
 
+type mockPostRepo struct{}
+
+func NewMockPostRepo() repository.PostRepo {
+	return &mockPostRepo{}
+}
+
 func (r *mockPostRepo) CreatePost(p models.Post) (models.Post, error) {
 	var post models.Post
 

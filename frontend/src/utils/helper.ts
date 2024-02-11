@@ -47,15 +47,11 @@ export const getAvatar = (user: User | null) => {
 };
 
 /** changeParam will set new query parameter and modify the url */
-export const changeParam = (
-  router: Router,
-  key: string,
-  value: any,
-  scrollToTop: boolean = false
-) => {
+export const changeParam = (router: Router, key: string, value: any) => {
   let params = new URLSearchParams(window.location.search);
+  if (["search", "limit"].includes(key)) params.delete("page");
+  if (key == "page") window.scrollTo(0, 150);
   params.set(key, value);
-  if (scrollToTop) window.scrollTo(0, 150);
   router.replace({ query: Object.fromEntries(params) });
 };
 

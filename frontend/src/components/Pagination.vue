@@ -24,12 +24,12 @@ const { before, after } = getPageNumbers(current, last);
   <div>
     <div class="row">
       <div class="m l">
-        <a @click="changeParam(router, 'page', 1, true)"> &lt;&lt; </a>
+        <a @click="changeParam(router, 'page', 1)"> &lt;&lt; </a>
       </div>
       <div class="row">
         <a
           v-for="page in before"
-          @click="changeParam(router, 'page', page, true)"
+          @click="changeParam(router, 'page', page)"
         >
           {{ page }}
         </a>
@@ -38,13 +38,13 @@ const { before, after } = getPageNumbers(current, last);
 
         <a
           v-for="page in after"
-          @click="changeParam(router, 'page', page, true)"
+          @click="changeParam(router, 'page', page)"
         >
           {{ page }}
         </a>
       </div>
       <div class="m l">
-        <a @click="changeParam(router, 'page', last, true)"> {{ last }} </a>
+        <a @click="changeParam(router, 'page', last)"> {{ last }} </a>
       </div>
     </div>
 
@@ -59,7 +59,7 @@ const { before, after } = getPageNumbers(current, last);
       </div>
       <button
         class="circle small-round secondary"
-        @click="changeParam(router, 'page', goToPage, true)"
+        @click="changeParam(router, 'page', goToPage)"
       >
         Go
       </button>
@@ -68,13 +68,13 @@ const { before, after } = getPageNumbers(current, last);
     <div class="row center-align s">
       <a
         class="button small secondary"
-        @click="changeParam(router, 'page', 1, true)"
+        @click="changeParam(router, 'page', 1)"
       >
         &lt;&lt;
       </a>
       <a
         class="button small secondary"
-        @click="changeParam(router, 'page', last, true)"
+        @click="changeParam(router, 'page', last)"
       >
         >>
       </a>

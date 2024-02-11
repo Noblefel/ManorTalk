@@ -78,7 +78,6 @@ defineProps({ loading: Boolean });
           <a @click="changeParam(router, 'limit', 10)">10 per Page</a>
           <a @click="changeParam(router, 'limit', 20)">20 per Page</a>
           <a @click="changeParam(router, 'limit', 50)">50 per Page</a>
-          <a>Infinite Scroll</a>
         </menu>
       </button>
     </div>

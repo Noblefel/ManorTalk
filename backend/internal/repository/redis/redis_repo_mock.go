@@ -7,6 +7,12 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
+type mockRedisRepo struct{}
+
+func NewMockRepo() repository.CacheRepo {
+	return &mockRedisRepo{}
+}
+
 func (r *mockRedisRepo) SetRefreshToken(td token.Details) error {
 	if td.UserId == repository.ErrUnexpectedKeyInt {
 		return errors.New("Some error")

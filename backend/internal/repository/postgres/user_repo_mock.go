@@ -9,6 +9,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type mockUserRepo struct{}
+
+func NewMockUserRepo() repository.UserRepo {
+	return &mockUserRepo{}
+}
+
 func (r *mockUserRepo) CreateUser(username, email, password string) (int, error) {
 	if email == repository.ErrDuplicateKeyString {
 		return 0, errors.New("duplicate key value")

@@ -55,6 +55,7 @@
 
 <style scoped>
 .row.scroll {
+  gap: 2rem;
   margin: 2.5rem 0;
   justify-content: center;
   text-align: center;

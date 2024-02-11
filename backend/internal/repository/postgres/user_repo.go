@@ -12,16 +12,10 @@ type UserRepo struct {
 	db *database.DB
 }
 
-type mockUserRepo struct{}
-
 func NewUserRepo(db *database.DB) repository.UserRepo {
 	return &UserRepo{
 		db: db,
 	}
-}
-
-func NewMockUserRepo() repository.UserRepo {
-	return &mockUserRepo{}
 }
 
 func (r *UserRepo) CreateUser(username, email, password string) (int, error) {
