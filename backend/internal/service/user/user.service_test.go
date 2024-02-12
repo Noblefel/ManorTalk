@@ -46,7 +46,7 @@ func newTestService() UserService {
 
 var s = newTestService()
 
-func TestAuthService_CheckUsername(t *testing.T) {
+func TestUserService_CheckUsername(t *testing.T) {
 	var tests = []struct {
 		name     string
 		username string
@@ -71,6 +71,42 @@ func TestAuthService_CheckUsername(t *testing.T) {
 
 	for _, tt := range tests {
 		err := s.CheckUsername(tt.username)
+
+		if err != nil && !tt.isError {
+			t.Errorf("%s should not return error, but got %s", tt.name, err)
+		}
+
+		if err == nil && tt.isError {
+			t.Errorf("%s should return error", tt.name)
+		}
+	}
+}
+
+func TestUserService_Get(t *testing.T) {
+	var tests = []struct {
+		name     string
+		username string
+		isError  bool
+	}{
+		{
+			name:     "get-ok",
+			username: "test",
+			isError:  false,
+		},
+		{
+			name:     "get-error-not-found",
+			username: repository.ErrNotFoundKeyString,
+			isError:  true,
+		},
+		{
+			name:     "get-error-getting-post-by-username",
+			username: repository.ErrUnexpectedKeyString,
+			isError:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		_, err := s.Get(tt.username)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

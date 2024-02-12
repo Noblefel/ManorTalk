@@ -85,7 +85,6 @@ func (r *router) postRouter(api *chi.Mux) {
 		api.Get("/", r.post.GetMany)
 		api.Get("/{slug}", r.post.Get)
 		api.Get("/categories", r.post.GetCategories)
-		// api.Get("/c/{category}", r.post.GetByCategory)
 
 		api.Group(func(api chi.Router) {
 			// api.Use(r.m.Auth)
@@ -99,5 +98,6 @@ func (r *router) postRouter(api *chi.Mux) {
 func (r *router) userRouter(api *chi.Mux) {
 	api.Route("/user", func(api chi.Router) {
 		api.Post("/check-username", r.user.CheckUsername)
+		api.Get("/{username}", r.user.Get)
 	})
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
+	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
@@ -11,10 +12,12 @@ import (
 
 var (
 	ErrDuplicateUsername = errors.New("Username already taken")
+	ErrNoUser            = errors.New("User not found")
 )
 
 type UserService interface {
 	CheckUsername(username string) error
+	Get(username string) (models.User, error)
 }
 
 type userService struct {

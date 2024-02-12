@@ -11,6 +11,7 @@ const rr = ref(new RequestResponse());
 const route = useRoute();
 
 onMounted(() => {
+  window.scrollTo(0,0)
   postStore.fetchPosts(rr.value, route.fullPath);
 });
 

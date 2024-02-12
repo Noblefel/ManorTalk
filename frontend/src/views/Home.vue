@@ -2,7 +2,8 @@
 import Hero from "@/components/home/Hero.vue";
 import Topics from "@/components/home/Topics.vue";
 import NewestPosts from "@/components/home/NewestPosts.vue";
-import PostCard from "@/components/PostCard.vue";
+import PostCard from "@/components/PostCard.vue"; 
+import Contact from "@/components/home/Contact.vue"
 </script>
 
 <template>
@@ -90,6 +91,11 @@ import PostCard from "@/components/PostCard.vue";
           <i class="font-size-2">arrow_right</i>
         </button>
       </div>
-    </section> 
+    </section>
+
+    <div class="space"></div>
+    <div class="divider"></div>
+    <div class="space"></div>
+    <Contact /> 
   </div>
 </template>

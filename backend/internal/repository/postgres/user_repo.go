@@ -46,9 +46,20 @@ func (r *UserRepo) GetUserById(id int) (models.User, error) {
 	var user models.User
 
 	query := `
-	SELECT id, COALESCE(name,''), username, COALESCE(avatar,''), email, password, created_at, updated_at 
-	FROM users 
-	WHERE id = $1`
+	SELECT 
+		u.id, 
+		COALESCE(u.name,''), 
+		u.username, 
+		COALESCE(u.avatar,''), 
+		u.email, 
+		u.password, 
+		u.created_at, 
+		u.updated_at, 
+		COUNT(p.id) AS posts_count
+	FROM users u 
+	LEFT JOIN posts p ON (p.user_id = u.id) 
+	WHERE u.id = $1
+	GROUP BY u.id`
 
 	err := r.db.Sql.QueryRow(query, id).Scan(
 		&user.Id,
@@ -59,6 +70,7 @@ func (r *UserRepo) GetUserById(id int) (models.User, error) {
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.PostsCount,
 	)
 
 	if err != nil {
@@ -72,9 +84,20 @@ func (r *UserRepo) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 
 	query := `
-	SELECT id, COALESCE(name,''), username, COALESCE(avatar,''), email, password, created_at, updated_at 
-	FROM users 
-	WHERE email = $1`
+	SELECT 
+		u.id, 
+		COALESCE(u.name,''), 
+		u.username, 
+		COALESCE(u.avatar,''), 
+		u.email, 
+		u.password, 
+		u.created_at, 
+		u.updated_at, 
+		COUNT(p.id) AS posts_count
+	FROM users u 
+	LEFT JOIN posts p ON (p.user_id = u.id) 
+	WHERE u.email = $1
+	GROUP BY u.id`
 
 	err := r.db.Sql.QueryRow(query, email).Scan(
 		&user.Id,
@@ -85,6 +108,7 @@ func (r *UserRepo) GetUserByEmail(email string) (models.User, error) {
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.PostsCount,
 	)
 
 	if err != nil {
@@ -98,9 +122,20 @@ func (r *UserRepo) GetUserByUsername(username string) (models.User, error) {
 	var user models.User
 
 	query := `
-	SELECT id, COALESCE(name,''), username, COALESCE(avatar,''), email, password, created_at, updated_at 
-	FROM users 
-	WHERE username = $1`
+	SELECT 
+		u.id, 
+		COALESCE(u.name,''), 
+		u.username, 
+		COALESCE(u.avatar,''), 
+		u.email, 
+		u.password, 
+		u.created_at, 
+		u.updated_at, 
+		COUNT(p.id) AS posts_count
+	FROM users u 
+	LEFT JOIN posts p ON (p.user_id = u.id) 
+	WHERE u.username = $1
+	GROUP BY u.id`
 
 	err := r.db.Sql.QueryRow(query, username).Scan(
 		&user.Id,
@@ -111,6 +146,7 @@ func (r *UserRepo) GetUserByUsername(username string) (models.User, error) {
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.PostsCount,
 	)
 
 	if err != nil {

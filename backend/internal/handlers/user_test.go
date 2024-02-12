@@ -83,3 +83,41 @@ func TestUser_CheckUsername(t *testing.T) {
 		}
 	}
 }
+
+func TestUser_Get(t *testing.T) {
+	var tests = []struct {
+		name       string
+		username   string
+		statusCode int
+	}{
+		{
+			name:       "userGet-ok",
+			username:   "example",
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "userGet-error-no-user",
+			username:   service.ErrNoUser.Error(),
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       "userGet-error-unexpected",
+			username:   "unexpected error",
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		r := httptest.NewRequest("GET", "/user/{username}", nil)
+		ctx := getCtxWithParam(r, params{"username": tt.username})
+		r = r.WithContext(ctx)
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		handler := http.HandlerFunc(h.user.Get)
+		handler.ServeHTTP(w, r)
+
+		if w.Code != tt.statusCode {
+			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
+		}
+	}
+}

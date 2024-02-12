@@ -1,8 +1,7 @@
 import type { RequestResponse } from "@/utils/api";
 import { toast } from "@/utils/helper";
 import { Validator } from "@/utils/validator";
-import { defineStore } from "pinia";
-import { computed } from "vue";
+import { defineStore } from "pinia"; 
 
 export interface User {
   id: number;
@@ -13,6 +12,7 @@ export interface User {
   password: string;
   created_at?: string;
   updated_at?: string;
+  posts_count?: number;
 }
 
 export const useUserStore = defineStore("user", () => {

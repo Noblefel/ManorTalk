@@ -6,7 +6,7 @@ body.light {
     background-color: var(--secondary);
   }
 
-  & .auth-background, #blog header:first-child {
+  & .auth-background, #blog header:first-child, #profile header {
     background-image: linear-gradient(
       to bottom right,
       var(--secondary),

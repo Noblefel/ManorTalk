@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
 import { getAvatar } from "@/utils/helper";
+import { RouterLink } from "vue-router";
 
 const authStore = useAuthStore();
 </script>
@@ -16,10 +17,18 @@ const authStore = useAuthStore();
         class="circle"
       />
       <div class="max right-align row">
-        <button class="no-margin circle secondary" v-if="authStore.isAuth">
+        <RouterLink
+          :to="{
+            name: 'profile',
+            params: { username: authStore.authUser?.username },
+          }"
+          class="button no-margin circle secondary"
+          v-if="authStore.isAuth"
+          data-ui="#nav-mobile-menu"
+        >
           <i class="fill">manage_accounts</i>
-          <div class="tooltip bottom">Edit Profile</div>
-        </button>
+          <div class="tooltip bottom">Profile</div>
+        </RouterLink>
         <button class="no-margin circle m s" data-ui="#nav-mobile-menu">
           <i>close</i>
         </button>

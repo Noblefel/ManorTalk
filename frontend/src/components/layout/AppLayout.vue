@@ -1,21 +1,12 @@
 <script setup lang="ts">
-import TheNavigation from './navigation/TheNavigation.vue';
-import TheFooter from '../TheFooter.vue';
-import TheContact from '../TheContact.vue';
+import TheNavigation from './navigation/TheNavigation.vue';  
 </script>
 
 <template>
   <TheNavigation />
   <div class="space"></div>
- 
   <slot></slot>
-
-  <div class="space"></div>
-  <div class="divider"></div>
-  <div class="space"></div>
-  <TheContact />
-  <div class="small-height"></div>
-  <TheFooter />
+  <div class="large-space"></div>
 </template>
 
 <style scoped>

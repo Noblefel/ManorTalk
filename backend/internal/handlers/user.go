@@ -10,6 +10,7 @@ import (
 	service "github.com/Noblefel/ManorTalk/backend/internal/service/user"
 	res "github.com/Noblefel/ManorTalk/backend/internal/utils/response"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/validate"
+	"github.com/go-chi/chi/v5"
 	"github.com/gosimple/slug"
 )
 
@@ -55,4 +56,23 @@ func (h *UserHandlers) CheckUsername(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res.MessageJSON(w, http.StatusOK, "Username is available")
+}
+
+func (h *UserHandlers) Get(w http.ResponseWriter, r *http.Request) {
+	user, err := h.service.Get(chi.URLParam(r, "username"))
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrNoUser):
+			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			return
+		default:
+			log.Println(err)
+			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the user")
+			return
+		}
+	}
+
+	res.JSON(w, http.StatusOK, res.Response{
+		Data: user,
+	})
 }
