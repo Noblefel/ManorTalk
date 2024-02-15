@@ -3,14 +3,11 @@ import type { PropType } from "vue";
 import type { User } from "./../../stores/user";
 import { getAvatar } from "@/utils/helper";
 import { useAuthStore } from "@/stores/auth";
-import { auth } from "@/router/middleware";
-
 const authStore = useAuthStore();
 
 defineProps({
   user: {
     type: Object as PropType<User>,
-    required: true,
   },
   errors: Boolean,
   loading: Boolean,
@@ -26,31 +23,39 @@ defineProps({
       <h6 class="font-size-1 medium-opacity"># {{ user.username }}</h6>
     </header>
 
-    <div class="row scroll" v-if="!errors">
-      <button class="secondary" :disabled="loading">
-        <i>account_circle</i>
-        Profile
-      </button>
-      <button class="inverted" :disabled="loading">
-        <i>article</i>
-        Posts
-      </button>
-      <button
-        class="inverted"
-        :disabled="loading"
-        v-if="authStore.authUser?.username == $route.params.username"
-      >
-        <i>edit</i>
-        Edit
-      </button>
-      <button
-        class="inverted"
-        :disabled="loading"
-        v-if="authStore.authUser?.username == $route.params.username"
-      >
-        <i>settings</i>
-        Settings
-      </button>
+    <div class="row scroll no-space" v-if="!errors">
+      <RouterLink :to="{ name: 'profile', params: $route.params }">
+        <button class="secondary" :disabled="loading">
+          <i>account_circle</i>
+          Profile
+        </button>
+      </RouterLink>
+      <RouterLink :to="{ name: 'home' }">
+        <button class="inverted" :disabled="loading">
+          <i>article</i>
+          Posts
+        </button>
+      </RouterLink>
+      <RouterLink :to="{ name: 'profile.edit', params: $route.params }">
+        <button
+          class="inverted"
+          :disabled="loading"
+          v-if="authStore.authUser?.username == $route.params.username"
+        >
+          <i>edit</i>
+          Edit
+        </button>
+      </RouterLink>
+      <RouterLink :to="{ name: 'home' }">
+        <button
+          class="inverted"
+          :disabled="loading"
+          v-if="authStore.authUser?.username == $route.params.username"
+        >
+          <i>settings</i>
+          Settings
+        </button>
+      </RouterLink>
     </div>
 
     <slot></slot>

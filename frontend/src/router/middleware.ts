@@ -1,4 +1,5 @@
 import type { useAuthStore } from "@/stores/auth";
+import { toast } from "@/utils/helper";
 import type { NavigationGuardNext, RouteLocationNormalized } from "vue-router";
 
 export interface MiddlewareCtx {
@@ -39,3 +40,13 @@ export const guest = (ctx: MiddlewareCtx) => {
   }
   return true;
 };
+
+/** userGuard will block access to other unauthorized users */
+export const userGuard = (ctx: MiddlewareCtx) => {
+  if (ctx.to.params.username != ctx.authStore.authUser?.username) {
+    toast("You have no permission to view that")
+    ctx.next(ctx.from)
+    return false
+  }
+  return true
+}

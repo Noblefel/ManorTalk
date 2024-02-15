@@ -23,7 +23,8 @@ Api.interceptors.response.use(
   },
   async (e) => {
     const originalReq = e.config;
-    const expired = e.response?.status == 401 && e.response?.data.message == "Token Expired";
+    const expired =
+      e.response?.status == 401 && e.response?.data.message == "Token Expired";
 
     if (expired && !originalReq._retry) {
       originalReq._retry = true;
@@ -71,11 +72,11 @@ export class RequestResponse {
 
     let req;
     switch (method) {
-      case "get":
-        req = Api.get(url);
-        break;
       case "post":
         req = Api.post(url, body);
+        break;
+      case "patch":
+        req = Api.patch(url, body);
         break;
       default:
         req = Api.get(url);

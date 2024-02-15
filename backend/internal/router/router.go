@@ -47,7 +47,7 @@ func (r *router) Routes() http.Handler {
 
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
@@ -96,8 +96,13 @@ func (r *router) postRouter(api *chi.Mux) {
 }
 
 func (r *router) userRouter(api *chi.Mux) {
-	api.Route("/user", func(api chi.Router) {
+	api.Route("/users", func(api chi.Router) {
 		api.Post("/check-username", r.user.CheckUsername)
 		api.Get("/{username}", r.user.Get)
+
+		api.Group(func(api chi.Router) {
+			api.Use(r.m.Auth)
+			api.Patch("/{username}", r.user.UpdateProfile)
+		})
 	})
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
+	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
@@ -107,6 +108,70 @@ func TestUserService_Get(t *testing.T) {
 
 	for _, tt := range tests {
 		_, err := s.Get(tt.username)
+
+		if err != nil && !tt.isError {
+			t.Errorf("%s should not return error, but got %s", tt.name, err)
+		}
+
+		if err == nil && tt.isError {
+			t.Errorf("%s should return error", tt.name)
+		}
+	}
+}
+
+func TestUserService_UpdateProfile(t *testing.T) {
+	var tests = []struct {
+		name     string
+		payload  models.UpdateProfileInput
+		username string
+		authId   int
+		isError  bool
+	}{
+		{
+			name: "updateProfile-ok",
+			payload: models.UpdateProfileInput{
+				Name: "test",
+			},
+			authId:  0,
+			isError: false,
+		},
+		{
+			name:     "updateProfile-error-not-found",
+			username: repository.ErrNotFoundKeyString,
+			authId:   0,
+			isError:  true,
+		},
+		{
+			name:     "updateProfile-error-getting-user",
+			username: repository.ErrUnexpectedKeyString,
+			authId:   0,
+			isError:  true,
+		},
+		{
+			name:    "updateProfile-error-unauthorized",
+			authId:  -1,
+			isError: true,
+		},
+		{
+			name: "updateProfile-error-duplicate-username",
+			payload: models.UpdateProfileInput{
+				Name: repository.ErrDuplicateKeyString,
+			},
+			authId:  0,
+			isError: true,
+		},
+		{
+			name: "updateProfile-error-updating-user",
+			payload: models.UpdateProfileInput{
+				Name: repository.ErrUnexpectedKeyString,
+			},
+			authId:  0,
+			isError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		err := s.UpdateProfile(tt.payload, tt.username, tt.authId)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

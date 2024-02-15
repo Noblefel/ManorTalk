@@ -1,12 +1,8 @@
 @import "./base.css";
 @import "./helper.css";
 
-body.light {
-  & #home-hero {
-    background-color: var(--secondary);
-  }
-
-  & .auth-background, #blog header:first-child, #profile header {
+body.light { 
+  & #home-hero, .auth-background, #blog header:first-child, #profile header {
     background-image: linear-gradient(
       to bottom right,
       var(--secondary),

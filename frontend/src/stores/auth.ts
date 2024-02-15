@@ -56,13 +56,15 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   /** setAuthStorage will save authenticated user data in the local/session storage */
-  function setAuthStorage(access_token: string) {
+  function setAuthStorage(access_token: string = "") {
     const userString = JSON.stringify(authUser.value);
 
     remember.value
-      ? localStorage.setItem("user", userString)
-      : sessionStorage.setItem("user", userString);
+    ? localStorage.setItem("user", userString)
+    : sessionStorage.setItem("user", userString);
 
+    if (access_token == "") return;
+    
     remember.value
       ? localStorage.setItem("access_token", access_token)
       : sessionStorage.setItem("access_token", access_token);

@@ -28,6 +28,8 @@ type UserRepo interface {
 	GetUserById(id int) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
 	GetUserByUsername(username string) (models.User, error)
+
+	UpdateUser(u models.User) error
 }
 
 type PostRepo interface {

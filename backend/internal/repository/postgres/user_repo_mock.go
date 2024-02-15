@@ -82,3 +82,20 @@ func (r *mockUserRepo) GetUserByUsername(username string) (models.User, error) {
 
 	return user, nil
 }
+
+func (r *mockUserRepo) UpdateUser(u models.User) error {
+
+	if u.Name == repository.ErrDuplicateKeyString {
+		return errors.New("duplicate key value")
+	}
+
+	if u.Name == repository.ErrUnexpectedKeyString {
+		return errors.New("some error")
+	}
+
+	if u.Name == repository.ErrNotFoundKeyString {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}

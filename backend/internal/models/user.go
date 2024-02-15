@@ -28,3 +28,8 @@ type UserLoginInput struct {
 type CheckUsernameInput struct {
 	Username string `json:"username" validate:"required,min=3,max=40,excludesall=~%^;'<>()[]@!#/&*"`
 }
+
+type UpdateProfileInput struct {
+	Name     string `json:"name" validate:"max=255"`
+	Username string `json:"username" validate:"required,min=3,max=40,excludesall=~%^;'<>()[]@!#/&*"`
+}

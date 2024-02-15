@@ -76,3 +76,43 @@ func (h *UserHandlers) Get(w http.ResponseWriter, r *http.Request) {
 		Data: user,
 	})
 }
+
+func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	var payload models.UpdateProfileInput
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
+		return
+	}
+
+	if err := validate.Struct(payload); err != nil {
+		res.JSON(w, http.StatusBadRequest, res.Response{
+			Message: "Some fields are invalid",
+			Errors:  err,
+		})
+		return
+	}
+
+	authId := r.Context().Value("user_id").(int)
+
+	err := h.service.UpdateProfile(payload, chi.URLParam(r, "username"), authId)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrNoUser):
+			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			return
+		case errors.Is(err, service.ErrUnauthorized):
+			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
+			return
+		case errors.Is(err, service.ErrDuplicateUsername):
+			res.MessageJSON(w, http.StatusConflict, err.Error())
+			return
+		default:
+			log.Println(err)
+			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems updating the profile")
+			return
+		}
+	}
+
+	res.MessageJSON(w, http.StatusOK, "Profile updated")
+}

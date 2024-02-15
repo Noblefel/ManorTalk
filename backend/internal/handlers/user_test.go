@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -67,10 +68,10 @@ func TestUser_CheckUsername(t *testing.T) {
 	for _, tt := range tests {
 		var r *http.Request
 		if tt.payload == nil {
-			r = httptest.NewRequest("POST", "/user/check-username", nil)
+			r = httptest.NewRequest("POST", "/users/check-username", nil)
 		} else {
 			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("POST", "/user/check-username", bytes.NewBuffer(jsonBytes))
+			r = httptest.NewRequest("POST", "/users/check-username", bytes.NewBuffer(jsonBytes))
 		}
 
 		r.Header.Set("Content-Type", "application/json")
@@ -108,12 +109,82 @@ func TestUser_Get(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("GET", "/user/{username}", nil)
+		r := httptest.NewRequest("GET", "/users/{username}", nil)
 		ctx := getCtxWithParam(r, params{"username": tt.username})
 		r = r.WithContext(ctx)
 		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.user.Get)
+		handler.ServeHTTP(w, r)
+
+		if w.Code != tt.statusCode {
+			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
+		}
+	}
+}
+
+func TestUser_UpdateProfile(t *testing.T) {
+	var tests = []struct {
+		name       string
+		username   string
+		payload    *models.UpdateProfileInput
+		statusCode int
+	}{
+		{
+			name:       "updateProfile-ok",
+			payload:    &models.UpdateProfileInput{Username: "test-user"},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "updateProfile-error-decode-json",
+			payload:    nil,
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name:       "updateProfile-error-validation",
+			payload:    &models.UpdateProfileInput{Username: ""},
+			statusCode: http.StatusBadRequest,
+		},
+		{
+			name:       "updateProfile-error-no-user",
+			payload:    &models.UpdateProfileInput{Username: "test-user"},
+			username:   service.ErrNoUser.Error(),
+			statusCode: http.StatusNotFound,
+		},
+		{
+			name:       "updateProfile-error-unauthorized",
+			payload:    &models.UpdateProfileInput{Username: "test-user"},
+			username:   service.ErrUnauthorized.Error(),
+			statusCode: http.StatusUnauthorized,
+		},
+		{
+			name:       "updateProfile-error-duplicate-username",
+			payload:    &models.UpdateProfileInput{Username: "test-user"},
+			username:   service.ErrDuplicateUsername.Error(),
+			statusCode: http.StatusConflict,
+		},
+		{
+			name:       "updateProfile-error-unexpected",
+			payload:    &models.UpdateProfileInput{Username: "test-user"},
+			username:   "unexpected error",
+			statusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		var r *http.Request
+		if tt.payload == nil {
+			r = httptest.NewRequest("PATCH", "/users/{username}", nil)
+		} else {
+			jsonBytes, _ := json.Marshal(tt.payload)
+			r = httptest.NewRequest("PATCH", "/users/{username}", bytes.NewBuffer(jsonBytes))
+		}
+
+		ctx := getCtxWithParam(r, params{"username": tt.username})
+		ctx = context.WithValue(ctx, "user_id", 1)
+		r = r.WithContext(ctx)
+		w := httptest.NewRecorder()
+		handler := http.HandlerFunc(h.user.UpdateProfile)
 		handler.ServeHTTP(w, r)
 
 		if w.Code != tt.statusCode {

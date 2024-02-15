@@ -155,3 +155,33 @@ func (r *UserRepo) GetUserByUsername(username string) (models.User, error) {
 
 	return user, nil
 }
+
+func (r *UserRepo) UpdateUser(u models.User) error {
+	query := `
+	UPDATE users 
+		SET 
+			name = NULLIF($1, ''), 
+			username = $2, 
+			avatar = NULLIF($3, ''), 
+			email = COALESCE(NULLIF($4, ''), email), 
+			password = COALESCE(NULLIF($5, ''), password), 
+			updated_at = $6 
+	WHERE id = $7
+`
+
+	_, err := r.db.Sql.Exec(query,
+		u.Name,
+		u.Username,
+		u.Avatar,
+		u.Email,
+		u.Password,
+		time.Now(),
+		u.Id,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

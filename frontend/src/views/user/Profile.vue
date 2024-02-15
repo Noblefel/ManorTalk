@@ -1,19 +1,23 @@
 <script setup lang="ts">
 import { RequestResponse } from "@/utils/api";
 import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { onBeforeRouteUpdate, useRoute } from "vue-router";
 import Header from "@/components/user/Header.vue";
+import { useAuthStore } from "@/stores/auth";
+import { useUserStore } from "@/stores/user";
 import type { User } from "@/stores/user";
 
+const authStore = useAuthStore();
 const route = useRoute();
 const rr = ref(new RequestResponse());
-const fetchPosts = ref(false);
+const userStore = useUserStore();
 
 onMounted(() => {
-  window.scrollTo(0, 0);
-  rr.value.useApi("GET", "/user/" + route.params.username).then(() => {
-    if (rr.value.status == 200) fetchPosts.value = true;
-  });
+ userStore.fetchProfile(route, rr.value, authStore.authUser)
+});
+
+onBeforeRouteUpdate((to) => {
+  userStore.fetchProfile(to, rr.value, authStore.authUser)
 });
 </script>
 

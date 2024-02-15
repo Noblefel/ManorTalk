@@ -3,7 +3,7 @@ import Home from "@/views/Home.vue";
 import AppLayout from "@/components/layout/AppLayout.vue";
 import AuthLayout from "@/components/layout/AuthLayout.vue";
 import { useAuthStore } from "@/stores/auth";
-import { guest, auth, checkAuth } from "./middleware";
+import { guest, auth, checkAuth, userGuard } from "./middleware";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,6 +43,12 @@ const router = createRouter({
       meta: { layout: AppLayout },
       component: () => import("@/views/user/Profile.vue"),
     },
+    {
+      path: "/profile/:username/edit",
+      name: "profile.edit",
+      meta: { layout: AuthLayout, auth: true, userGuard: true },
+      component: () => import("@/views/user/Edit.vue"),
+    },
   ],
 });
 
@@ -55,6 +61,8 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.guest && !guest(ctx)) return;
 
   if (to.meta.auth && !auth(ctx)) return;
+
+  if (to.meta.userGuard && !userGuard(ctx)) return;
 
   if (to.name == "logout") {
     authStore.logout();
