@@ -78,11 +78,15 @@ func (h *UserHandlers) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	var payload models.UpdateProfileInput
-
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		res.MessageJSON(w, http.StatusBadRequest, "Error parsing form")
 		return
+	}
+
+	payload := models.UpdateProfileInput{
+		Name:     r.FormValue("name"),
+		Username: r.FormValue("username"),
+		Files:    r.MultipartForm.File,
 	}
 
 	if err := validate.Struct(payload); err != nil {
@@ -95,7 +99,7 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	authId := r.Context().Value("user_id").(int)
 
-	err := h.service.UpdateProfile(payload, chi.URLParam(r, "username"), authId)
+	avatar, err := h.service.UpdateProfile(payload, chi.URLParam(r, "username"), authId)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoUser):
@@ -103,6 +107,9 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 			return
 		case errors.Is(err, service.ErrUnauthorized):
 			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
+			return
+		case errors.Is(err, service.ErrAvatarTooLarge), errors.Is(err, service.ErrAvatarInvalid):
+			res.MessageJSON(w, http.StatusBadRequest, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateUsername):
 			res.MessageJSON(w, http.StatusConflict, err.Error())
@@ -114,5 +121,8 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res.MessageJSON(w, http.StatusOK, "Profile updated")
+	res.JSON(w, http.StatusOK, res.Response{
+		Message: "Profile Updated",
+		Data:    avatar,
+	})
 }

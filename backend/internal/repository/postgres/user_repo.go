@@ -162,7 +162,7 @@ func (r *UserRepo) UpdateUser(u models.User) error {
 		SET 
 			name = NULLIF($1, ''), 
 			username = $2, 
-			avatar = NULLIF($3, ''), 
+			avatar = COALESCE(NULLIF($3, ''), avatar), 
 			email = COALESCE(NULLIF($4, ''), email), 
 			password = COALESCE(NULLIF($5, ''), password), 
 			updated_at = $6 

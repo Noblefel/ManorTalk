@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type User struct {
 	Id         int       `json:"id,omitempty"`
@@ -32,4 +35,5 @@ type CheckUsernameInput struct {
 type UpdateProfileInput struct {
 	Name     string `json:"name" validate:"max=255"`
 	Username string `json:"username" validate:"required,min=3,max=40,excludesall=~%^;'<>()[]@!#/&*"`
+	Files    map[string][]*multipart.FileHeader
 }

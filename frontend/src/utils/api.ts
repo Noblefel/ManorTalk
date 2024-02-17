@@ -1,4 +1,4 @@
-import type { AxiosInstance } from "axios";
+import type { AxiosHeaders, AxiosInstance } from "axios";
 import axios from "axios";
 import type { FormErrors } from "./validator";
 import { toast } from "./helper";
@@ -62,21 +62,27 @@ export class RequestResponse {
     this.loading = false;
   }
 
+  /** ======== Need improvements ======== */
   async useApi(
     method: string,
     url: string,
     body: any = null,
-    errToast: boolean = true
+    errToast: boolean = true,
+    contentType: string = "application/json"
   ) {
     this.loading = true;
 
     let req;
     switch (method) {
       case "post":
-        req = Api.post(url, body);
+        req = Api.post(url, body, {
+          headers: { "Content-Type": contentType },
+        });
         break;
       case "patch":
-        req = Api.patch(url, body);
+        req = Api.patch(url, body, {
+          headers: { "Content-Type": contentType },
+        });
         break;
       default:
         req = Api.get(url);

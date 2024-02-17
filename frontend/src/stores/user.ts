@@ -2,7 +2,7 @@ import type { RequestResponse } from "@/utils/api";
 import { toast } from "@/utils/helper";
 import { Validator } from "@/utils/validator";
 import { defineStore } from "pinia";
-import { useRoute, type RouteLocation, useRouter } from "vue-router";
+import { type RouteLocation, useRouter } from "vue-router";
 import { useAuthStore } from "./auth";
 
 export interface User {
@@ -21,7 +21,7 @@ export interface User {
 export interface UpdateForm {
   name?: string;
   username: string;
-  avatar?: string;
+  avatar: File | null;
   bio?: string;
 }
 
@@ -66,7 +66,7 @@ export const useUserStore = defineStore("user", () => {
   }
 
   /** update validates the form and updates the user profile */
-  function update(form: UpdateForm, rr: RequestResponse, username: string | string[]) {
+  function update(form: UpdateForm, rr: RequestResponse, username: string) {
     const f = new Validator(form)
       .required("name", "username")
       .strMinLength("username", 3)
@@ -79,24 +79,29 @@ export const useUserStore = defineStore("user", () => {
       return;
     }
 
-    rr.useApi("patch", `/users/${username}`, form).then(
-      () => { 
-        if (rr.status != 200) return;
+    rr.useApi(
+      "patch",
+      `/users/${username}`,
+      form,
+      true,
+      "multipart/form-data"
+    ).then(() => {
+      if (rr.status != 200) return;
 
-        authStore!.authUser!.name = form.name;
-        authStore!.authUser!.username = form.username;
-        authStore.setAuthStorage();
+      authStore!.authUser!.name = form.name;
+      authStore!.authUser!.username = form.username;
+      authStore!.authUser!.avatar = rr.data as any;
+      authStore.setAuthStorage();
 
-        if (rr.message) toast(rr.message, "green white-text");
+      if (rr.message) toast(rr.message, "green white-text");
 
-        router.push({ name: "profile", params: { username: form.username } });
-      }
-    );
+      router.push({ name: "profile", params: { username: form.username } });
+    });
   }
 
   return {
     checkUsername,
     fetchProfile,
-    update
+    update,
   };
 });

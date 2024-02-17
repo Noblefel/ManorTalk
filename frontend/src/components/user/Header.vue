@@ -85,7 +85,8 @@ header {
 
   img {
     border-radius: 50%;
-    width: 5rem;
+    width: 5.5rem;
+    height: 5.5rem;
   }
 }
 

@@ -171,7 +171,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := s.UpdateProfile(tt.payload, tt.username, tt.authId)
+		_, err := s.UpdateProfile(tt.payload, tt.username, tt.authId)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

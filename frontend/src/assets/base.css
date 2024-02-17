@@ -36,8 +36,8 @@
     &.dark {
       --primary: #79512e;
       --on-primary: white;
-      --secondary: #6b643e4f;
-      --on-secondary: color-mix(in srgb, var(--primary), white 65%);
+      --secondary: #58585896;
+      --on-secondary: rgba(255, 255, 255, 0.705);
       --tertiary: #79705f;
       --on-tertiary: white;
       --surface: #242424;
@@ -115,7 +115,7 @@
   }
   
   .field {
-    & input:not(:focus) {
+    & input:not(:focus), textarea:not(.no-border) {
       border-color: color-mix(
         in srgb,
         var(--on-surface),

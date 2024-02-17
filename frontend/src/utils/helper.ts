@@ -5,11 +5,7 @@ import { useRoute, type Router } from "vue-router";
 export const activeRoute = (routeName: string): string => {
   const route = useRoute();
 
-  if (route.name == routeName) {
-    return "active";
-  }
-
-  return "";
+  return route.name == routeName ? "active" : "";
 };
 
 /** toast will create a pop up div element with the provided message
@@ -39,7 +35,7 @@ export const getAvatar = (user: User | null) => {
   if (!user)
     return `https://ui-avatars.com/api/?name=guest&background=ffeec6&size=120&color=ff9d48&bold=true`;
 
-  if (user.avatar) return user.avatar;
+  if (user.avatar) return "http://localhost:8080/images/avatar/" + user.avatar;
 
   const name = (user.name ?? user.username).split(/[\s_\-]/).join("+");
 

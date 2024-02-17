@@ -1,5 +1,11 @@
 *.exe
-database.yml
 .env
 .todo
 cover.out
+
+images/*/*.png
+images/*/*.PNG
+images/*/*.jpg
+images/*/*.JPG
+images/*/*.jpeg
+images/*/*.JPEG

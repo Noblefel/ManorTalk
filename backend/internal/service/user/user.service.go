@@ -14,12 +14,14 @@ var (
 	ErrDuplicateUsername = errors.New("Username already taken")
 	ErrNoUser            = errors.New("User not found")
 	ErrUnauthorized      = errors.New("You have no permission to do that")
+	ErrAvatarTooLarge    = errors.New("Avatar image is too large (2MB max)")
+	ErrAvatarInvalid     = errors.New("Invalid type, avatar should be jpg/jpeg/png")
 )
 
 type UserService interface {
 	CheckUsername(username string) error
 	Get(username string) (models.User, error)
-	UpdateProfile(payload models.UpdateProfileInput, username string, authId int) error
+	UpdateProfile(payload models.UpdateProfileInput, username string, authId int) (string, error)
 }
 
 type userService struct {

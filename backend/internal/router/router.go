@@ -43,7 +43,9 @@ func (r *router) Routes() http.Handler {
 	// mux.Use(chiMiddleware.Logger)
 	mux.Use(chiMiddleware.RealIP)
 	mux.Use(chiMiddleware.Recoverer)
-	mux.Use(chiMiddleware.AllowContentType("application/json"))
+	mux.Use(chiMiddleware.AllowContentType(
+		"application/json", "multipart/form-data",
+	))
 
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
@@ -67,6 +69,9 @@ func (r *router) Routes() http.Handler {
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello"))
 	})
+
+	fileServer := http.FileServer(http.Dir("./images/"))
+	mux.Handle("/images/*", http.StripPrefix("/images", fileServer))
 
 	return mux
 }

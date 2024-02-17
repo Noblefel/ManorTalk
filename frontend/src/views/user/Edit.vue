@@ -4,7 +4,7 @@ import { ref } from "vue";
 import { RequestResponse } from "@/utils/api";
 import { useAuthStore } from "@/stores/auth";
 import { useUserStore, type UpdateForm } from "@/stores/user";
-import { getAvatar } from "@/utils/helper";
+import { getAvatar, toast } from "@/utils/helper";
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -14,21 +14,47 @@ const u = authStore.authUser;
 const form = ref<UpdateForm>({
   name: u?.name,
   username: u?.username ?? "",
-  avatar: u?.avatar,
+  avatar: null,
   bio: u?.bio,
 });
 
 const rr = ref(new RequestResponse());
 const rrCheck = ref(new RequestResponse());
+
+const shownImage = ref(getAvatar(u));
+
+function onFileChange(event: Event) {
+  form.value.avatar = null;
+  shownImage.value = getAvatar(u);
+  const file = (event.target as HTMLInputElement).files;
+
+  if (!file) {
+    toast("File must be an image");
+    return;
+  }
+
+  if (file[0].size > 2 * 1024 * 1024) {
+    toast("Image is too large (2MB max)");
+    return;
+  }
+
+  form.value.avatar = file[0];
+  shownImage.value = URL.createObjectURL(file[0]);
+}
 </script>
 
 <template>
   <AuthCard title="Edit Profile 📝">
-    <form @submit.prevent="userStore.update(form, rr, $route.params.username)">
+    <form
+      @submit.prevent="
+        userStore.update(form, rr, $route.params.username as string)
+      "
+      enctype="multipart/form-data"
+    >
       <div class="space"></div>
 
       <div class="center-align">
-        <img :src="getAvatar(u)" alt="" width="75px" />
+        <img :src="shownImage" alt="Avatar" width="75px" height="75px" />
       </div>
 
       <div class="padding">
@@ -49,7 +75,7 @@ const rrCheck = ref(new RequestResponse());
 
         <div class="space"></div>
 
-        <label for="email" class="font-size-0-9 font-600">Username</label>
+        <label for="username" class="font-size-0-9 font-600">Username</label>
         <div class="field border no-margin prefix">
           <i>tag</i>
           <input
@@ -87,34 +113,41 @@ const rrCheck = ref(new RequestResponse());
         <label for="avatar" class="font-size-0-9 font-600">Avatar</label>
         <div class="field border no-margin prefix">
           <i>attach_file</i>
-          <input type="file" />
+          <input type="file" @change="onFileChange" accept=".jpeg,.jpg,.png" />
           <input
             type="text"
             id="avatar"
             name="avatar"
             placeholder="Click to change"
           />
-          <span class="error" v-if="rr.errors?.bio">
-            {{ rr.errors.bio[0] }}
-          </span>
         </div>
 
         <div class="space"></div>
-
-        <label for="bio" class="font-size-0-9 font-600">Bio</label>
-        <div class="field border no-margin prefix">
+        <label class="font-size-0-9 font-600">Bio</label>
+        <button
+          type="button"
+          class="responsive secondary no-margin"
+          data-ui="#edit-bio"
+        >
           <i>article</i>
-          <input
-            type="text"
-            name="bio"
-            id="bio"
-            autocomplete="off"
-            v-model.trim="form.bio"
-          />
-          <span class="error" v-if="rr.errors?.bio">
-            {{ rr.errors.bio[0] }}
-          </span>
-        </div>
+          View Bio
+        </button>
+
+        <dialog id="edit-bio">
+          <h6>My Bio 📓</h6>
+          <div class="field textarea no-border">
+            <textarea id="bio" name="bio" v-model="form.bio"></textarea>
+          </div>
+          <div class="row right-align">
+            <button class="secondary" type="button" @click="form.bio = u?.bio">
+              <i>undo</i>
+              Undo
+            </button>
+            <button class="secondary" data-ui="#edit-bio" type="button">
+              Ok
+            </button>
+          </div>
+        </dialog>
       </div>
 
       <div class="space"></div>
@@ -127,7 +160,7 @@ const rrCheck = ref(new RequestResponse());
           Cancel
           <i>cancel</i>
         </RouterLink>
-        <button :disabled="rr.loading">
+        <button type="submit" :disabled="rr.loading">
           {{ rr.loading ? "Updating..." : "Update" }}
           <i v-if="!rr.loading">edit</i>
           <progress v-else class="circle white-text small"></progress>
@@ -144,5 +177,21 @@ p {
 
 img {
   border-radius: 50%;
+}
+
+#edit-bio {
+  width: 700px;
+  border-radius: 8px;
+  background-color: var(--background);
+  border: 1px solid var(--secondary);
+  transition: none;
+
+  .field {
+    block-size: 25rem;
+  }
+
+  textarea {
+    border: 2px dashed;
+  }
 }
 </style>
