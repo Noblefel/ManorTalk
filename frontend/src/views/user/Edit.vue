@@ -132,6 +132,9 @@ function onFileChange(event: Event) {
           <i>article</i>
           View Bio
         </button>
+        <span class="error-text font-size-0-9" v-if="rr.errors?.bio">
+          {{ rr.errors.bio[0] }}
+        </span>
 
         <dialog id="edit-bio">
           <h6>My Bio 📓</h6>

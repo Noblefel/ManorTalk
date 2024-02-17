@@ -71,7 +71,8 @@ export const useUserStore = defineStore("user", () => {
       .required("name", "username")
       .strMinLength("username", 3)
       .strMaxLength("username", 40)
-      .strMaxLength("name", 255);
+      .strMaxLength("name", 255)
+      .strMaxLength("bio", 2000);
 
     if (!f.isValid()) {
       rr.errors = f.errors;
@@ -90,6 +91,7 @@ export const useUserStore = defineStore("user", () => {
 
       authStore!.authUser!.name = form.name;
       authStore!.authUser!.username = form.username;
+      authStore!.authUser!.bio = form.bio;
       authStore!.authUser!.avatar = rr.data as any;
       authStore.setAuthStorage();
 

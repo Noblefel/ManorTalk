@@ -32,6 +32,7 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 
 	user.Name = payload.Name
 	user.Username = payload.Username
+	user.Bio = payload.Bio
 
 	file, ok := payload.Files["avatar"]
 	if ok {

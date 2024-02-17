@@ -10,6 +10,7 @@ type User struct {
 	Name       string    `json:"name,omitempty"`
 	Username   string    `json:"username,omitempty"`
 	Avatar     string    `json:"avatar,omitempty"`
+	Bio        string    `json:"bio,omitempty"`
 	Email      string    `json:"email,omitempty"`
 	Password   string    `json:"password,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -35,5 +36,6 @@ type CheckUsernameInput struct {
 type UpdateProfileInput struct {
 	Name     string `json:"name" validate:"max=255"`
 	Username string `json:"username" validate:"required,min=3,max=40,excludesall=~%^;'<>()[]@!#/&*"`
+	Bio      string `json:"bio" validate:"max=2000"`
 	Files    map[string][]*multipart.FileHeader
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RequestResponse } from "@/utils/api";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { onBeforeRouteUpdate, useRoute } from "vue-router";
 import Header from "@/components/user/Header.vue";
 import { useAuthStore } from "@/stores/auth";
@@ -13,12 +13,13 @@ const rr = ref(new RequestResponse());
 const userStore = useUserStore();
 
 onMounted(() => {
- userStore.fetchProfile(route, rr.value, authStore.authUser)
+  userStore.fetchProfile(route, rr.value, authStore.authUser);
 });
 
 onBeforeRouteUpdate((to) => {
-  userStore.fetchProfile(to, rr.value, authStore.authUser)
+  userStore.fetchProfile(to, rr.value, authStore.authUser);
 });
+ 
 </script>
 
 <template>
@@ -77,6 +78,11 @@ onBeforeRouteUpdate((to) => {
             <i>face</i>
             <p>No Bio</p>
             <div class="large-space"></div>
+          </div>
+          <div v-else>
+            <p v-for="p in (rr.data as any)?.bio.split('\n')"> 
+              {{ p == "" ? "&nbsp;" : p}}
+            </p>
           </div>
         </article>
       </div>

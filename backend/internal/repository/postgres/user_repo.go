@@ -51,6 +51,7 @@ func (r *UserRepo) GetUserById(id int) (models.User, error) {
 		COALESCE(u.name,''), 
 		u.username, 
 		COALESCE(u.avatar,''), 
+		COALESCE(u.bio, ''),
 		u.email, 
 		u.password, 
 		u.created_at, 
@@ -66,6 +67,7 @@ func (r *UserRepo) GetUserById(id int) (models.User, error) {
 		&user.Name,
 		&user.Username,
 		&user.Avatar,
+		&user.Bio,
 		&user.Email,
 		&user.Password,
 		&user.CreatedAt,
@@ -89,6 +91,7 @@ func (r *UserRepo) GetUserByEmail(email string) (models.User, error) {
 		COALESCE(u.name,''), 
 		u.username, 
 		COALESCE(u.avatar,''), 
+		COALESCE(u.bio, ''),
 		u.email, 
 		u.password, 
 		u.created_at, 
@@ -104,6 +107,7 @@ func (r *UserRepo) GetUserByEmail(email string) (models.User, error) {
 		&user.Name,
 		&user.Username,
 		&user.Avatar,
+		&user.Bio,
 		&user.Email,
 		&user.Password,
 		&user.CreatedAt,
@@ -127,6 +131,7 @@ func (r *UserRepo) GetUserByUsername(username string) (models.User, error) {
 		COALESCE(u.name,''), 
 		u.username, 
 		COALESCE(u.avatar,''), 
+		COALESCE(u.bio, ''),
 		u.email, 
 		u.password, 
 		u.created_at, 
@@ -142,6 +147,7 @@ func (r *UserRepo) GetUserByUsername(username string) (models.User, error) {
 		&user.Name,
 		&user.Username,
 		&user.Avatar,
+		&user.Bio,
 		&user.Email,
 		&user.Password,
 		&user.CreatedAt,
@@ -162,17 +168,19 @@ func (r *UserRepo) UpdateUser(u models.User) error {
 		SET 
 			name = NULLIF($1, ''), 
 			username = $2, 
-			avatar = COALESCE(NULLIF($3, ''), avatar), 
-			email = COALESCE(NULLIF($4, ''), email), 
-			password = COALESCE(NULLIF($5, ''), password), 
-			updated_at = $6 
-	WHERE id = $7
+			avatar = COALESCE(NULLIF($3, ''), avatar),
+			bio = NULLIF($4, ''), 
+			email = COALESCE(NULLIF($5, ''), email), 
+			password = COALESCE(NULLIF($6, ''), password), 
+			updated_at = $7 
+	WHERE id = $8
 `
 
 	_, err := r.db.Sql.Exec(query,
 		u.Name,
 		u.Username,
 		u.Avatar,
+		u.Bio,
 		u.Email,
 		u.Password,
 		time.Now(),

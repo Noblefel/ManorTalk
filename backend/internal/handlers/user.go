@@ -86,6 +86,7 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	payload := models.UpdateProfileInput{
 		Name:     r.FormValue("name"),
 		Username: r.FormValue("username"),
+		Bio:      r.FormValue("bio"),
 		Files:    r.MultipartForm.File,
 	}
 
