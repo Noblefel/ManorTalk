@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/pagination"
@@ -13,11 +14,23 @@ import (
 
 func (s *postService) GetMany(q url.Values) ([]models.Post, *pagination.Meta, error) {
 	var posts []models.Post
+	var pgMeta *pagination.Meta
+	var err error
+
+	cursor, _ := strconv.Atoi(q.Get("cursor"))
+	uId, _ := strconv.Atoi(q.Get("user"))
+	limit, err := strconv.Atoi(q.Get("limit"))
+	if err != nil {
+		limit = 10
+	}
 
 	filters := models.PostsFilters{
 		Order:    q.Get("order"),
 		Category: q.Get("category"),
 		Search:   q.Get("search"),
+		Cursor:   cursor,
+		UserId:   uId,
+		Limit:    limit,
 	}
 
 	if filters.Category != "" {
@@ -27,36 +40,33 @@ func (s *postService) GetMany(q url.Values) ([]models.Post, *pagination.Meta, er
 				return posts, nil, ErrNoCategory
 			}
 
-			return posts, nil, fmt.Errorf("%s: %w", "Error getting category by slug", err)
+			return posts, nil, fmt.Errorf("getting category by slug: %w", err)
 		}
 
 		filters.Category = c.Slug
 	}
 
-	pgMeta, err := pagination.NewMeta(q)
-	if err != nil {
-		return posts, pgMeta, fmt.Errorf("%s: %w", "Error creating pagination meta", err)
-	}
-
-	// After the initial query and wants to navigate to the next page,
-	// client should attach the "total" parameter to the url.
-	// This will skip the below statement to reduce further bottleneck
-	// Or
-	// if the requested posts doesn't need pagination, for example to get the
-	// latest posts to be displayed on the sidebar. In this case, feel free
-	// to put any number on the "total" param as long as it's not 0.
-	if pgMeta.Total == 0 {
-		total, err := s.postRepo.CountPosts(filters)
-		if err != nil && !errors.Is(sql.ErrNoRows, err) {
-			return posts, nil, fmt.Errorf("%s: %w", "Error counting posts", err)
+	if cursor == 0 {
+		pgMeta, err = pagination.NewMeta(q, limit)
+		if err != nil {
+			return posts, pgMeta, fmt.Errorf("creating pagination meta: %w", err)
 		}
 
-		pgMeta.SetNewTotal(total)
+		// Client could optionally attach "total" parameter to the url.
+		// This skip the below statement to reduce further bottleneck
+		if pgMeta.Total == 0 {
+			total, err := s.postRepo.CountPosts(filters)
+			if err != nil && !errors.Is(sql.ErrNoRows, err) {
+				return posts, nil, fmt.Errorf("counting posts: %w", err)
+			}
+
+			pgMeta.SetNewTotal(total, limit)
+		}
 	}
 
 	posts, err = s.postRepo.GetPosts(pgMeta, filters)
 	if err != nil && !errors.Is(sql.ErrNoRows, err) {
-		return posts, nil, fmt.Errorf("%s: %w", "Error getting posts", err)
+		return posts, nil, fmt.Errorf("getting posts: %w", err)
 	}
 
 	return posts, pgMeta, nil

@@ -4,6 +4,7 @@ import { Validator } from "@/utils/validator";
 import { defineStore } from "pinia";
 import { type RouteLocation, useRouter } from "vue-router";
 import { useAuthStore } from "./auth";
+import { ref } from "vue";
 
 export interface User {
   id: number;
@@ -28,6 +29,7 @@ export interface UpdateForm {
 export const useUserStore = defineStore("user", () => {
   const router = useRouter();
   const authStore = useAuthStore();
+  const viewedUser = ref<User | null>(null);
 
   /** checkUsername validates the username and send request to check its availability */
   function checkUsername(username: string, rr: RequestResponse) {
@@ -50,25 +52,27 @@ export const useUserStore = defineStore("user", () => {
   }
 
   /** fetchProfile will get the user profile data */
-  function fetchProfile(
-    to: RouteLocation,
-    rr: RequestResponse,
-    authUser: User | null
-  ) {
-    window.scrollTo(0, 0);
-
-    if (to.params.username == authUser?.username) {
-      rr.data = authUser as any;
+  function fetchProfile(to: RouteLocation, rr: RequestResponse) {
+    if (viewedUser.value?.username == to.params.username) {
       return;
     }
 
-    rr.useApi("GET", "/users/" + to.params.username);
+    if (to.params.username == authStore.authUser?.username) {
+      viewedUser.value = authStore.authUser;
+      return;
+    }
+
+     return rr.useApi("GET", "/users/" + to.params.username).then(() => {
+      if (rr.status !== 200) return;
+
+      viewedUser.value = rr.data as any
+    });
   }
 
   /** update validates the form and updates the user profile */
   function update(form: UpdateForm, rr: RequestResponse, username: string) {
     const f = new Validator(form)
-      .required("name", "username")
+      .required("username")
       .strMinLength("username", 3)
       .strMaxLength("username", 40)
       .strMaxLength("name", 255)
@@ -102,6 +106,7 @@ export const useUserStore = defineStore("user", () => {
   }
 
   return {
+    viewedUser,
     checkUsername,
     fetchProfile,
     update,

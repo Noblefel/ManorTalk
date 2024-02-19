@@ -3,9 +3,9 @@
 .todo
 cover.out
 
-images/*/*.png
-images/*/*.PNG
-images/*/*.jpg
-images/*/*.JPG
-images/*/*.jpeg
-images/*/*.JPEG
+/*.png
+/*.PNG
+/*.jpg
+/*.JPG
+/*.jpeg
+/*.JPEG

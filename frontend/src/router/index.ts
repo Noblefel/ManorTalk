@@ -44,6 +44,12 @@ const router = createRouter({
       component: () => import("@/views/user/Profile.vue"),
     },
     {
+      path: "/profile/:username/posts",
+      name: "profile.posts",
+      meta: { layout: AppLayout },
+      component: () => import("@/views/user/Posts.vue"),
+    },
+    {
       path: "/profile/:username/edit",
       name: "profile.edit",
       meta: { layout: AuthLayout, auth: true, userGuard: true },

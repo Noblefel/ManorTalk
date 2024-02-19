@@ -12,6 +12,13 @@ A mini-forum application built in Go 1.20
 - [go-redis](https://github.com/redis/go-redis)
 - [slug](https://github.com/gosimple/slug)
 
+### TODO
+1. Create, edit posts (frontend)
+2. Refactor JSON response to separate pagination metadata from the main data.
+3. Refactor unit test.
+4. Improve database queries in post repo.
+5. Fix migration to set from specific version/steps, instead of migrating up/down everything.
+
 ## Installation
 ```bash
 git clone https://github.com/Noblefel/ManorTalk

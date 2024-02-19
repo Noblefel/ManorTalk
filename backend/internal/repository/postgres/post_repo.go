@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
@@ -55,20 +56,35 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 		query += "AND p.title != $4\n"
 	}
 
-	if filters.Order == "asc" {
-		query += "ORDER BY p.id ASC\n"
+	if filters.UserId != 0 {
+		query += "AND p.user_id = $5\n"
 	} else {
-		query += "ORDER BY p.id DESC\n"
+		query += "AND p.user_id != $5\n"
 	}
 
-	query += "OFFSET $1 LIMIT $2"
+	var rows *sql.Rows
+	var err error
 
-	rows, err := r.db.Sql.Query(query,
-		pgMeta.Offset,
-		pgMeta.Limit,
-		filters.Category,
-		filters.Search,
-	)
+	if filters.Cursor != 0 {
+		query += "AND p.id >= $1 LIMIT $2"
+		rows, err = r.db.Sql.Query(query,
+			filters.Cursor,
+			filters.Limit,
+			filters.Category,
+			filters.Search,
+			filters.UserId,
+		)
+	} else {
+		query += "OFFSET $1 LIMIT $2"
+		rows, err = r.db.Sql.Query(query,
+			pgMeta.Offset,
+			filters.Limit,
+			filters.Category,
+			filters.Search,
+			filters.UserId,
+		)
+	}
+
 	if err != nil {
 		return posts, err
 	}

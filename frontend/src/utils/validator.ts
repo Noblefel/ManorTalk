@@ -32,7 +32,7 @@ export class Validator {
   /** strMinLength checks if the field value is less than the given number */
   strMinLength(field: string, n: number) {
     const str = this.form[field] as String;
-    if (str.length < n) {
+    if (str?.length < n) {
       this.addError(field, `Must be atleast ${n} characters`);
     }
     return this;
@@ -41,7 +41,7 @@ export class Validator {
   /** strMaxLength checks if the field value is more than the given number */
   strMaxLength(field: string, n: number) {
     const str = this.form[field] as String;
-    if (str.length > n) {
+    if (str?.length > n) {
       this.addError(field, `Must not exceeds ${n} characters`);
     }
     return this;

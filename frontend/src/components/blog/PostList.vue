@@ -23,8 +23,7 @@ defineProps({
       </h6>
     </div>
     <div class="s12 m6 l6" v-for="post in posts">
-      <PostCard
-        class="s6 m4 l3"
+      <PostCard 
         :post="post"
         :with-author="true"
         :with-excerpt="true"

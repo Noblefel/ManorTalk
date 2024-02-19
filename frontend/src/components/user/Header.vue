@@ -1,37 +1,46 @@
 <script setup lang="ts">
-import type { PropType } from "vue";
-import type { User } from "./../../stores/user";
-import { getAvatar } from "@/utils/helper";
 import { useAuthStore } from "@/stores/auth";
-const authStore = useAuthStore();
+import { useUserStore } from "@/stores/user";
+import type { RequestResponse } from "@/utils/api";
+import { getAvatar } from "@/utils/helper";
+import type { PropType } from "vue";
 
-defineProps({
-  user: {
-    type: Object as PropType<User>,
+const props = defineProps({
+  rr: {
+    type: Object as PropType<RequestResponse>,
+    required: true,
   },
-  errors: Boolean,
-  loading: Boolean,
-  status: Number,
 });
+
+const authStore = useAuthStore();
+const userStore = useUserStore();
 </script>
 
 <template>
-  <div id="profile" v-if="user">
+  <div id="profile" v-if="userStore.viewedUser">
     <header>
-      <img :src="getAvatar(user)" alt="Profile Avatar" />
-      <h5 class="font-size-title">{{ user.name }}</h5>
-      <h6 class="font-size-1 medium-opacity"># {{ user.username }}</h6>
+      <img :src="getAvatar(userStore.viewedUser)" alt="Profile Avatar" />
+      <h5 class="font-size-title">{{ userStore.viewedUser.name }}</h5>
+      <h6 class="font-size-1 medium-opacity">
+        # {{ userStore.viewedUser.username }}
+      </h6>
     </header>
 
-    <div class="row scroll no-space" v-if="!errors">
+    <div class="row scroll no-space" v-if="!props.rr.errors">
       <RouterLink :to="{ name: 'profile', params: $route.params }">
-        <button class="secondary" :disabled="loading">
+        <button
+          :class="$route.name == 'profile' ? 'secondary' : 'inverted'"
+          :disabled="props.rr.loading"
+        >
           <i>account_circle</i>
           Profile
         </button>
       </RouterLink>
-      <RouterLink :to="{ name: 'home' }">
-        <button class="inverted" :disabled="loading">
+      <RouterLink :to="{ name: 'profile.posts', params: $route.params }">
+        <button
+          :class="$route.name == 'profile.posts' ? 'secondary' : 'inverted'"
+          :disabled="props.rr.loading"
+        >
           <i>article</i>
           Posts
         </button>
@@ -39,7 +48,7 @@ defineProps({
       <RouterLink :to="{ name: 'profile.edit', params: $route.params }">
         <button
           class="inverted"
-          :disabled="loading"
+          :disabled="props.rr.loading"
           v-if="authStore.authUser?.username == $route.params.username"
         >
           <i>edit</i>
@@ -49,7 +58,7 @@ defineProps({
       <RouterLink :to="{ name: 'home' }">
         <button
           class="inverted"
-          :disabled="loading"
+          :disabled="props.rr.loading"
           v-if="authStore.authUser?.username == $route.params.username"
         >
           <i>settings</i>
@@ -58,13 +67,17 @@ defineProps({
       </RouterLink>
     </div>
 
-    <slot></slot>
+    <slot :loading="props.rr.loading"></slot>
   </div>
-  <div id="profile" v-else-if="errors">
+  <div id="profile" v-else-if="props.rr.errors">
     <header class="small-opacity">
       <i class="font-size-2 responsive">warning</i>
       <h6>
-        {{ status == 404 ? "User not found" : "Unable to get user profile" }}
+        {{
+          props.rr.status == 404
+            ? "User not found"
+            : "Unable to get user profile"
+        }}
       </h6>
     </header>
   </div>

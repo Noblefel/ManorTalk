@@ -1,37 +1,28 @@
 <script setup lang="ts">
-import { RequestResponse } from "@/utils/api";
-import { onMounted, ref, computed } from "vue";
-import { onBeforeRouteUpdate, useRoute } from "vue-router";
-import Header from "@/components/user/Header.vue";
-import { useAuthStore } from "@/stores/auth";
 import { useUserStore } from "@/stores/user";
-import type { User } from "@/stores/user";
-
-const authStore = useAuthStore();
-const route = useRoute();
-const rr = ref(new RequestResponse());
+import Header from "@/components/user/Header.vue";
+import { RequestResponse } from "@/utils/api";
+import { onMounted, ref } from "vue";
+import { onBeforeRouteUpdate, useRoute } from "vue-router";
 const userStore = useUserStore();
 
+const rr = ref(new RequestResponse());
+const route = useRoute();
+
 onMounted(() => {
-  userStore.fetchProfile(route, rr.value, authStore.authUser);
+  userStore.fetchProfile(route, rr.value);
 });
 
 onBeforeRouteUpdate((to) => {
-  userStore.fetchProfile(to, rr.value, authStore.authUser);
+  userStore.fetchProfile(to, rr.value);
 });
- 
 </script>
 
 <template>
-  <Header
-    :user="(rr.data as any as User)"
-    :errors="rr.errors != null"
-    :loading="rr.loading"
-    :status="rr.status"
-  >
+  <Header :rr="rr">
     <div class="grid">
       <div class="s12 m12 l4">
-        <article>
+        <article v-if="userStore.viewedUser">
           <div class="row">
             <div class="chip circle primary no-border large">
               <p class="font-size-1-5">📋</p>
@@ -42,22 +33,26 @@ onBeforeRouteUpdate((to) => {
           <div class="item">
             <i>person</i>
             <p>Full Name:</p>
-            <p>{{ (rr.data as any).name }}</p>
+            <p>{{ userStore.viewedUser.name }}</p>
           </div>
           <div class="item">
             <i>account_circle</i>
             <p>Username:</p>
-            <p>{{ (rr.data as any).username }}</p>
+            <p>{{ userStore.viewedUser.username }}</p>
           </div>
           <div class="item">
             <i>article</i>
             <p>Post Created:</p>
-            <p>{{ (rr.data as any).posts_count ?? 0 }} posts</p>
+            <p>{{ userStore.viewedUser.posts_count ?? 0 }} posts</p>
           </div>
           <div class="item">
             <i>calendar_month</i>
             <p>Joined:</p>
-            <p>{{ new Date((rr.data as any).created_at).toUTCString() }}</p>
+            <p>
+              {{
+                new Date(userStore.viewedUser.created_at || "").toUTCString()
+              }}
+            </p>
           </div>
         </article>
       </div>
@@ -71,7 +66,7 @@ onBeforeRouteUpdate((to) => {
           </div>
 
           <div
-            v-if="!(rr.data as any).bio"
+            v-if="!userStore.viewedUser?.bio"
             class="center-align small-opacity font-500"
           >
             <div class="large-space"></div>
@@ -80,8 +75,8 @@ onBeforeRouteUpdate((to) => {
             <div class="large-space"></div>
           </div>
           <div v-else>
-            <p v-for="p in (rr.data as any)?.bio.split('\n')"> 
-              {{ p == "" ? "&nbsp;" : p}}
+            <p v-for="p in userStore.viewedUser.bio.split('\n')">
+              {{ p == "" ? "&nbsp;" : p }}
             </p>
           </div>
         </article>
