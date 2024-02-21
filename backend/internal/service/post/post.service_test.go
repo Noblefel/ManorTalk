@@ -93,7 +93,7 @@ func TestPostService_Create(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		_, err := s.Create(tt.payload)
+		_, err := s.Create(tt.payload, 1)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

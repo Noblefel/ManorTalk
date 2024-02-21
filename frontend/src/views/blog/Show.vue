@@ -10,6 +10,7 @@ const rr = ref(new RequestResponse());
 const route = useRoute();
 
 onMounted(() => {
+  window.scrollTo(0, 0)
   rr.value.useApi("GET", "/posts/" + route.params.slug);
 });
 

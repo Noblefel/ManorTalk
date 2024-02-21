@@ -13,7 +13,7 @@ A mini-forum application built in Go 1.20
 - [slug](https://github.com/gosimple/slug)
 
 ### TODO
-1. Create, edit posts (frontend)
+1. Edit posts (frontend)
 2. Refactor JSON response to separate pagination metadata from the main data.
 3. Refactor unit test.
 4. Improve database queries in post repo.

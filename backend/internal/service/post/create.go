@@ -10,7 +10,7 @@ import (
 	"github.com/gosimple/slug"
 )
 
-func (s *postService) Create(payload models.PostCreateInput) (models.Post, error) {
+func (s *postService) Create(payload models.PostCreateInput, userId int) (models.Post, error) {
 	var post models.Post
 
 	category, err := s.postRepo.GetCategoryById(payload.CategoryId)
@@ -23,7 +23,7 @@ func (s *postService) Create(payload models.PostCreateInput) (models.Post, error
 	}
 
 	post = models.Post{
-		UserId:     1,
+		UserId:     userId,
 		Title:      payload.Title,
 		Slug:       slug.Make(payload.Title),
 		Excerpt:    payload.Excerpt,
@@ -45,7 +45,7 @@ func (s *postService) Create(payload models.PostCreateInput) (models.Post, error
 	return post, nil
 }
 
-func (s *mockPostService) Create(payload models.PostCreateInput) (models.Post, error) {
+func (s *mockPostService) Create(payload models.PostCreateInput, userId int) (models.Post, error) {
 	var post models.Post
 	switch payload.Title {
 	case ErrNoCategory.Error():

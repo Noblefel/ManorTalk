@@ -10,10 +10,13 @@ const authStore = useAuthStore();
   <dialog id="nav-mobile-menu" class="right">
     <Profile />
 
-    <button class="responsive no-margin secondary">
+    <RouterLink
+      :to="{ name: 'blog.create' }"
+      class="button responsive no-margin secondary"
+    >
       Create Post
       <i>edit</i>
-    </button>
+    </RouterLink>
 
     <div class="space"></div>
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -104,6 +105,8 @@ func TestPost_Create(t *testing.T) {
 			r = httptest.NewRequest("POST", "/posts", bytes.NewBuffer(jsonBytes))
 		}
 
+		ctx := context.WithValue(r.Context(), "user_id", 1)
+		r = r.WithContext(ctx)
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.post.Create)
 		handler.ServeHTTP(w, r)

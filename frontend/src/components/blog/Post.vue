@@ -42,12 +42,12 @@ defineProps({
     <!-- <img src="@/assets/images/stock_1.jpg" alt="" /> -->
 
     <p class="excerpt italic">
-      {{ post.content }}
+      {{ post.excerpt }}
     </p>
 
     <div class="space"></div>
 
-    <Markdown />
+    <Markdown :content="post.content"/>
   </div>
 </template>
 

@@ -6,7 +6,7 @@ import { usePostStore, type Post } from "@/stores/post";
 import { RequestResponse } from "@/utils/api";
 import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/user";
-import { onBeforeRouteUpdate, useRoute } from "vue-router";
+import { onBeforeRouteUpdate, useRoute, RouterLink } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
@@ -42,12 +42,13 @@ function load() {
   <Header :rr="rr">
     <div class="space"></div>
     <div class="center-align margin">
-      <button
-        class="large"
+      <RouterLink
+        :to="{ name: 'blog.create' }"
+        class="button large"
         v-if="authStore.authUser?.username == $route.params.username"
       >
         Create Posts&nbsp; ✏️
-      </button>
+      </RouterLink>
     </div>
     <div v-if="posts && posts.length">
       <div class="grid">

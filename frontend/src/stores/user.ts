@@ -54,18 +54,18 @@ export const useUserStore = defineStore("user", () => {
   /** fetchProfile will get the user profile data */
   function fetchProfile(to: RouteLocation, rr: RequestResponse) {
     if (viewedUser.value?.username == to.params.username) {
-      return;
+      return Promise.resolve();
     }
 
     if (to.params.username == authStore.authUser?.username) {
       viewedUser.value = authStore.authUser;
-      return;
+      return Promise.resolve();
     }
 
-     return rr.useApi("GET", "/users/" + to.params.username).then(() => {
+    return rr.useApi("GET", "/users/" + to.params.username).then(() => {
       if (rr.status !== 200) return;
 
-      viewedUser.value = rr.data as any
+      viewedUser.value = rr.data as any;
     });
   }
 

@@ -19,7 +19,7 @@ var (
 )
 
 type PostService interface {
-	Create(payload models.PostCreateInput) (models.Post, error)
+	Create(payload models.PostCreateInput, userId int) (models.Post, error)
 	Get(slug string) (models.Post, error)
 	GetMany(q url.Values) ([]models.Post, *pagination.Meta, error)
 	Update(payload models.PostUpdateInput, urlSlug string) error

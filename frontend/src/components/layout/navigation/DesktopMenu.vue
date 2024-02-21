@@ -10,10 +10,12 @@ const authStore = useAuthStore();
   <menu id="nav-menu" class="left">
     <Profile />
 
-    <button class="responsive no-margin secondary" v-if="authStore.isAuth">
-      Create Post
-      <i>edit</i>
-    </button>
+    <RouterLink :to="{name: 'blog.create'}"  v-if="authStore.isAuth">
+      <button class="responsive no-margin secondary">
+        Create Post
+        <i>edit</i>
+      </button>
+    </RouterLink>
 
     <div class="space"></div>
     <div class="divider"></div>

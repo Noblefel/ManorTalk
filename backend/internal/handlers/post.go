@@ -45,7 +45,9 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := h.service.Create(payload)
+	userId := r.Context().Value("user_id").(int)
+
+	post, err := h.service.Create(payload, userId)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoCategory):
