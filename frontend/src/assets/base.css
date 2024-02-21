@@ -8,7 +8,6 @@
   body {
     min-height: 100vh;
     background-color: var(--background);
-    /* color: var(--on-background); */
     font-size: 1.02rem;
     line-height: 1.6;
     text-rendering: optimizeLegibility;
@@ -98,7 +97,6 @@
   }
 
   article {
-    /* background-color: color-mix(in srgb, var(--on-surface), transparent 99.5%); */
     background-color: var(--surface);
     border-radius: 10px;
     border: 1px solid color-mix(in srgb, var(--on-surface), transparent 85%);

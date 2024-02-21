@@ -107,9 +107,12 @@ function cropText(text: String) {
       <div class="tags font-400">
         <div>{{ post.category.name ?? "tes" }}</div>
       </div>
-      <p class="font-size-1-25">
+      <RouterLink
+        :to="{ name: 'blog.show', params: { slug: post.slug } }"
+        class="font-size-1-25"
+      >
         {{ post.title }}
-      </p>
+      </RouterLink>
       <div class="divider"></div>
     </div>
     <div class="details">

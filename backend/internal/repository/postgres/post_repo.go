@@ -129,9 +129,22 @@ func (r *PostRepo) GetPostBySlug(slug string) (models.Post, error) {
 
 	query := `
 		SELECT 
-			p.id, p.user_id, p.title, p.slug, COALESCE(p.excerpt, ''), p.content, p.category_id, p.created_at, p.updated_at,
-			c.name, c.slug 
+			p.id, 
+			p.user_id, 
+			p.title, 
+			p.slug, 
+			COALESCE(p.excerpt, ''), 
+			p.content, 
+			p.category_id, 
+			p.created_at, 
+			p.updated_at,
+			COALESCE(u.name, ''), 
+			u.username, 
+			COALESCE(u.avatar, ''),
+			c.name, 
+			c.slug 
 		FROM posts p
+		LEFT JOIN users u ON (p.user_id = u.id)
 		LEFT JOIN categories c ON (p.category_id = c.id)
 		WHERE p.slug = $1 
 	`
@@ -146,6 +159,9 @@ func (r *PostRepo) GetPostBySlug(slug string) (models.Post, error) {
 		&post.CategoryId,
 		&post.CreatedAt,
 		&post.UpdatedAt,
+		&post.User.Name,
+		&post.User.Username,
+		&post.User.Avatar,
 		&post.Category.Name,
 		&post.Category.Slug,
 	)

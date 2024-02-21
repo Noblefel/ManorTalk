@@ -5,7 +5,7 @@ import { useRoute, type Router } from "vue-router";
 export const activeRoute = (routeName: string): string => {
   const route = useRoute();
 
-  return route.name == routeName ? "active" : "";
+  return route.name?.toString().startsWith(routeName) ? "active" : "";
 };
 
 /** toast will create a pop up div element with the provided message

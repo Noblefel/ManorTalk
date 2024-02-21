@@ -38,6 +38,12 @@ const router = createRouter({
       component: () => import("@/views/blog/Index.vue"),
     },
     {
+      path: "/blog/:slug",
+      name: "blog.show",
+      meta: { layout: AppLayout },
+      component: () => import("@/views/blog/Show.vue"),
+    },
+    {
       path: "/profile/:username",
       name: "profile",
       meta: { layout: AppLayout },
