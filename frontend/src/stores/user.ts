@@ -51,7 +51,7 @@ export const useUserStore = defineStore("user", () => {
     });
   }
 
-  /** fetchProfile will get the user profile data */
+  /** fetchProfile will get the user data and cache it as viewedUser */
   function fetchProfile(to: RouteLocation, rr: RequestResponse) {
     if (viewedUser.value?.username == to.params.username) {
       return Promise.resolve();

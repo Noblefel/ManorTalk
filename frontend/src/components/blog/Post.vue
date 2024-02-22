@@ -3,12 +3,12 @@ import { getAvatar } from "@/utils/helper";
 import type { Post } from "@/stores/post";
 import { type PropType } from "vue";
 import Markdown from "../Markdown.vue";
+import { useAuthStore } from "@/stores/auth";
+
+const authStore = useAuthStore();
 
 defineProps({
-  post: {
-    type: Object as PropType<Post>,
-    required: true,
-  },
+  post: { type: Object as PropType<Post>, required: true },
 });
 </script>
 
@@ -20,21 +20,35 @@ defineProps({
     </div>
   </header>
 
-  <div class="author">
-    <img
-      :src="getAvatar(post.user)"
-      :alt="`${post.user.username} profile avatar`"
-    />
-    <div>
+  <div class="row wrap">
+    <div class="author">
+      <img
+        :src="getAvatar(post.user)"
+        :alt="`${post.user.username} profile avatar`"
+      />
+      <div>
+        <RouterLink
+          :to="{ name: 'profile', params: { username: post.user.username } }"
+          class="font-700"
+        >
+          {{ post.user.name ?? post.user.username }}
+        </RouterLink>
+        <p class="small-text font-600" v-if="post.created_at">
+          {{ new Date(post.created_at).toUTCString() }}
+        </p>
+      </div>
+    </div>
+    <div
+      class="max right-align"
+      v-if="authStore.authUser?.username == post.user?.username"
+    >
       <RouterLink
-        :to="{ name: 'profile', params: { username: post.user.username } }"
-        class="font-700"
+        :to="{ name: 'blog.edit', params: $route.params }"
+        class="button secondary"
       >
-        {{ post.user.name ?? post.user.username }}
+        <i>edit</i>
+        Edit
       </RouterLink>
-      <p class="small-text font-600" v-if="post.created_at">
-        {{ new Date(post.created_at).toUTCString() }}
-      </p>
     </div>
   </div>
 
@@ -47,7 +61,7 @@ defineProps({
 
     <div class="space"></div>
 
-    <Markdown :content="post.content"/>
+    <Markdown :content="post.content" />
   </div>
 </template>
 

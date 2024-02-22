@@ -5,25 +5,21 @@ import type { PaginationMeta, Post } from "@/stores/post";
 import type { PropType } from "vue";
 
 defineProps({
-  posts: {
-    type: Array as PropType<Post[]>,
-  },
-  pagination_meta: {
-    type: Object as PropType<PaginationMeta>,
-  },
+  posts: Array as PropType<Post[]>,
+  pagination_meta: Object as PropType<PaginationMeta>,
 });
 </script>
 
 <template>
   <div class="grid">
     <div class="s12 m12 l12" v-if="pagination_meta">
-      <h6>
+      <h6 class="center-align">
         <span class="font-size-1-5">🔎&nbsp;</span>
         Found {{ Intl.NumberFormat().format(pagination_meta.total) }} posts
       </h6>
     </div>
     <div class="s12 m6 l6" v-for="post in posts">
-      <PostCard 
+      <PostCard
         :post="post"
         :with-author="true"
         :with-excerpt="true"
@@ -39,10 +35,3 @@ defineProps({
     </div>
   </div>
 </template>
-
-<style scoped>
-h6 {
-  padding: 0 1rem;
-  font-size: 1rem;
-}
-</style>

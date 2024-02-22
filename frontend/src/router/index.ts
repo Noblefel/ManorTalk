@@ -50,6 +50,12 @@ const router = createRouter({
       component: () => import("@/views/blog/Show.vue"),
     },
     {
+      path: "/blog/:slug/edit",
+      name: "blog.edit",
+      meta: { layout: AppLayout, auth: true },
+      component: () => import("@/views/blog/Edit.vue"),
+    },
+    {
       path: "/profile/:username",
       name: "profile",
       meta: { layout: AppLayout },

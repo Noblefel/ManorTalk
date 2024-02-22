@@ -27,19 +27,13 @@ const { before, after } = getPageNumbers(current, last);
         <a @click="changeParam(router, 'page', 1)"> &lt;&lt; </a>
       </div>
       <div class="row">
-        <a
-          v-for="page in before"
-          @click="changeParam(router, 'page', page)"
-        >
+        <a v-for="page in before" @click="changeParam(router, 'page', page)">
           {{ page }}
         </a>
 
         <a class="primary">{{ current }}</a>
 
-        <a
-          v-for="page in after"
-          @click="changeParam(router, 'page', page)"
-        >
+        <a v-for="page in after" @click="changeParam(router, 'page', page)">
           {{ page }}
         </a>
       </div>
@@ -66,10 +60,7 @@ const { before, after } = getPageNumbers(current, last);
     </div>
 
     <div class="row center-align s">
-      <a
-        class="button small secondary"
-        @click="changeParam(router, 'page', 1)"
-      >
+      <a class="button small secondary" @click="changeParam(router, 'page', 1)">
         &lt;&lt;
       </a>
       <a
@@ -95,7 +86,6 @@ const { before, after } = getPageNumbers(current, last);
 }
 
 a {
-  /* max-width: 2rem; */
   padding: 0.5rem 1rem;
   border-radius: 8px;
   transition: 0.2s all ease-in;

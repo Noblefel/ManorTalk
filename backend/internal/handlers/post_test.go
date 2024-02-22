@@ -12,7 +12,6 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
-	"github.com/Noblefel/ManorTalk/backend/internal/repository"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
 	service "github.com/Noblefel/ManorTalk/backend/internal/service/post"
@@ -231,10 +230,20 @@ func TestPost_Update(t *testing.T) {
 			statusCode: http.StatusNotFound,
 		},
 		{
+			name:      "postUpdate-error-unauthorized",
+			slugRoute: service.ErrUnauthorized.Error(),
+			payload: &models.PostUpdateInput{
+				Title:      "The updated post title",
+				Content:    longText,
+				CategoryId: 1,
+			},
+			statusCode: http.StatusUnauthorized,
+		},
+		{
 			name:      "postUpdate-error-duplicate-title-or-post",
 			slugRoute: service.ErrDuplicateTitle.Error(),
 			payload: &models.PostUpdateInput{
-				Title:      repository.ErrDuplicateKeyString,
+				Title:      "The updated post title",
 				Content:    longText,
 				CategoryId: 1,
 			},
@@ -262,6 +271,7 @@ func TestPost_Update(t *testing.T) {
 		}
 
 		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
+		ctx = context.WithValue(ctx, "user_id", 1)
 		r = r.WithContext(ctx)
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.post.Update)
@@ -290,6 +300,11 @@ func TestPost_Delete(t *testing.T) {
 			statusCode: http.StatusNotFound,
 		},
 		{
+			name:       "postDelete-error-unauthorized",
+			slugRoute:  service.ErrUnauthorized.Error(),
+			statusCode: http.StatusUnauthorized,
+		},
+		{
 			name:       "postDelete-error-unexpected",
 			slugRoute:  "unexpected error",
 			statusCode: http.StatusInternalServerError,
@@ -300,6 +315,7 @@ func TestPost_Delete(t *testing.T) {
 
 		r := httptest.NewRequest("DELETE", "/posts/{slug}", nil)
 		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
+		ctx = context.WithValue(ctx, "user_id", 1)
 		r = r.WithContext(ctx)
 		w := httptest.NewRecorder()
 		handler := http.HandlerFunc(h.post.Delete)

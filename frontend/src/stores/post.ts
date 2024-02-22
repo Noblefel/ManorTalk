@@ -4,7 +4,7 @@ import { ref, type Ref } from "vue";
 import { type User, useUserStore } from "./user";
 import { Validator } from "@/utils/validator";
 import { toast } from "@/utils/helper";
-import { useRouter } from "vue-router";
+import { useRouter, type RouteLocation } from "vue-router";
 
 export interface Post {
   id?: number;
@@ -14,7 +14,9 @@ export interface Post {
   content: string;
   created_at?: string;
   updated_at?: string;
+  category_id: number;
   category: Category;
+  user_id: number;
   user: User;
 }
 
@@ -68,8 +70,8 @@ ___
 *Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla posuere neque id magna pretium rutrum.* `;
 
 export const usePostStore = defineStore("post", () => {
-  /** new posts that are shown in the home page and sidebars */
   const latestPosts = ref([] as Post[]);
+  const viewedPost = ref<Post | null>(null);
   const categories = ref([] as Category[]);
   const userStore = useUserStore();
   const postStore = usePostStore();
@@ -83,6 +85,19 @@ export const usePostStore = defineStore("post", () => {
 
       const posts = (rr.data as unknown as { posts: Post[] }).posts;
       latestPosts.value = posts;
+    });
+  }
+
+  /** fetchPost will get the post and cache it as viewedPost */
+  function fetchPost(rr: RequestResponse, to: RouteLocation) {
+    if (viewedPost.value?.slug == to.params.slug) {
+      return Promise.resolve();
+    }
+
+    return rr.useApi("get", "/posts/" + to.params.slug).then(() => {
+      if (rr.status !== 200) return;
+
+      viewedPost.value = rr.data as any;
     });
   }
 
@@ -119,8 +134,8 @@ export const usePostStore = defineStore("post", () => {
     });
   }
 
-  /** createPost will validates the form and stores the new post  */
-  function createPost(form: CreatePost, rr: RequestResponse) {
+  /** create will validates the form and stores the new post  */
+  function create(form: CreatePost, rr: RequestResponse) {
     const f = new Validator(form)
       .required("title", "content")
       .strMinLength("title", 10)
@@ -132,22 +147,61 @@ export const usePostStore = defineStore("post", () => {
       rr.errors = f.errors;
       toast("Some fields are invalid");
       return;
-    } 
+    }
 
     rr.useApi("post", "/posts", form).then(() => {
       if (rr.status != 201) return;
+      if (rr.message) toast(rr.message, "green white-text");
       const slug = (rr.data as any as Post).slug;
       router.push({ name: "blog.show", params: { slug: slug } });
     });
   }
 
+  /** update will validates the form and updates the post  */
+  function update(form: CreatePost, rr: RequestResponse) {
+    const f = new Validator(form)
+      .required("title", "content")
+      .strMinLength("title", 10)
+      .strMinLength("content", 50)
+      .strMaxLength("title", 255)
+      .strMaxLength("title", 255);
+
+    if (!f.isValid()) {
+      rr.errors = f.errors;
+      toast("Some fields are invalid");
+      return;
+    }
+
+    rr.useApi("patch", "/posts/" + viewedPost.value?.slug, form).then(() => {
+      if (rr.status !== 200) return;
+      if (rr.message) toast(rr.message, "green white-text");
+      viewedPost.value = null;
+      const slug = rr.data as any as string;
+      router.push({ name: "blog.show", params: { slug: slug } });
+    });
+  }
+
+  function deletePost(rr: RequestResponse) {
+    if (!confirm("Are you sure? ")) return;
+    rr.useApi("delete", "/posts/" + viewedPost.value?.slug).then(() => {
+      if (rr.status !== 200) return;
+      if (rr.message) toast(rr.message, "green white-text");
+      viewedPost.value = null;
+      router.go(-2);
+    });
+  }
+
   return {
     latestPosts,
+    viewedPost,
     categories,
-    fetchHomePosts,
+    fetchPost,
     fetchPosts,
+    fetchHomePosts,
     fetchProfilePosts,
     fetchCategories,
-    createPost,
+    create,
+    update,
+    deletePost,
   };
 });

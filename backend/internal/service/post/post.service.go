@@ -16,14 +16,15 @@ var (
 	ErrDuplicateTitle = errors.New("Title has already been used")
 	ErrNoCategory     = errors.New("Category not found")
 	ErrNoPost         = errors.New("Post not found")
+	ErrUnauthorized   = errors.New("You have no permission to do that")
 )
 
 type PostService interface {
-	Create(payload models.PostCreateInput, userId int) (models.Post, error)
+	Create(payload models.PostCreateInput, authId int) (models.Post, error)
 	Get(slug string) (models.Post, error)
 	GetMany(q url.Values) ([]models.Post, *pagination.Meta, error)
-	Update(payload models.PostUpdateInput, urlSlug string) error
-	Delete(slug string) error
+	Update(payload models.PostUpdateInput, urlSlug string, authId int) error
+	Delete(slug string, authId int) error
 	GetCategories() ([]models.Category, error)
 }
 

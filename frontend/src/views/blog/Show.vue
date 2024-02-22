@@ -5,24 +5,27 @@ import Post from "@/components/blog/Post.vue";
 import { RequestResponse } from "@/utils/api";
 import { onMounted, ref } from "vue";
 import { onBeforeRouteUpdate, useRoute } from "vue-router";
+import { usePostStore } from "@/stores/post";
 
 const rr = ref(new RequestResponse());
+const postStore = usePostStore();
 const route = useRoute();
 
 onMounted(() => {
-  window.scrollTo(0, 0)
-  rr.value.useApi("GET", "/posts/" + route.params.slug);
+  window.scrollTo(0, 0);
+  postStore.fetchPost(rr.value, route);
 });
 
 onBeforeRouteUpdate((to) => {
-  rr.value.useApi("GET", "/posts/" + to.params.slug);
+  window.scrollTo(0, 0);
+  postStore.fetchPost(rr.value, to);
 });
 </script>
 
 <template>
   <div class="wrapper">
-    <main v-if="rr.data" id="post">
-      <Post :post="(rr.data as any)" />
+    <main v-if="postStore.viewedPost" id="post">
+      <Post :post="postStore.viewedPost" />
 
       <div class="large-space"></div>
       <div class="divider"></div>
@@ -33,7 +36,7 @@ onBeforeRouteUpdate((to) => {
           <i>chevron_left</i>
           Previous post
 
-          <PostCard :with-excerpt="true" :post="rr.data" />
+          <PostCard :with-excerpt="true" :post="postStore.viewedPost" />
         </article>
         <article class="max glow s12 m6 l6 no-margin">
           <div class="right-align">
@@ -41,7 +44,7 @@ onBeforeRouteUpdate((to) => {
             <i>chevron_right</i>
           </div>
 
-          <PostCard :with-excerpt="true" :post="rr.data" />
+          <PostCard :with-excerpt="true" :post="postStore.viewedPost" />
         </article>
       </div>
     </main>

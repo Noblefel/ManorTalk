@@ -6,10 +6,7 @@ import { getAvatar } from "@/utils/helper";
 import type { PropType } from "vue";
 
 const props = defineProps({
-  rr: {
-    type: Object as PropType<RequestResponse>,
-    required: true,
-  },
+  rr: { type: Object as PropType<RequestResponse>, required: true },
 });
 
 const authStore = useAuthStore();

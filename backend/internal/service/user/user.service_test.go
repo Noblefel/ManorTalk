@@ -132,19 +132,16 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			payload: models.UpdateProfileInput{
 				Name: "test",
 			},
-			authId:  0,
 			isError: false,
 		},
 		{
 			name:     "updateProfile-error-not-found",
 			username: repository.ErrNotFoundKeyString,
-			authId:   0,
 			isError:  true,
 		},
 		{
 			name:     "updateProfile-error-getting-user",
 			username: repository.ErrUnexpectedKeyString,
-			authId:   0,
 			isError:  true,
 		},
 		{
@@ -157,7 +154,6 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			payload: models.UpdateProfileInput{
 				Name: repository.ErrDuplicateKeyString,
 			},
-			authId:  0,
 			isError: true,
 		},
 		{
@@ -165,7 +161,6 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			payload: models.UpdateProfileInput{
 				Name: repository.ErrUnexpectedKeyString,
 			},
-			authId:  0,
 			isError: true,
 		},
 	}

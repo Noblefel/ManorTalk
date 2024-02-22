@@ -2,12 +2,7 @@
 import TheThemeSwitch from "./../TheThemeSwitch.vue";
 import { RouterLink } from "vue-router";
 
-defineProps({
-  title: {
-    type: String,
-    required: true,
-  },
-});
+defineProps({ title: { type: String, required: true } });
 </script>
 
 <template>

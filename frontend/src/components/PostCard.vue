@@ -5,64 +5,18 @@ import type { PropType } from "vue";
 import { RouterLink } from "vue-router";
 
 defineProps({
-  post: {
-    type: Object as PropType<Post>,
-    default: {
-      id: 0,
-      title: "A sample post 0",
-      slug: "a-sample-post-0",
-      category: { name: "Sample" },
-      user: { username: "john-doe" },
-    },
-  },
-  width: {
-    type: String,
-    default: "100%",
-  },
-  image: {
-    type: String,
-  },
-  separateImage: {
-    type: Boolean,
-    default: false,
-  },
+  post: { type: Object as PropType<Post>, required: true },
+  width: { type: String, default: "100%" },
+  image: { type: String },
   imageHeight: {
     type: String,
     default: "clamp(15rem, calc(8rem + 8vw), 20rem)",
   },
-  backgroundColor: {
-    type: String,
-    default: "var(--surface)",
-  },
-  withBorder: {
-    type: Boolean,
-    default: false,
-  },
-  withExcerpt: {
-    type: Boolean,
-    default: false,
-  },
-  withAuthor: {
-    type: Boolean,
-    default: false,
-  },
-  withStats: {
-    type: Boolean,
-    default: false,
-  },
+  backgroundColor: { type: String, default: "var(--surface)" },
+  withBorder: { type: Boolean, default: false },
+  withExcerpt: { type: Boolean, default: false },
+  withAuthor: { type: Boolean, default: false },
 });
-
-function cropText(text: String) {
-  let max = 100;
-
-  if (window.screen.width <= 600) {
-    max = 50;
-  } else if (window.screen.width <= 900) {
-    max = 75;
-  }
-
-  return text.slice(0, max) + "...";
-}
 </script>
 
 <template>
@@ -76,24 +30,7 @@ function cropText(text: String) {
       width: width,
     }"
   >
-    <div v-if="image && !separateImage" class="merged-image">
-      <img
-        :src="image"
-        alt=""
-        :style="{
-          height: imageHeight,
-        }"
-      />
-      <div class="title-absolute">
-        <p class="font-size-1-25">
-          {{ cropText(post.title) }}
-        </p>
-        <div class="tags font-400">
-          <div>Business</div>
-        </div>
-      </div>
-    </div>
-    <div v-else class="separate-image">
+    <div class="separate-image">
       <div v-if="image">
         <img
           :src="image"
@@ -113,14 +50,10 @@ function cropText(text: String) {
       >
         {{ post.title }}
       </RouterLink>
-      <div class="divider"></div>
     </div>
     <div class="details">
       <p class="excerpt" v-if="withExcerpt">
-        <!-- {{ post.excerpt }} -->
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in
-        sapien luctus libero ultricies egestas vel vitae ligula. Aliquam posuere
-        condimentum ex, quis luctus libero interdum eget"
+        {{ post.excerpt }}
       </p>
       <div class="author" v-if="withAuthor">
         <img
@@ -134,22 +67,9 @@ function cropText(text: String) {
           >
             {{ post.user.name ?? post.user.username }}
           </RouterLink>
-          <p class="small-text font-600" v-if="post.created_at">
+          <p class="small-text font-600 no-margin" v-if="post.created_at">
             {{ new Date(post.created_at).toUTCString() }}
           </p>
-        </div>
-      </div>
-      <div class="stats" v-if="withStats">
-        <div class="green1 green-text small-opacity">
-          <i>thumb_up</i>
-          <span>12</span>
-        </div>
-        <div class="secondary">
-          <i>comment</i>
-          <span>0</span>
-        </div>
-        <div class="red2 red-text small-opacity">
-          <i>warning</i>
         </div>
       </div>
     </div>
@@ -210,7 +130,7 @@ article {
 }
 
 .details {
-  padding: 0.5rem 1rem;
+  padding: 0 1rem 0.5rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -230,31 +150,6 @@ article {
       height: 40px;
       object-fit: cover;
       border-radius: 50%;
-    }
-  }
-
-  p {
-    margin: 0;
-  }
-
-  .stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    font-weight: 600;
-
-    & > * {
-      display: flex;
-      gap: 0.5rem;
-      margin: 0;
-      padding: 0.2rem 0.5rem;
-      border-radius: 7px;
-      height: fit-content;
-      font-size: 0.9rem;
-
-      & i {
-        font-size: 1.2rem;
-      }
     }
   }
 }

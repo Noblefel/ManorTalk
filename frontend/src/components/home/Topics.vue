@@ -9,7 +9,7 @@
           </button>
           <button class="s6 m6 l6 glow">
             <i>chat</i>
-            Join Discussions
+            Placeholder
           </button>
           <button class="s6 m6 l6 glow">
             <i>light_mode</i>

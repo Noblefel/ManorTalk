@@ -2,12 +2,7 @@
 // @ts-ignore
 import markdownit from "markdown-it";
 
-const props = defineProps({
-  content: {
-    type: String,
-    requried: true,
-  },
-});
+const props = defineProps({ content: { type: String, requried: true } });
 
 const md = markdownit({ breaks: true });
 const render = md.render(props.content);

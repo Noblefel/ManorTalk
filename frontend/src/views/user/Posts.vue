@@ -19,11 +19,6 @@ const userStore = useUserStore();
 const authStore = useAuthStore();
 
 onMounted(() => {
-  if (userStore.viewedUser) {
-    load();
-    return;
-  }
-
   userStore.fetchProfile(route, rr.value)?.then(() => {
     load();
   });
@@ -52,12 +47,13 @@ function load() {
     </div>
     <div v-if="posts && posts.length">
       <div class="grid">
-        <div class="s12 m6 l4" v-for="post in posts">
+        <div class="s12 m6 l6" v-for="post in posts">
           <PostCard
             :post="post"
             :with-excerpt="true"
+            :with-author="true"
             :separate-image="true"
-            image-height="10rem"
+            image-height="12rem"
             background-color="var(--background)"
             image="/src/assets/images/stock_1.jpg"
           />
@@ -69,15 +65,9 @@ function load() {
         <button @click="load" v-if="!rrPosts.loading">Load More</button>
         <progress v-else class="circle"></progress>
       </div>
-    </div>
-    <div v-else-if="rrPosts.loading">
-      <ResponseCard :loading="true" message="Please wait..." />
-    </div>
-    <div v-else-if="rrPosts.errors">
-      <ResponseCard icon="warning" message="Unable to get posts" />
-    </div>
-    <div v-else>
-      <ResponseCard icon="article" message="Empty" />
-    </div>
+    </div> 
+    <ResponseCard :loading="true" message="Please wait..." v-else-if="rrPosts.loading"/>
+    <ResponseCard icon="warning" message="Unable to get posts"  v-else-if="rrPosts.errors"/>
+    <ResponseCard icon="article" message="Empty" v-else />
   </Header>
 </template>

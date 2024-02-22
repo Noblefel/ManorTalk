@@ -84,6 +84,9 @@ export class RequestResponse {
           headers: { "Content-Type": contentType },
         });
         break;
+      case "delete":
+        req = Api.delete(url, body);
+        break;
       default:
         req = Api.get(url);
         break;

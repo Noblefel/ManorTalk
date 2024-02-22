@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import Markdown from "@/components/Markdown.vue";
 import { onMounted, ref } from "vue";
-import {
-  type CreatePost,
-  usePostStore,
-  type Category,
-  sampleContent,
-} from "@/stores/post";
+import { type CreatePost, usePostStore, sampleContent } from "@/stores/post";
 import { RequestResponse } from "@/utils/api";
-import { onBeforeRouteUpdate } from "vue-router";
 
 const postStore = usePostStore();
 const rr = ref(new RequestResponse());
@@ -29,13 +23,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <form class="grid" @submit.prevent="postStore.createPost(form, rr)">
+  <form class="grid" @submit.prevent="postStore.create(form, rr)">
     <div class="s12 m12 l9">
       <h3 class="center-align">Create Post 🎨</h3>
       <div class="space"></div>
       <label for="title" class="font-size-1-25 font-600">Title</label>
       <div class="field border no-margin">
-        <input type="text" id="title" name="title" v-model="form.title" />
+        <input
+          type="text"
+          id="title"
+          name="title"
+          v-model="form.title"
+          autocomplete="off"
+        />
         <span class="error" v-if="rr.errors?.title">
           {{ rr.errors.title[0] }}
         </span>
@@ -45,7 +45,13 @@ onMounted(() => {
 
       <label for="excerpt" class="font-size-1-25 font-600">Excerpt</label>
       <div class="field border no-margin">
-        <input type="text" id="excerpt" name="excerpt" v-model="form.excerpt" />
+        <input
+          type="text"
+          id="excerpt"
+          name="excerpt"
+          v-model="form.excerpt"
+          autocomplete="off"
+        />
         <span class="error" v-if="rr.errors?.excerpt">
           {{ rr.errors.excerpt[0] }}
         </span>
@@ -54,9 +60,9 @@ onMounted(() => {
       <div class="space"></div>
 
       <label for="category" class="font-size-1-25 font-600">Category</label>
-      <div v-if="rr2.data" class="field border no-margin suffix">
+      <div v-if="postStore.categories" class="field border no-margin suffix">
         <select name="category" id="category" v-model="form.category_id">
-          <option v-for="c in (rr2.data as any as Category[])" :value="c.id">
+          <option v-for="c in postStore.categories" :value="c.id">
             {{ c.name }}
           </option>
         </select>

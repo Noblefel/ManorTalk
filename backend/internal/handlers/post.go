@@ -134,11 +134,16 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.Update(payload, chi.URLParam(r, "slug"))
+	authId := r.Context().Value("user_id").(int)
+
+	err := h.service.Update(payload, chi.URLParam(r, "slug"), authId)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoPost):
 			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			return
+		case errors.Is(err, service.ErrUnauthorized):
+			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateTitle):
 			res.MessageJSON(w, http.StatusConflict, err.Error())
@@ -150,16 +155,23 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res.MessageJSON(w, http.StatusOK, "Post has been updated")
+	res.JSON(w, http.StatusOK, res.Response{
+		Message: "Post has been updated",
+		Data:    payload.Slug,
+	})
 }
 
 func (h *PostHandlers) Delete(w http.ResponseWriter, r *http.Request) {
+	authId := r.Context().Value("user_id").(int)
 
-	err := h.service.Delete(chi.URLParam(r, "slug"))
+	err := h.service.Delete(chi.URLParam(r, "slug"), authId)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoPost):
 			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			return
+		case errors.Is(err, service.ErrUnauthorized):
+			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
 			return
 		default:
 			log.Println(err)

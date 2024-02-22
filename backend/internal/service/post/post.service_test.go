@@ -212,6 +212,7 @@ func TestPostService_Update(t *testing.T) {
 		name    string
 		payload models.PostUpdateInput
 		urlSlug string
+		authId  int
 		isError bool
 	}{
 		{
@@ -235,6 +236,13 @@ func TestPostService_Update(t *testing.T) {
 			isError: true,
 		},
 		{
+			name:    "update-error-unauhtorized",
+			payload: models.PostUpdateInput{},
+			urlSlug: "example",
+			authId:  -1,
+			isError: true,
+		},
+		{
 			name: "update-error-duplicate-title",
 			payload: models.PostUpdateInput{
 				Title: repository.ErrDuplicateKeyString,
@@ -253,7 +261,7 @@ func TestPostService_Update(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := s.Update(tt.payload, tt.urlSlug)
+		err := s.Update(tt.payload, tt.urlSlug, tt.authId)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)
@@ -269,6 +277,7 @@ func TestPostService_Delete(t *testing.T) {
 	var tests = []struct {
 		name    string
 		slug    string
+		authId  int
 		isError bool
 	}{
 		{
@@ -287,6 +296,12 @@ func TestPostService_Delete(t *testing.T) {
 			isError: true,
 		},
 		{
+			name:    "delete-error-unauthorized",
+			slug:    "sample",
+			authId:  -1,
+			isError: true,
+		},
+		{
 			name:    "delete-error-deleting-post",
 			slug:    "get-invalid-post",
 			isError: true,
@@ -294,7 +309,7 @@ func TestPostService_Delete(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := s.Delete(tt.slug)
+		err := s.Delete(tt.slug, tt.authId)
 
 		if err != nil && !tt.isError {
 			t.Errorf("%s should not return error, but got %s", tt.name, err)

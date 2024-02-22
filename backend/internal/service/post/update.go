@@ -10,14 +10,18 @@ import (
 	"github.com/gosimple/slug"
 )
 
-func (s *postService) Update(payload models.PostUpdateInput, urlSlug string) error {
+func (s *postService) Update(payload models.PostUpdateInput, urlSlug string, authId int) error {
 	post, err := s.postRepo.GetPostBySlug(urlSlug)
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return ErrNoPost
 		}
 
-		return fmt.Errorf("%s: %w", "Error getting post by slug", err)
+		return fmt.Errorf("getting post by slug: %w", err)
+	}
+
+	if authId != post.UserId {
+		return ErrUnauthorized
 	}
 
 	post = models.Post{
@@ -35,16 +39,18 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string) err
 			return ErrDuplicateTitle
 		}
 
-		return fmt.Errorf("%s: %w", "Error updating post", err)
+		return fmt.Errorf("updating post: %w", err)
 	}
 
 	return nil
 }
 
-func (s *mockPostService) Update(payload models.PostUpdateInput, urlSlug string) error {
+func (s *mockPostService) Update(payload models.PostUpdateInput, urlSlug string, authId int) error {
 	switch urlSlug {
 	case ErrNoPost.Error():
 		return ErrNoPost
+	case ErrUnauthorized.Error():
+		return ErrUnauthorized
 	case ErrDuplicateTitle.Error():
 		return ErrDuplicateTitle
 	case "unexpected error":
