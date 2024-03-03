@@ -17,6 +17,8 @@ var (
 	ErrNoCategory     = errors.New("Category not found")
 	ErrNoPost         = errors.New("Post not found")
 	ErrUnauthorized   = errors.New("You have no permission to do that")
+	ErrImageTooLarge  = errors.New("Image is too large (2MB max)")
+	ErrImageInvalid   = errors.New("Invalid type, image should be jpg/jpeg/png")
 )
 
 type PostService interface {

@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -26,16 +26,20 @@ func NewPostHandlers(s service.PostService) *PostHandlers {
 }
 
 func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
-	var payload models.PostCreateInput
-
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		res.MessageJSON(w, http.StatusBadRequest, "Error parsing form")
 		return
 	}
 
-	payload.Title = strings.TrimSpace(payload.Title)
+	cId, _ := strconv.Atoi(r.FormValue("category_id"))
+
+	payload := models.PostCreateInput{
+		Title:      strings.TrimSpace(r.FormValue("title")),
+		Content:    strings.TrimSpace(r.FormValue("content")),
+		CategoryId: cId,
+		Files:      r.MultipartForm.File,
+	}
 	payload.Slug = slug.Make(payload.Title)
-	payload.Content = strings.TrimSpace(payload.Content)
 
 	if err := validate.Struct(payload); err != nil {
 		res.JSON(w, http.StatusBadRequest, res.Response{
@@ -52,6 +56,9 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, service.ErrNoCategory):
 			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			return
+		case errors.Is(err, service.ErrImageTooLarge), errors.Is(err, service.ErrImageInvalid):
+			res.MessageJSON(w, http.StatusBadRequest, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateTitle):
 			res.MessageJSON(w, http.StatusConflict, err.Error())
@@ -113,18 +120,20 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
-	var payload models.PostUpdateInput
-
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.JSON(w, http.StatusBadRequest, res.Response{
-			Message: "Error decoding json",
-		})
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		res.MessageJSON(w, http.StatusBadRequest, "Error parsing form")
 		return
 	}
 
-	payload.Title = strings.TrimSpace(payload.Title)
+	cId, _ := strconv.Atoi(r.FormValue("category_id"))
+
+	payload := models.PostUpdateInput{
+		Title:      strings.TrimSpace(r.FormValue("title")),
+		Content:    strings.TrimSpace(r.FormValue("content")),
+		CategoryId: cId,
+		Files:      r.MultipartForm.File,
+	}
 	payload.Slug = slug.Make(payload.Title)
-	payload.Content = strings.TrimSpace(payload.Content)
 
 	if err := validate.Struct(payload); err != nil {
 		res.JSON(w, http.StatusBadRequest, res.Response{
@@ -142,8 +151,14 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, service.ErrNoPost):
 			res.MessageJSON(w, http.StatusNotFound, err.Error())
 			return
+		case errors.Is(err, service.ErrNoCategory):
+			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			return
 		case errors.Is(err, service.ErrUnauthorized):
 			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
+			return
+		case errors.Is(err, service.ErrImageTooLarge), errors.Is(err, service.ErrImageInvalid):
+			res.MessageJSON(w, http.StatusBadRequest, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateTitle):
 			res.MessageJSON(w, http.StatusConflict, err.Error())

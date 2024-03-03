@@ -11,6 +11,7 @@ export interface Post {
   title: string;
   slug?: string;
   excerpt: string;
+  image?: string;
   content: string;
   created_at?: string;
   updated_at?: string;
@@ -39,6 +40,7 @@ export interface CreatePost {
   excerpt: string;
   content: string;
   category_id: number;
+  image: File | null;
 }
 
 export const sampleContent = `### 🌟 Lorem Ipsum 👋
@@ -140,8 +142,7 @@ export const usePostStore = defineStore("post", () => {
       .required("title", "content")
       .strMinLength("title", 10)
       .strMinLength("content", 50)
-      .strMaxLength("title", 255)
-      .strMaxLength("title", 255);
+      .strMaxLength("title", 50);
 
     if (!f.isValid()) {
       rr.errors = f.errors;
@@ -149,7 +150,7 @@ export const usePostStore = defineStore("post", () => {
       return;
     }
 
-    rr.useApi("post", "/posts", form).then(() => {
+    rr.useApi("post", "/posts", form, true, "multipart/form-data").then(() => {
       if (rr.status != 201) return;
       if (rr.message) toast(rr.message, "green white-text");
       const slug = (rr.data as any as Post).slug;
@@ -163,8 +164,7 @@ export const usePostStore = defineStore("post", () => {
       .required("title", "content")
       .strMinLength("title", 10)
       .strMinLength("content", 50)
-      .strMaxLength("title", 255)
-      .strMaxLength("title", 255);
+      .strMaxLength("title", 50);
 
     if (!f.isValid()) {
       rr.errors = f.errors;
@@ -172,7 +172,13 @@ export const usePostStore = defineStore("post", () => {
       return;
     }
 
-    rr.useApi("patch", "/posts/" + viewedPost.value?.slug, form).then(() => {
+    rr.useApi(
+      "patch",
+      "/posts/" + viewedPost.value?.slug,
+      form,
+      true,
+      "multipart/form-data"
+    ).then(() => {
       if (rr.status !== 200) return;
       if (rr.message) toast(rr.message, "green white-text");
       viewedPost.value = null;

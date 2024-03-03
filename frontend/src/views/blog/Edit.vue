@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import Markdown from "@/components/Markdown.vue";
 import ResponseCard from "@/components/ResponseCard.vue";
+import Actions from "@/components/blog/Actions.vue";
 import { onMounted, ref } from "vue";
 import { type CreatePost, usePostStore } from "@/stores/post";
 import { RequestResponse } from "@/utils/api";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { getImage, verifyImage } from "@/utils/helper";
 
 const postStore = usePostStore();
 const authStore = useAuthStore();
@@ -14,21 +16,33 @@ const rr2 = ref(new RequestResponse()); // categories
 const rr3 = ref(new RequestResponse()); // viewedPost
 const rr4 = ref(new RequestResponse()); // delete
 const route = useRoute();
-
 const form = ref({} as CreatePost);
+const shownImage = ref("");
 
-function set() {
+function reset() {
   form.value.title = postStore.viewedPost?.title ?? "";
   form.value.excerpt = postStore.viewedPost?.excerpt ?? "";
   form.value.content = postStore.viewedPost?.content ?? "";
   form.value.category_id = postStore.viewedPost?.category_id ?? 1;
+  form.value.image = null;
+  shownImage.value = getImage("post/" + postStore.viewedPost?.image ?? "");
+}
+
+function onFileChange(event: Event) {
+  form.value.image = null;
+  const files = (event.target as HTMLInputElement).files;
+  const img = verifyImage(files);
+  if (img && files) {
+    form.value.image = files[0];
+    shownImage.value = URL.createObjectURL(files[0]);
+  }
 }
 
 const render = ref(false);
 
 onMounted(() => {
   postStore.fetchPost(rr3.value, route).then(() => {
-    set();
+    reset();
   });
   postStore.fetchCategories(rr2.value);
 });
@@ -47,7 +61,16 @@ onMounted(() => {
     <div class="grid" v-else-if="postStore.viewedPost">
       <div class="s12 m12 l9">
         <h3 class="center-align">Edit Post 🎨</h3>
+
         <div class="space"></div>
+        <img
+          v-if="shownImage"
+          :src="shownImage"
+          alt="Post Image"
+          class="responsive medium-height small-round"
+        />
+        <div class="space"></div>
+
         <label for="title" class="font-size-1-25 font-600">Title</label>
         <div class="field border no-margin">
           <input
@@ -127,33 +150,13 @@ onMounted(() => {
         </div>
       </div>
       <div class="s12 m12 l3">
-        <div class="actions">
-          <button
-            type="button"
-            class="red small-opacity responsive"
-            @click="postStore.deletePost(rr4)"
-            :disabled="rr.loading || rr4.loading"
-          >
-            {{ rr4.loading ? "Deleting..." : "Delete" }}
-            <i v-if="!rr4.loading">delete</i>
-            <progress v-else class="circle small white-text"></progress>
-          </button>
-          <div class="space"></div>
-          <button type="button" class="inverted responsive" @click="set">
-            Reset
-            <i>cancel</i>
-          </button>
-          <div class="space"></div>
-          <button
-            type="submit"
-            class="secondary responsive"
-            :disabled="rr.loading || rr4.loading"
-          >
-            {{ rr.loading ? "Processing..." : "Done" }}
-            <i v-if="!rr.loading">done</i>
-            <progress v-else class="circle small"></progress>
-          </button>
-        </div>
+        <Actions
+          :on-file-change="onFileChange"
+          :on-reset="reset"
+          :on-delete="postStore.deletePost"
+          :rr-delete="rr4"
+          :rr-submit="rr"
+        />
       </div>
     </div>
     <ResponseCard
@@ -175,12 +178,5 @@ form {
 textarea,
 textarea:focus {
   border: 2px dashed;
-}
-
-@media screen and (min-width: 992px) {
-  .actions {
-    position: fixed;
-    width: 15rem;
-  }
 }
 </style>

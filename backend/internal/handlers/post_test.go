@@ -3,7 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -11,7 +11,6 @@ import (
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
-	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/postgres"
 	"github.com/Noblefel/ManorTalk/backend/internal/repository/redis"
 	service "github.com/Noblefel/ManorTalk/backend/internal/service/post"
@@ -40,79 +39,48 @@ congue felis ligula sit amet mi`
 
 func TestPost_Create(t *testing.T) {
 	var tests = []struct {
-		name       string
-		payload    *models.PostCreateInput
-		statusCode int
+		name         string
+		noForm       bool
+		payloadTitle string
+		statusCode   int
 	}{
-		{
-			name: "postCreate-ok",
-			payload: &models.PostCreateInput{
-				Title:      "The new post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusCreated,
-		},
-		{
-			name:       "postCreate-error-decode-json",
-			payload:    nil,
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name: "postCreate-error-validation",
-			payload: &models.PostCreateInput{
-				Title:   "",
-				Content: "",
-			},
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name: "postCreate-error-no-category",
-			payload: &models.PostCreateInput{
-				Title:      service.ErrNoCategory.Error(),
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name: "postCreate-error-duplicate-title",
-			payload: &models.PostCreateInput{
-				Title:      service.ErrDuplicateTitle.Error(),
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusConflict,
-		},
-		{
-			name: "postCreate-error-unexpected",
-			payload: &models.PostCreateInput{
-				Title:      "unexpected error",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", false, "a sample title 123", http.StatusCreated},
+		{"error parsing form", true, "", http.StatusBadRequest},
+		{"error validation", false, "", http.StatusBadRequest},
+		{"no category", false, service.ErrNoCategory.Error(), http.StatusNotFound},
+		{"error image invalid", false, service.ErrImageInvalid.Error(), http.StatusBadRequest},
+		{"error image too large", false, service.ErrImageTooLarge.Error(), http.StatusBadRequest},
+		{"duplicate title", false, service.ErrDuplicateTitle.Error(), http.StatusConflict},
+		{"unexpected error", false, "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		var r *http.Request
-		if tt.payload == nil {
-			r = httptest.NewRequest("POST", "/posts", nil)
-		} else {
-			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("POST", "/posts", bytes.NewBuffer(jsonBytes))
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			var b bytes.Buffer
+			writer := multipart.NewWriter(&b)
+			writer.WriteField("title", tt.payloadTitle)
+			writer.WriteField("content", longText)
+			writer.WriteField("category_id", "1")
+			writer.Close()
 
-		ctx := context.WithValue(r.Context(), "user_id", 1)
-		r = r.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.post.Create)
-		handler.ServeHTTP(w, r)
+			var r *http.Request
+			if tt.noForm {
+				r = httptest.NewRequest("POST", "/posts", nil)
+			} else {
+				r = httptest.NewRequest("POST", "/posts", &b)
+			}
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			ctx := context.WithValue(r.Context(), "user_id", 1)
+			r = r.WithContext(ctx)
+			r.Header.Set("Content-Type", writer.FormDataContentType())
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.post.Create)
+			handler.ServeHTTP(w, r)
+
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -191,95 +159,56 @@ func TestPost_GetMany(t *testing.T) {
 
 func TestPost_Update(t *testing.T) {
 	var tests = []struct {
-		name       string
-		slugRoute  string
-		payload    *models.PostUpdateInput
-		statusCode int
+		name           string
+		slugRoute      string
+		noForm         bool
+		failValidation bool
+		statusCode     int
 	}{
-		{
-			name:      "postUpdate-ok",
-			slugRoute: "post-title",
-			payload: &models.PostUpdateInput{
-				Title:      "The updated post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "postCreate-error-decode-json",
-			payload:    nil,
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name: "postCreate-error-validation",
-			payload: &models.PostUpdateInput{
-				Title:   "",
-				Content: "",
-			},
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:      "postUpdate-error-no-post",
-			slugRoute: service.ErrNoPost.Error(),
-			payload: &models.PostUpdateInput{
-				Title:      "The updated post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name:      "postUpdate-error-unauthorized",
-			slugRoute: service.ErrUnauthorized.Error(),
-			payload: &models.PostUpdateInput{
-				Title:      "The updated post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name:      "postUpdate-error-duplicate-title-or-post",
-			slugRoute: service.ErrDuplicateTitle.Error(),
-			payload: &models.PostUpdateInput{
-				Title:      "The updated post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusConflict,
-		},
-		{
-			name:      "postUpdate-error-unexpected",
-			slugRoute: "unexpected error",
-			payload: &models.PostUpdateInput{
-				Title:      "The updated post title",
-				Content:    longText,
-				CategoryId: 1,
-			},
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "slug", false, false, http.StatusOK},
+		{"error parsing form", "", true, false, http.StatusBadRequest},
+		{"error validation", "", false, true, http.StatusBadRequest},
+		{"no post", service.ErrNoPost.Error(), false, false, http.StatusNotFound},
+		{"unauthorized", service.ErrUnauthorized.Error(), false, false, http.StatusUnauthorized},
+		{"no category", service.ErrNoCategory.Error(), false, false, http.StatusNotFound},
+		{"error image invalid", service.ErrImageInvalid.Error(), false, false, http.StatusBadRequest},
+		{"error image too large", service.ErrImageTooLarge.Error(), false, false, http.StatusBadRequest},
+		{"duplicate title", service.ErrDuplicateTitle.Error(), false, false, http.StatusConflict},
+		{"unexpected error", "unexpected error", false, false, http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		var r *http.Request
-		if tt.payload == nil {
-			r = httptest.NewRequest("PATCH", "/posts/{slug}", nil)
-		} else {
-			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("PATCH", "/posts/{slug}", bytes.NewBuffer(jsonBytes))
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			var b bytes.Buffer
+			writer := multipart.NewWriter(&b)
+			writer.WriteField("content", longText)
+			writer.WriteField("category_id", "1")
+			if tt.failValidation {
+				writer.WriteField("title", "x")
+			} else {
+				writer.WriteField("title", "sample title")
+			}
+			writer.Close()
 
-		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
-		ctx = context.WithValue(ctx, "user_id", 1)
-		r = r.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.post.Update)
-		handler.ServeHTTP(w, r)
+			var r *http.Request
+			if tt.noForm {
+				r = httptest.NewRequest("PATCH", "/posts/{slug}", nil)
+			} else {
+				r = httptest.NewRequest("PATCH", "/posts/{slug}", &b)
+			}
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
+			ctx = context.WithValue(ctx, "user_id", 1)
+			r = r.WithContext(ctx)
+			r.Header.Set("Content-Type", writer.FormDataContentType())
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.post.Update)
+			handler.ServeHTTP(w, r)
+
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 

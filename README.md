@@ -13,11 +13,11 @@ A mini-forum application built in Go 1.20
 - [slug](https://github.com/gosimple/slug)
 
 ### TODO
-1. Add image column to post table.
+1. Clean up old images after change or deletion of that record.
 2. Refactor JSON response to separate pagination metadata from the main data.
 3. Refactor unit test.
 4. Improve database queries in post repo.
-5. Fix migration to set from specific version/steps, instead of migrating up/down everything.
+5. Fix migration to run from specific version/steps, instead of migrating up/down everything.
 
 ## Installation
 ```bash

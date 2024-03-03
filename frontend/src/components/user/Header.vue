@@ -94,6 +94,7 @@ header {
   align-items: center;
 
   img {
+    object-fit: cover;
     border-radius: 50%;
     width: 5.5rem;
     height: 5.5rem;

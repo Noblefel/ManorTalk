@@ -3,6 +3,8 @@ import Markdown from "@/components/Markdown.vue";
 import { onMounted, ref } from "vue";
 import { type CreatePost, usePostStore, sampleContent } from "@/stores/post";
 import { RequestResponse } from "@/utils/api";
+import { verifyImage } from "@/utils/helper";
+import Actions from "@/components/blog/Actions.vue";
 
 const postStore = usePostStore();
 const rr = ref(new RequestResponse());
@@ -13,6 +15,7 @@ const form = ref<CreatePost>({
   excerpt: "",
   content: sampleContent,
   category_id: 1,
+  image: null,
 });
 
 const render = ref(false);
@@ -20,13 +23,34 @@ const render = ref(false);
 onMounted(() => {
   postStore.fetchCategories(rr2.value);
 });
+
+const shownImage = ref("");
+
+function onFileChange(event: Event) {
+  form.value.image = null;
+  const files = (event.target as HTMLInputElement).files;
+  const img = verifyImage(files);
+  if (img && files) {
+    form.value.image = files[0];
+    shownImage.value = img;
+  }
+}
 </script>
 
 <template>
   <form class="grid" @submit.prevent="postStore.create(form, rr)">
     <div class="s12 m12 l9">
       <h3 class="center-align">Create Post 🎨</h3>
+
       <div class="space"></div>
+      <img
+        v-if="form.image"
+        :src="shownImage"
+        alt="Post Image"
+        class="responsive medium-height small-round"
+      />
+      <div class="space"></div>
+
       <label for="title" class="font-size-1-25 font-600">Title</label>
       <div class="field border no-margin">
         <input
@@ -106,33 +130,19 @@ onMounted(() => {
       </div>
     </div>
     <div class="s12 m12 l3">
-      <div class="actions">
-        <button
-          type="button"
-          class="inverted responsive"
-          @click="
-            () => {
-              form.title = '';
-              form.excerpt = '';
-              form.content = sampleContent;
-              form.category_id = 1;
-            }
-          "
-        >
-          Reset
-          <i>cancel</i>
-        </button>
-        <div class="space"></div>
-        <button
-          type="submit"
-          class="secondary responsive"
-          :disabled="rr.loading"
-        >
-          {{ rr.loading ? "Processing..." : "Done" }}
-          <i v-if="!rr.loading">done</i>
-          <progress v-else class="circle small"></progress>
-        </button>
-      </div>
+      <Actions
+        :on-file-change="onFileChange"
+        :on-reset="
+          () => {
+            form.title = '';
+            form.excerpt = '';
+            form.content = sampleContent;
+            form.category_id = 1;
+            form.image = null;
+          }
+        "
+        :rr-submit="rr"
+      />
     </div>
   </form>
 </template>
@@ -142,6 +152,10 @@ form {
   margin: auto;
   max-width: 1000px;
   padding: 1rem;
+}
+
+img {
+  object-fit: cover;
 }
 
 textarea,

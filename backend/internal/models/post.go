@@ -1,35 +1,41 @@
 package models
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type Post struct {
-	Id         int       `json:"id"`
-	UserId     int       `json:"user_id"`
-	Title      string    `json:"title"`
-	Slug       string    `json:"slug"`
-	Excerpt    string    `json:"excerpt"`
-	Content    string    `json:"content"`
-	CategoryId int       `json:"category_id"`
+	Id         int       `json:"id,omitempty"`
+	UserId     int       `json:"user_id,omitempty"`
+	Title      string    `json:"title,omitempty"`
+	Slug       string    `json:"slug,omitempty"`
+	Excerpt    string    `json:"excerpt,omitempty"`
+	Image      string    `json:"image,omitempty"`
+	Content    string    `json:"content,omitempty"`
+	CategoryId int       `json:"category_id,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
-	Category   Category  `json:"category"`
-	User       User      `json:"user"`
+	Category   Category  `json:"category,omitempty"`
+	User       User      `json:"user,omitempty"`
 }
 
 type PostCreateInput struct {
-	Title      string `json:"title" validate:"required,min=10,max=255,excludesall=~%^;'<>"`
+	Title      string `json:"title" validate:"required,min=10,max=50,excludesall=~%^;'<>"`
 	Slug       string `json:"slug" validate:"required,min=10,max=255"`
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`
+	Files      map[string][]*multipart.FileHeader
 }
 
 type PostUpdateInput struct {
-	Title      string `json:"title" validate:"required,min=10,max=255,excludesall=~%^;'<>"`
+	Title      string `json:"title" validate:"required,min=10,max=50,excludesall=~%^;'<>"`
 	Slug       string `json:"slug" validate:"required,min=10,max=255"`
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`
+	Files      map[string][]*multipart.FileHeader
 }
 
 type Category struct {

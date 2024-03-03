@@ -25,8 +25,7 @@ defineProps({
         :with-excerpt="true"
         :separate-image="true"
         image-height="clamp(10rem, calc(5rem + 15vw), 18rem)"
-        background-color="var(--background)"
-        image="/src/assets/images/stock_1.jpg"
+        background-color="var(--background)" 
       />
     </div>
     <div class="s12 m12 l12" v-if="pagination_meta">

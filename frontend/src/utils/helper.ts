@@ -1,4 +1,5 @@
 import type { User } from "@/stores/user";
+import type { Ref } from "vue";
 import { useRoute, type Router } from "vue-router";
 
 /**  activeRoute returns "active" if the current route name match  .*/
@@ -28,6 +29,10 @@ export const toast = (messages: string, className: string = "error") => {
   }, 7000);
 };
 
+export const getImage = (path: string) => {
+  return "http://localhost:8080/images/" + path;
+};
+
 /** getAvatar will return image url based on user's name/username.
  *  Will skip if user already has an avatar
  */
@@ -35,11 +40,32 @@ export const getAvatar = (user: User | null) => {
   if (!user)
     return `https://ui-avatars.com/api/?name=guest&background=ffeec6&size=120&color=ff9d48&bold=true`;
 
-  if (user.avatar) return "http://localhost:8080/images/avatar/" + user.avatar;
+  if (user.avatar) return getImage("avatar/" + user.avatar);
 
   const name = (user.name ?? user.username).split(/[\s_\-]/).join("+");
 
   return `https://ui-avatars.com/api/?name=${name}&background=random&size=120&color=fff`;
+};
+
+/** verifyImage will check if the file is either png/jpeg/jpg and less than 2mb */
+export const verifyImage = (files: FileList | null) => {
+  const isImg =
+    files &&
+    ["image/png", "image/jpeg", "image/jpg"].includes(
+      files[0].type.toLowerCase()
+    );
+
+  if (!isImg) {
+    toast("File must be an image (png,jpg)");
+    return;
+  }
+
+  if (files[0].size > 2 * 1024 * 1024) {
+    toast("Image is too large (2MB max)");
+    return;
+  }
+
+  return URL.createObjectURL(files[0]);
 };
 
 /** changeParam will set new query parameter and modify the url */

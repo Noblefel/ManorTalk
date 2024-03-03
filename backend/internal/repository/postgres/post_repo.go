@@ -29,7 +29,8 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 			p.user_id, 
 			p.title, 
 			p.slug, 
-			COALESCE(p.excerpt, ''), 
+			COALESCE(p.excerpt, ''),
+			COALESCE(p.image, ''),  
 			p.content, 
 			p.category_id, 
 			p.created_at, 
@@ -99,6 +100,7 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 			&post.Title,
 			&post.Slug,
 			&post.Excerpt,
+			&post.Image,
 			&post.Content,
 			&post.CategoryId,
 			&post.CreatedAt,
@@ -134,6 +136,7 @@ func (r *PostRepo) GetPostBySlug(slug string) (models.Post, error) {
 			p.title, 
 			p.slug, 
 			COALESCE(p.excerpt, ''), 
+			COALESCE(p.image, ''), 
 			p.content, 
 			p.category_id, 
 			p.created_at, 
@@ -155,6 +158,7 @@ func (r *PostRepo) GetPostBySlug(slug string) (models.Post, error) {
 		&post.Title,
 		&post.Slug,
 		&post.Excerpt,
+		&post.Image,
 		&post.Content,
 		&post.CategoryId,
 		&post.CreatedAt,
@@ -177,9 +181,29 @@ func (r *PostRepo) CreatePost(p models.Post) (models.Post, error) {
 	var post models.Post
 
 	query := `
-		INSERT INTO posts (user_id, title, slug, excerpt, content, category_id, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id, user_id, title, slug, excerpt, content, category_id, created_at, updated_at
+		INSERT INTO posts (
+			user_id, 
+			title, 
+			slug, 
+			excerpt,
+			image, 
+			content, 
+			category_id, 
+			created_at, 
+			updated_at
+		)
+		VALUES ($1, $2, $3, $4, NULLIF($5, ''), $6, $7, $8, $9)
+		RETURNING 
+			id, 
+			user_id, 
+			title, 
+			slug, 
+			excerpt,
+			COALESCE(image, ''), 
+			content, 
+			category_id, 
+			created_at, 
+			updated_at
 	`
 
 	err := r.db.Sql.QueryRow(query,
@@ -187,6 +211,7 @@ func (r *PostRepo) CreatePost(p models.Post) (models.Post, error) {
 		p.Title,
 		p.Slug,
 		p.Excerpt,
+		p.Image,
 		p.Content,
 		p.CategoryId,
 		time.Now(),
@@ -197,6 +222,7 @@ func (r *PostRepo) CreatePost(p models.Post) (models.Post, error) {
 		&post.Title,
 		&post.Slug,
 		&post.Excerpt,
+		&post.Image,
 		&post.Content,
 		&post.CategoryId,
 		&post.CreatedAt,
@@ -217,16 +243,18 @@ func (r *PostRepo) UpdatePost(p models.Post) error {
 				title = $1, 
 				slug = $2, 
 				excerpt = $3, 
-				content = $4, 
-				category_id = $5, 
-				updated_at = $6 
-		WHERE id = $7
+				image = COALESCE(NULLIF($4, ''), image),
+				content = $5, 
+				category_id = $6, 
+				updated_at = $7 
+		WHERE id = $8
 	`
 
 	_, err := r.db.Sql.Exec(query,
 		p.Title,
 		p.Slug,
 		p.Excerpt,
+		p.Image,
 		p.Content,
 		p.CategoryId,
 		time.Now(),

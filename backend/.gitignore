@@ -3,9 +3,8 @@
 .todo
 cover.out
 
-*.png
-*.PNG
-*.jpg
-*.JPG
-*.jpeg
-*.JPEG
+images/avatar/*
+!images/avatar/example.png
+
+images/post/*
+!images/post/example.jpg

@@ -4,15 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"image/jpeg"
-	"image/png"
-	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
+	"github.com/Noblefel/ManorTalk/backend/internal/utils/img"
 	"github.com/google/uuid"
 )
 
@@ -23,7 +20,7 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 			return "", ErrNoUser
 		}
 
-		return "", fmt.Errorf("error getting user by slug: %w", err)
+		return "", fmt.Errorf("getting user by slug: %w", err)
 	}
 
 	if authId != user.Id {
@@ -34,68 +31,30 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 	user.Username = payload.Username
 	user.Bio = payload.Bio
 
-	file, ok := payload.Files["avatar"]
+	files, ok := payload.Files["avatar"]
 	if ok {
-		f, err := file[0].Open()
+		f, err := files[0].Open()
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("opening file: %w", err)
 		}
 		defer f.Close()
-
-		if file[0].Size > 2*1024*1024 {
-			return "", ErrAvatarTooLarge
-		}
-
-		buff := make([]byte, 512)
-		_, err = f.Read(buff)
-		if err != nil {
-			return "", err
-		}
-
-		fileType := http.DetectContentType(buff)
-		switch fileType {
-		case "image/png", "image/jpg", "image/jpeg":
-		default:
-			return "", ErrAvatarInvalid
-		}
-
-		_, err = f.Seek(0, 0)
-		if err != nil {
-			return "", err
-		}
 
 		user.Avatar = fmt.Sprintf(
 			"%d%d-%s%s",
 			time.Now().UnixNano(),
 			user.Id,
 			uuid.New(),
-			filepath.Ext(file[0].Filename),
+			filepath.Ext(files[0].Filename),
 		)
 
-		out, err := os.Create("images/avatar/" + user.Avatar)
+		err = img.Upload(f, "images/avatar/"+user.Avatar)
 		if err != nil {
-			return "", err
-		}
-		defer out.Close()
-
-		if fileType == "image/png" {
-			img, err := png.Decode(f)
-			if err != nil {
-				return "", err
-			}
-
-			err = png.Encode(out, img)
-			if err != nil {
-				return "", err
-			}
-		} else {
-			img, err := jpeg.Decode(f)
-			if err != nil {
-				return "", err
-			}
-
-			err = jpeg.Encode(out, img, nil)
-			if err != nil {
+			switch err {
+			case img.ErrTooLarge:
+				return "", ErrAvatarTooLarge
+			case img.ErrType:
+				return "", ErrAvatarInvalid
+			default:
 				return "", err
 			}
 		}

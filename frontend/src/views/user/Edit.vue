@@ -4,7 +4,7 @@ import { ref } from "vue";
 import { RequestResponse } from "@/utils/api";
 import { useAuthStore } from "@/stores/auth";
 import { useUserStore, type UpdateForm } from "@/stores/user";
-import { getAvatar, toast } from "@/utils/helper";
+import { getAvatar, verifyImage } from "@/utils/helper";
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -20,26 +20,17 @@ const form = ref<UpdateForm>({
 
 const rr = ref(new RequestResponse());
 const rrCheck = ref(new RequestResponse());
-
 const shownImage = ref(getAvatar(u));
 
 function onFileChange(event: Event) {
   form.value.avatar = null;
   shownImage.value = getAvatar(u);
-  const file = (event.target as HTMLInputElement).files;
-
-  if (!file) {
-    toast("File must be an image");
-    return;
+  const files = (event.target as HTMLInputElement).files;
+  const img = verifyImage(files) 
+  if (img && files) {
+    form.value.avatar = files[0];
+    shownImage.value = URL.createObjectURL(files[0]);
   }
-
-  if (file[0].size > 2 * 1024 * 1024) {
-    toast("Image is too large (2MB max)");
-    return;
-  }
-
-  form.value.avatar = file[0];
-  shownImage.value = URL.createObjectURL(file[0]);
 }
 </script>
 
@@ -112,7 +103,7 @@ function onFileChange(event: Event) {
 
         <label for="avatar" class="font-size-0-9 font-600">Avatar</label>
         <div class="field border no-margin prefix">
-          <i>attach_file</i>
+          <i>image</i>
           <input type="file" @change="onFileChange" accept=".jpeg,.jpg,.png" />
           <input
             type="text"
@@ -179,6 +170,7 @@ p {
 }
 
 img {
+  object-fit: cover;
   border-radius: 50%;
 }
 

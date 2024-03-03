@@ -1,5 +1,12 @@
-INSERT INTO public.users (email, password, created_at, updated_at, name, username) VALUES 
-('test@example.com', '$2y$12$AI3YjckdxoalFHJQBGbQBu2aVNbaNpQO1wewFIaCrY5nMl4tnvYCq', '2020-01-02', '2020-01-02', 'Test User no.1', 'the-first-user');
+INSERT INTO public.users (email, password, created_at, updated_at, name, username, avatar) VALUES 
+(
+    'test@example.com', 
+    '$2y$12$AI3YjckdxoalFHJQBGbQBu2aVNbaNpQO1wewFIaCrY5nMl4tnvYCq', 
+    '2020-01-02', '2020-01-02', 
+    'Test User no.1', 
+    'the-first-user',
+    'example.png'
+);
 
 INSERT INTO users ( 
     email, 

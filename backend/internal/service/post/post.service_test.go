@@ -51,57 +51,34 @@ var s = newTestService()
 
 func TestPostService_Create(t *testing.T) {
 	var tests = []struct {
-		name    string
-		payload models.PostCreateInput
-		isError bool
+		name       string
+		title      string
+		categoryId int
+		isError    bool
 	}{
-		{
-			name: "create-ok",
-			payload: models.PostCreateInput{
-				Title: "A sample title",
-			},
-			isError: false,
-		},
-		{
-			name: "create-error-no-category",
-			payload: models.PostCreateInput{
-				CategoryId: repository.ErrNotFoundKeyInt,
-			},
-			isError: true,
-		},
-		{
-			name: "create-error-getting-category",
-			payload: models.PostCreateInput{
-				CategoryId: repository.ErrUnexpectedKeyInt,
-			},
-			isError: true,
-		},
-		{
-			name: "create-error-duplicate-title",
-			payload: models.PostCreateInput{
-				Title: repository.ErrDuplicateKeyString,
-			},
-			isError: true,
-		},
-		{
-			name: "create-error-creating-post",
-			payload: models.PostCreateInput{
-				Title: repository.ErrUnexpectedKeyString,
-			},
-			isError: true,
-		},
+		{"success", "", 1, false},
+		{"no category", "", repository.ErrNotFoundKeyInt, true},
+		{"error getting category", "", repository.ErrUnexpectedKeyInt, true},
+		{"duplicate title", repository.ErrDuplicateKeyString, 1, true},
+		{"error creating post", repository.ErrUnexpectedKeyString, 1, true},
 	}
 
 	for _, tt := range tests {
-		_, err := s.Create(tt.payload, 1)
+		t.Run(tt.name, func(t *testing.T) {
+			payload := models.PostCreateInput{
+				Title:      tt.title,
+				CategoryId: tt.categoryId,
+			}
+			_, err := s.Create(payload, 1)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Error("expecting error")
+			}
+		})
 	}
 }
 
@@ -209,67 +186,39 @@ func TestPostService_GetMany(t *testing.T) {
 
 func TestPostService_Update(t *testing.T) {
 	var tests = []struct {
-		name    string
-		payload models.PostUpdateInput
-		urlSlug string
-		authId  int
-		isError bool
+		name       string
+		title      string
+		categoryId int
+		urlSlug    string
+		authId     int
+		isError    bool
 	}{
-		{
-			name: "update-ok",
-			payload: models.PostUpdateInput{
-				Title: "A sample title",
-			},
-			urlSlug: "example",
-			isError: false,
-		},
-		{
-			name:    "update-error-no-post",
-			payload: models.PostUpdateInput{},
-			urlSlug: repository.ErrNotFoundKeyString,
-			isError: true,
-		},
-		{
-			name:    "update-error-getting-post",
-			payload: models.PostUpdateInput{},
-			urlSlug: repository.ErrUnexpectedKeyString,
-			isError: true,
-		},
-		{
-			name:    "update-error-unauhtorized",
-			payload: models.PostUpdateInput{},
-			urlSlug: "example",
-			authId:  -1,
-			isError: true,
-		},
-		{
-			name: "update-error-duplicate-title",
-			payload: models.PostUpdateInput{
-				Title: repository.ErrDuplicateKeyString,
-			},
-			urlSlug: "example",
-			isError: true,
-		},
-		{
-			name: "update-error-updating-post",
-			payload: models.PostUpdateInput{
-				Title: repository.ErrUnexpectedKeyString,
-			},
-			urlSlug: "example",
-			isError: true,
-		},
+		{"success", "", 0, "", 0, false},
+		{"no post", "", 0, repository.ErrNotFoundKeyString, 0, true},
+		{"error getting post", "", 0, repository.ErrUnexpectedKeyString, 0, true},
+		{"unauthorized", "", 0, "", -1, true},
+		{"no category", "", repository.ErrNotFoundKeyInt, "", 0, true},
+		{"error getting category", "", repository.ErrUnexpectedKeyInt, "", 0, true},
+		{"duplicate title", repository.ErrDuplicateKeyString, 0, "", 0, true},
+		{"error updating post", repository.ErrUnexpectedKeyString, 0, "", 0, true},
 	}
 
 	for _, tt := range tests {
-		err := s.Update(tt.payload, tt.urlSlug, tt.authId)
+		t.Run(tt.name, func(t *testing.T) {
+			payload := models.PostUpdateInput{
+				Title:      tt.title,
+				CategoryId: tt.categoryId,
+			}
+			err := s.Update(payload, tt.urlSlug, tt.authId)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Error("expecting error")
+			}
+		})
 	}
 }
 

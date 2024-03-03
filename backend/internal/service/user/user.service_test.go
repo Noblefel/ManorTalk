@@ -53,33 +53,23 @@ func TestUserService_CheckUsername(t *testing.T) {
 		username string
 		isError  bool
 	}{
-		{
-			name:     "checkUsername-ok",
-			username: repository.ErrNotFoundKeyString,
-			isError:  false,
-		},
-		{
-			name:     "checkUsername-error-duplicate-username",
-			username: "test",
-			isError:  true,
-		},
-		{
-			name:     "checkUsername-error-getting-post-by-username",
-			username: repository.ErrUnexpectedKeyString,
-			isError:  true,
-		},
+		{"success", repository.ErrNotFoundKeyString, false},
+		{"duplicate username", "test", true},
+		{"error getting user by username", repository.ErrUnexpectedKeyString, true},
 	}
 
 	for _, tt := range tests {
-		err := s.CheckUsername(tt.username)
+		t.Run(tt.name, func(t *testing.T) {
+			err := s.CheckUsername(tt.username)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Error("expecting error")
+			}
+		})
 	}
 }
 
@@ -89,33 +79,23 @@ func TestUserService_Get(t *testing.T) {
 		username string
 		isError  bool
 	}{
-		{
-			name:     "get-ok",
-			username: "test",
-			isError:  false,
-		},
-		{
-			name:     "get-error-not-found",
-			username: repository.ErrNotFoundKeyString,
-			isError:  true,
-		},
-		{
-			name:     "get-error-getting-post-by-username",
-			username: repository.ErrUnexpectedKeyString,
-			isError:  true,
-		},
+		{"success", "test", false},
+		{"user not found", repository.ErrNotFoundKeyString, true},
+		{"error getting user by username", repository.ErrUnexpectedKeyString, true},
 	}
 
 	for _, tt := range tests {
-		_, err := s.Get(tt.username)
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := s.Get(tt.username)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Error("expecting error")
+			}
+		})
 	}
 }
 
@@ -128,36 +108,35 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		isError  bool
 	}{
 		{
-			name: "updateProfile-ok",
+			name: "success",
 			payload: models.UpdateProfileInput{
 				Name: "test",
 			},
-			isError: false,
 		},
 		{
-			name:     "updateProfile-error-not-found",
+			name:     "user not found",
 			username: repository.ErrNotFoundKeyString,
 			isError:  true,
 		},
 		{
-			name:     "updateProfile-error-getting-user",
+			name:     "error getting user",
 			username: repository.ErrUnexpectedKeyString,
 			isError:  true,
 		},
 		{
-			name:    "updateProfile-error-unauthorized",
+			name:    "unauthorized",
 			authId:  -1,
 			isError: true,
 		},
 		{
-			name: "updateProfile-error-duplicate-username",
+			name: "duplicate username",
 			payload: models.UpdateProfileInput{
 				Name: repository.ErrDuplicateKeyString,
 			},
 			isError: true,
 		},
 		{
-			name: "updateProfile-error-updating-user",
+			name: "error updating user",
 			payload: models.UpdateProfileInput{
 				Name: repository.ErrUnexpectedKeyString,
 			},
@@ -166,14 +145,16 @@ func TestUserService_UpdateProfile(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		_, err := s.UpdateProfile(tt.payload, tt.username, tt.authId)
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := s.UpdateProfile(tt.payload, tt.username, tt.authId)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Errorf("expecting error")
+			}
+		})
 	}
 }

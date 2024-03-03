@@ -7,6 +7,7 @@ INSERT INTO posts (
     title, 
     slug,  
     excerpt,
+    image,
     content, 
     category_id, 
     created_at, 
@@ -17,6 +18,7 @@ SELECT
     concat('A Sample Post no.', num),
     concat('a-sample-post-',num), 
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla commodo nisl sed odio hendrerit, sit amet dignissim libero fringilla. Fusce vehicula enim eget mauris suscipit, at porta nibh fermentum.',
+    'example.JPG',
     E'### 🌟 Lorem Ipsum 👋
 
 *Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla posuere neque id magna pretium rutrum.* 

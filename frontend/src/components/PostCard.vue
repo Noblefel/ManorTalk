@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import type { Post } from "@/stores/post";
-import { getAvatar } from "@/utils/helper";
+import { getAvatar, getImage } from "@/utils/helper";
 import type { PropType } from "vue";
 import { RouterLink } from "vue-router";
 
 defineProps({
   post: { type: Object as PropType<Post>, required: true },
-  width: { type: String, default: "100%" },
-  image: { type: String },
+  width: { type: String, default: "100%" }, 
   imageHeight: {
     type: String,
     default: "clamp(15rem, calc(8rem + 8vw), 20rem)",
@@ -31,13 +30,14 @@ defineProps({
     }"
   >
     <div class="separate-image">
-      <div v-if="image">
+      <div v-if="post.image">
         <img
-          :src="image"
+          :src="getImage(`post/${post.image}`)"
           :alt="post.title"
           :style="{
             height: imageHeight,
           }"
+          loading="lazy"
         />
       </div>
       <div class="space"></div>

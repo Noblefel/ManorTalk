@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getAvatar } from "@/utils/helper";
+import { getAvatar, getImage } from "@/utils/helper";
 import type { Post } from "@/stores/post";
 import { type PropType } from "vue";
 import Markdown from "../Markdown.vue";
@@ -53,8 +53,11 @@ defineProps({
   </div>
 
   <div class="content-wrapper small-padding">
-    <!-- <img src="@/assets/images/stock_1.jpg" alt="" /> -->
-
+    <img
+      :src="getImage(`post/${post.image}`)"
+      alt="Post Image"
+      v-if="post.image"
+    />
     <p class="excerpt italic">
       {{ post.excerpt }}
     </p>
