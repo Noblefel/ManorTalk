@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"path/filepath"
+	"log"
+	"os"
 	"strings"
-	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/img"
@@ -31,23 +31,11 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 	user.Username = payload.Username
 	user.Bio = payload.Bio
 
-	files, ok := payload.Files["avatar"]
-	if ok {
-		f, err := files[0].Open()
-		if err != nil {
-			return "", fmt.Errorf("opening file: %w", err)
-		}
-		defer f.Close()
+	var oldImage string
 
-		user.Avatar = fmt.Sprintf(
-			"%d%d-%s%s",
-			time.Now().UnixNano(),
-			user.Id,
-			uuid.New(),
-			filepath.Ext(files[0].Filename),
-		)
-
-		err = img.Upload(f, "images/avatar/"+user.Avatar)
+	if payload.Avatar != nil {
+		name := fmt.Sprintf("%s-%d", uuid.New(), authId)
+		ext, err := img.Verify(payload.Avatar, name)
 		if err != nil {
 			switch err {
 			case img.ErrTooLarge:
@@ -55,8 +43,15 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 			case img.ErrType:
 				return "", ErrAvatarInvalid
 			default:
-				return "", err
+				return "", fmt.Errorf("verifying image: %w", err)
 			}
+		}
+
+		oldImage, user.Avatar = user.Avatar, name+ext
+
+		err = img.Save(payload.Avatar, "images/avatar/", user.Avatar)
+		if err != nil {
+			return "", fmt.Errorf("saving image: %w", err)
 		}
 	}
 
@@ -66,7 +61,13 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 			return "", ErrDuplicateUsername
 		}
 
-		return "", fmt.Errorf("error updating user: %w", err)
+		return "", fmt.Errorf("updating user: %w", err)
+	}
+
+	if oldImage != "" {
+		if err := os.Remove("images/avatar/" + oldImage); err != nil {
+			log.Println("unable to delete image: ", err)
+		}
 	}
 
 	return user.Avatar, nil

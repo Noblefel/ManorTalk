@@ -132,80 +132,47 @@ func TestUser_UpdateProfile(t *testing.T) {
 		username       string
 		statusCode     int
 	}{
-		{
-			name:       "updateProfile-ok",
-			username:   "test",
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "updateProfile-error-parsing-form",
-			noForm:     true,
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:           "updateProfile-error-validation",
-			failValidation: true,
-			statusCode:     http.StatusBadRequest,
-		},
-		{
-			name:       "updateProfile-error-no-user",
-			username:   service.ErrNoUser.Error(),
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name:       "updateProfile-error-unauthorized",
-			username:   service.ErrUnauthorized.Error(),
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name:       "updateProfile-error-avatar-too-large",
-			username:   service.ErrAvatarTooLarge.Error(),
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:       "updateProfile-error-avatar-invalid",
-			username:   service.ErrAvatarInvalid.Error(),
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:       "updateProfile-error-duplicate-username",
-			username:   service.ErrDuplicateUsername.Error(),
-			statusCode: http.StatusConflict,
-		},
-		{
-			name:       "updateProfile-error-unexpected",
-			username:   "unexpected error",
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", false, false, "test", http.StatusOK},
+		{"error parsing form", true, false, "", http.StatusBadRequest},
+		{"error validation", false, true, "", http.StatusBadRequest},
+		{"no user", false, false, service.ErrNoUser.Error(), http.StatusNotFound},
+		{"unauthorized", false, false, service.ErrUnauthorized.Error(), http.StatusUnauthorized},
+		{"avatar invalid type", false, false, service.ErrAvatarInvalid.Error(), http.StatusBadRequest},
+		{"avatar too large", false, false, service.ErrAvatarTooLarge.Error(), http.StatusBadRequest},
+		{"duplicate username", false, false, service.ErrDuplicateUsername.Error(), http.StatusConflict},
+		{"unexpected error", false, false, "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		var b bytes.Buffer
-		writer := multipart.NewWriter(&b)
-		v := "test"
-		if tt.failValidation {
-			v = ""
-		}
-		writer.WriteField("username", v)
-		writer.Close()
+		t.Run(tt.name, func(t *testing.T) {
+			var b bytes.Buffer
+			fw := multipart.NewWriter(&b)
+			v := "test"
+			if tt.failValidation {
+				v = ""
+			}
+			fw.WriteField("username", v)
+			fw.CreateFormFile("avatar", "x")
+			fw.Close()
 
-		var r *http.Request
-		if tt.noForm {
-			r = httptest.NewRequest("PATCH", "/users/{username}", nil)
-		} else {
-			r = httptest.NewRequest("PATCH", "/users/{username}", &b)
-		}
+			var r *http.Request
+			if tt.noForm {
+				r = httptest.NewRequest("PATCH", "/users/{username}", nil)
+			} else {
+				r = httptest.NewRequest("PATCH", "/users/{username}", &b)
+			}
 
-		ctx := getCtxWithParam(r, params{"username": tt.username})
-		ctx = context.WithValue(ctx, "user_id", 1)
-		r = r.WithContext(ctx)
-		r.Header.Set("Content-Type", writer.FormDataContentType())
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.user.UpdateProfile)
-		handler.ServeHTTP(w, r)
+			ctx := getCtxWithParam(r, params{"username": tt.username})
+			ctx = context.WithValue(ctx, "user_id", 1)
+			r = r.WithContext(ctx)
+			r.Header.Set("Content-Type", fw.FormDataContentType())
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.user.UpdateProfile)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }

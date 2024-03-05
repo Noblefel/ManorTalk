@@ -1,6 +1,7 @@
 package user
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 
@@ -63,7 +64,7 @@ func TestUserService_CheckUsername(t *testing.T) {
 			err := s.CheckUsername(tt.username)
 
 			if err != nil && !tt.isError {
-				t.Errorf("expecting no error, got %v", err)
+				t.Errorf("expecting no error, got: %v", err)
 			}
 
 			if err == nil && tt.isError {
@@ -89,7 +90,7 @@ func TestUserService_Get(t *testing.T) {
 			_, err := s.Get(tt.username)
 
 			if err != nil && !tt.isError {
-				t.Errorf("expecting no error, got %v", err)
+				t.Errorf("expecting no error, got: %v", err)
 			}
 
 			if err == nil && tt.isError {
@@ -129,6 +130,27 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			isError: true,
 		},
 		{
+			name: "avatar invalid type",
+			payload: models.UpdateProfileInput{
+				Avatar: bytes.NewReader(make([]byte, 1)),
+			},
+			isError: true,
+		},
+		{
+			name: "avatar too large",
+			payload: models.UpdateProfileInput{
+				Avatar: bytes.NewReader(make([]byte, 2*1024*1024+2)),
+			},
+			isError: true,
+		},
+		{
+			name: "error verifying image",
+			payload: models.UpdateProfileInput{
+				Avatar: &bytes.Reader{},
+			},
+			isError: true,
+		},
+		{
 			name: "duplicate username",
 			payload: models.UpdateProfileInput{
 				Name: repository.ErrDuplicateKeyString,
@@ -149,7 +171,7 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			_, err := s.UpdateProfile(tt.payload, tt.username, tt.authId)
 
 			if err != nil && !tt.isError {
-				t.Errorf("expecting no error, got %v", err)
+				t.Errorf("expecting no error, got: %v", err)
 			}
 
 			if err == nil && tt.isError {

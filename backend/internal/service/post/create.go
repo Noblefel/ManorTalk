@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/img"
@@ -26,32 +24,9 @@ func (s *postService) Create(payload models.PostCreateInput, authId int) (models
 		return post, fmt.Errorf("getting category by id: %w", err)
 	}
 
-	post = models.Post{
-		UserId:     authId,
-		Title:      payload.Title,
-		Slug:       slug.Make(payload.Title),
-		Excerpt:    payload.Excerpt,
-		Content:    payload.Content,
-		CategoryId: payload.CategoryId,
-	}
-
-	files, ok := payload.Files["image"]
-	if ok {
-		f, err := files[0].Open()
-		if err != nil {
-			return post, fmt.Errorf("opening file: %w", err)
-		}
-		defer f.Close()
-
-		post.Image = fmt.Sprintf(
-			"%d%d-%s%s",
-			time.Now().UnixNano(),
-			authId,
-			uuid.New(),
-			filepath.Ext(files[0].Filename),
-		)
-
-		err = img.Upload(f, "images/post/"+post.Image)
+	if payload.Image != nil {
+		name := fmt.Sprintf("%s-%d", uuid.New(), authId)
+		ext, err := img.Verify(payload.Image, name)
 		if err != nil {
 			switch err {
 			case img.ErrTooLarge:
@@ -59,10 +34,23 @@ func (s *postService) Create(payload models.PostCreateInput, authId int) (models
 			case img.ErrType:
 				return post, ErrImageInvalid
 			default:
-				return post, fmt.Errorf("uploading image: %w", err)
+				return post, fmt.Errorf("verifying image: %w", err)
 			}
 		}
+
+		post.Image = name + ext
+
+		err = img.Save(payload.Image, "images/post/", post.Image)
+		if err != nil {
+			return post, fmt.Errorf("saving image: %w", err)
+		}
 	}
+
+	post.Title = payload.Title
+	post.Slug = slug.Make(payload.Title)
+	post.Excerpt = payload.Excerpt
+	post.Content = payload.Content
+	post.CategoryId = payload.CategoryId
 
 	post, err = s.postRepo.CreatePost(post)
 	if err != nil {
@@ -72,7 +60,6 @@ func (s *postService) Create(payload models.PostCreateInput, authId int) (models
 
 		return post, fmt.Errorf("creating post: %w", err)
 	}
-
 	post.Category = category
 
 	return post, nil

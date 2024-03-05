@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 )
 
 func (s *postService) Delete(slug string, authId int) error {
@@ -23,6 +25,13 @@ func (s *postService) Delete(slug string, authId int) error {
 	err = s.postRepo.DeletePost(post.Id)
 	if err != nil {
 		return fmt.Errorf("deleting post: %w", err)
+	}
+
+	if post.Image != "" {
+		err := os.Remove("images/post/" + post.Image)
+		if err != nil {
+			log.Println("removing image: ", err)
+		}
 	}
 
 	return nil

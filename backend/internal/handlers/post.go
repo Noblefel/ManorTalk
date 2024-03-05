@@ -32,12 +32,10 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cId, _ := strconv.Atoi(r.FormValue("category_id"))
-
 	payload := models.PostCreateInput{
 		Title:      strings.TrimSpace(r.FormValue("title")),
 		Content:    strings.TrimSpace(r.FormValue("content")),
 		CategoryId: cId,
-		Files:      r.MultipartForm.File,
 	}
 	payload.Slug = slug.Make(payload.Title)
 
@@ -47,6 +45,17 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 			Errors:  err,
 		})
 		return
+	}
+
+	files, ok := r.MultipartForm.File["image"]
+	if ok {
+		f, err := files[0].Open()
+		if err != nil {
+			res.MessageJSON(w, http.StatusBadRequest, "Error opening file")
+		}
+		defer f.Close()
+
+		payload.Image = f
 	}
 
 	userId := r.Context().Value("user_id").(int)
@@ -126,12 +135,10 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cId, _ := strconv.Atoi(r.FormValue("category_id"))
-
 	payload := models.PostUpdateInput{
 		Title:      strings.TrimSpace(r.FormValue("title")),
 		Content:    strings.TrimSpace(r.FormValue("content")),
 		CategoryId: cId,
-		Files:      r.MultipartForm.File,
 	}
 	payload.Slug = slug.Make(payload.Title)
 
@@ -141,6 +148,17 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 			Errors:  err,
 		})
 		return
+	}
+
+	files, ok := r.MultipartForm.File["image"]
+	if ok {
+		f, err := files[0].Open()
+		if err != nil {
+			res.MessageJSON(w, http.StatusBadRequest, "Error opening file")
+		}
+		defer f.Close()
+
+		payload.Image = f
 	}
 
 	authId := r.Context().Value("user_id").(int)

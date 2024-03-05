@@ -87,7 +87,6 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		Name:     r.FormValue("name"),
 		Username: r.FormValue("username"),
 		Bio:      r.FormValue("bio"),
-		Files:    r.MultipartForm.File,
 	}
 
 	if err := validate.Struct(payload); err != nil {
@@ -96,6 +95,17 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 			Errors:  err,
 		})
 		return
+	}
+
+	files, ok := r.MultipartForm.File["avatar"]
+	if ok {
+		f, err := files[0].Open()
+		if err != nil {
+			res.MessageJSON(w, http.StatusBadRequest, "Error opening file")
+		}
+		defer f.Close()
+
+		payload.Avatar = f
 	}
 
 	authId := r.Context().Value("user_id").(int)

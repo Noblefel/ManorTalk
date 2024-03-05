@@ -191,9 +191,9 @@ export const usePostStore = defineStore("post", () => {
     if (!confirm("Are you sure? ")) return;
     rr.useApi("delete", "/posts/" + viewedPost.value?.slug).then(() => {
       if (rr.status !== 200) return;
+      router.push({name: "blog"})
       if (rr.message) toast(rr.message, "green white-text");
       viewedPost.value = null;
-      router.go(-2);
     });
   }
 

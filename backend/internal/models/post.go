@@ -1,7 +1,7 @@
 package models
 
 import (
-	"mime/multipart"
+	"io"
 	"time"
 )
 
@@ -26,7 +26,7 @@ type PostCreateInput struct {
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`
-	Files      map[string][]*multipart.FileHeader
+	Image      io.ReadSeeker
 }
 
 type PostUpdateInput struct {
@@ -35,7 +35,7 @@ type PostUpdateInput struct {
 	Excerpt    string `json:"excerpt" validate:"max=255"`
 	Content    string `json:"content" validate:"required,min=50"`
 	CategoryId int    `json:"category_id" validate:"required"`
-	Files      map[string][]*multipart.FileHeader
+	Image      io.ReadSeeker
 }
 
 type Category struct {

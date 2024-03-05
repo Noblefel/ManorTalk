@@ -9,22 +9,26 @@ import (
 	"testing"
 )
 
-func TestUpload(t *testing.T) {
+func TestVerify(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		f, _ := os.CreateTemp("", "test.png")
 		defer os.Remove(f.Name())
 		png.Encode(f, image.Rect(0, 0, 1, 1))
 		f.Seek(0, 0)
 
-		err := Upload(f, "/test.png")
+		s, err := Verify(f, "/test.png")
 		if err != nil {
 			t.Errorf("expecting no error, got %v", err)
+		}
+
+		if s != ".png" {
+			t.Errorf("want .png, got %s", s)
 		}
 	})
 
 	t.Run("fail reading", func(t *testing.T) {
 		var b bytes.Reader
-		err := Upload(&b, "")
+		_, err := Verify(&b, "")
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -34,7 +38,7 @@ func TestUpload(t *testing.T) {
 		b := make([]byte, max+1)
 		r := bytes.NewReader(b)
 
-		err := Upload(r, "")
+		_, err := Verify(r, "")
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -44,19 +48,7 @@ func TestUpload(t *testing.T) {
 		b := make([]byte, 1)
 		r := bytes.NewReader(b)
 
-		err := Upload(r, "")
-		if err == nil {
-			t.Error("expecting error")
-		}
-	})
-
-	t.Run("fail saving to local", func(t *testing.T) {
-		f, _ := os.CreateTemp("", "test.png")
-		defer os.Remove(f.Name())
-		png.Encode(f, image.Rect(0, 0, 100, 100))
-		f.Seek(0, 0)
-
-		err := Upload(f, "")
+		_, err := Verify(r, "")
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -110,9 +102,9 @@ func TestCheckType(t *testing.T) {
 	})
 }
 
-func TestSaveToLocal(t *testing.T) {
+func TestSave(t *testing.T) {
 	t.Run("fail no path name", func(t *testing.T) {
-		err := saveToLocal(nil, "", "")
+		err := Save(nil, "", "")
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -124,7 +116,7 @@ func TestSaveToLocal(t *testing.T) {
 		png.Encode(f, image.Rect(0, 0, 1, 1))
 		f.Seek(0, 0)
 
-		err := saveToLocal(f, "image/png", "/test.png")
+		err := Save(f, "", "/test.png")
 		if err != nil {
 			t.Errorf("expecting no error, got %v", err)
 		}
@@ -135,7 +127,7 @@ func TestSaveToLocal(t *testing.T) {
 		defer os.Remove(f.Name())
 		jpeg.Encode(f, image.Rect(0, 0, 1, 1), nil)
 
-		err := saveToLocal(f, "image/png", "/test.png")
+		err := Save(f, "", "/test.png")
 		if err == nil {
 			t.Errorf("expecting error")
 		}
@@ -147,7 +139,7 @@ func TestSaveToLocal(t *testing.T) {
 		jpeg.Encode(f, image.Rect(0, 0, 1, 1), nil)
 		f.Seek(0, 0)
 
-		err := saveToLocal(f, "image/jpeg", "/test.jpeg")
+		err := Save(f, "", "/test.jpeg")
 		if err != nil {
 			t.Errorf("expecting no error, got %v", err)
 		}
@@ -158,7 +150,7 @@ func TestSaveToLocal(t *testing.T) {
 		defer os.Remove(f.Name())
 		png.Encode(f, image.Rect(0, 0, 1, 1))
 
-		err := saveToLocal(f, "image/jpeg", "/test.png")
+		err := Save(f, "", "/test.jpeg")
 		if err == nil {
 			t.Errorf("expecting error")
 		}

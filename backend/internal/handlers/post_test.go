@@ -57,11 +57,12 @@ func TestPost_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var b bytes.Buffer
-			writer := multipart.NewWriter(&b)
-			writer.WriteField("title", tt.payloadTitle)
-			writer.WriteField("content", longText)
-			writer.WriteField("category_id", "1")
-			writer.Close()
+			fw := multipart.NewWriter(&b)
+			fw.WriteField("title", tt.payloadTitle)
+			fw.WriteField("content", longText)
+			fw.WriteField("category_id", "1")
+			fw.CreateFormFile("image", "x")
+			fw.Close()
 
 			var r *http.Request
 			if tt.noForm {
@@ -72,7 +73,7 @@ func TestPost_Create(t *testing.T) {
 
 			ctx := context.WithValue(r.Context(), "user_id", 1)
 			r = r.WithContext(ctx)
-			r.Header.Set("Content-Type", writer.FormDataContentType())
+			r.Header.Set("Content-Type", fw.FormDataContentType())
 			w := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.post.Create)
 			handler.ServeHTTP(w, r)
@@ -180,15 +181,16 @@ func TestPost_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var b bytes.Buffer
-			writer := multipart.NewWriter(&b)
-			writer.WriteField("content", longText)
-			writer.WriteField("category_id", "1")
+			fw := multipart.NewWriter(&b)
+			fw.WriteField("content", longText)
+			fw.WriteField("category_id", "1")
 			if tt.failValidation {
-				writer.WriteField("title", "x")
+				fw.WriteField("title", "x")
 			} else {
-				writer.WriteField("title", "sample title")
+				fw.WriteField("title", "sample title")
 			}
-			writer.Close()
+			fw.CreateFormFile("image", "x")
+			fw.Close()
 
 			var r *http.Request
 			if tt.noForm {
@@ -200,7 +202,7 @@ func TestPost_Update(t *testing.T) {
 			ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
 			ctx = context.WithValue(ctx, "user_id", 1)
 			r = r.WithContext(ctx)
-			r.Header.Set("Content-Type", writer.FormDataContentType())
+			r.Header.Set("Content-Type", fw.FormDataContentType())
 			w := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.post.Update)
 			handler.ServeHTTP(w, r)

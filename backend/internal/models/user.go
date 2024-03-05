@@ -1,7 +1,7 @@
 package models
 
 import (
-	"mime/multipart"
+	"io"
 	"time"
 )
 
@@ -37,5 +37,5 @@ type UpdateProfileInput struct {
 	Name     string `json:"name" validate:"max=255"`
 	Username string `json:"username" validate:"required,min=3,max=40,excludesall=~%^;'<>()[]@!#/&*"`
 	Bio      string `json:"bio" validate:"max=2000"`
-	Files    map[string][]*multipart.FileHeader
+	Avatar   io.ReadSeeker
 }

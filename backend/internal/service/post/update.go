@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"path/filepath"
+	"log"
+	"os"
 	"strings"
-	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/img"
@@ -39,32 +39,11 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string, aut
 		}
 	}
 
-	post = models.Post{
-		Id:         post.Id,
-		Title:      payload.Title,
-		Slug:       slug.Make(payload.Title),
-		Excerpt:    payload.Excerpt,
-		Content:    payload.Content,
-		CategoryId: payload.CategoryId,
-	}
+	var oldImage string
 
-	files, ok := payload.Files["image"]
-	if ok {
-		f, err := files[0].Open()
-		if err != nil {
-			return fmt.Errorf("opening file: %w", err)
-		}
-		defer f.Close()
-
-		post.Image = fmt.Sprintf(
-			"%d%d-%s%s",
-			time.Now().UnixNano(),
-			authId,
-			uuid.New(),
-			filepath.Ext(files[0].Filename),
-		)
-
-		err = img.Upload(f, "images/post/"+post.Image)
+	if payload.Image != nil {
+		name := fmt.Sprintf("%s-%d", uuid.New(), authId)
+		ext, err := img.Verify(payload.Image, name)
 		if err != nil {
 			switch err {
 			case img.ErrTooLarge:
@@ -72,18 +51,36 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string, aut
 			case img.ErrType:
 				return ErrImageInvalid
 			default:
-				return fmt.Errorf("uploading image: %w", err)
+				return fmt.Errorf("verifying image: %w", err)
 			}
+		}
+
+		oldImage, post.Image = post.Image, name+ext
+
+		err = img.Save(payload.Image, "images/post/", post.Image)
+		if err != nil {
+			return fmt.Errorf("saving image: %w", err)
 		}
 	}
 
-	err = s.postRepo.UpdatePost(post)
-	if err != nil {
+	post.Title = payload.Title
+	post.Slug = slug.Make(payload.Title)
+	post.Excerpt = payload.Excerpt
+	post.Content = payload.Content
+	post.CategoryId = payload.CategoryId
+
+	if err := s.postRepo.UpdatePost(post); err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
 			return ErrDuplicateTitle
 		}
 
 		return fmt.Errorf("updating post: %w", err)
+	}
+
+	if oldImage != "" {
+		if err := os.Remove("images/post/" + oldImage); err != nil {
+			log.Println("unable to delete image: ", err)
+		}
 	}
 
 	return nil
