@@ -15,7 +15,7 @@ func (s *userService) CheckUsername(username string) error {
 			return nil
 		}
 
-		return fmt.Errorf("%s: %w", "Error getting user by username", err)
+		return fmt.Errorf("getting user by username: %w", err)
 	}
 
 	return ErrDuplicateUsername

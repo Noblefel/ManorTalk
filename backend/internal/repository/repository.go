@@ -6,15 +6,14 @@ import (
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
-// Default values to maintain consistency throughout test repos.
-// Will use the equal "==" operator
+// Default values to maintain consistency throughout mock repos.
 const (
-	ErrNotFoundKeyInt      = -1
-	ErrNotFoundKeyString   = "not-found"
-	ErrUnexpectedKeyInt    = -2
-	ErrUnexpectedKeyString = "unexpected-error"
-	ErrIncorrectKey        = "something-incorrect"
-	ErrDuplicateKeyString  = "already-exists"
+	NotFoundKeyInt   = -1
+	NotFoundKey      = "not-found"
+	UnexpectedKeyInt = -2
+	UnexpectedKey    = "unexpected-error"
+	IncorrectKey     = "something-incorrect"
+	DuplicateKey     = "already-exists"
 )
 
 type CacheRepo interface {

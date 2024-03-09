@@ -14,7 +14,7 @@ func NewMockRepo() repository.CacheRepo {
 }
 
 func (r *mockRedisRepo) SetRefreshToken(td token.Details) error {
-	if td.UserId == repository.ErrUnexpectedKeyInt {
+	if td.UserId == repository.UnexpectedKeyInt {
 		return errors.New("Some error")
 	}
 
@@ -22,7 +22,7 @@ func (r *mockRedisRepo) SetRefreshToken(td token.Details) error {
 }
 
 func (r *mockRedisRepo) GetRefreshToken(td token.Details) (string, error) {
-	if td.UniqueId == repository.ErrIncorrectKey {
+	if td.UniqueId == repository.IncorrectKey {
 		return "", errors.New("Some error")
 	}
 
@@ -30,7 +30,7 @@ func (r *mockRedisRepo) GetRefreshToken(td token.Details) (string, error) {
 }
 
 func (r *mockRedisRepo) DelRefreshToken(td token.Details) error {
-	if td.UserId == repository.ErrUnexpectedKeyInt {
+	if td.UserId == repository.UnexpectedKeyInt {
 		return errors.New("Some error")
 	}
 

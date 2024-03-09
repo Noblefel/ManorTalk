@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
-	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/handlers"
 	"github.com/Noblefel/ManorTalk/backend/internal/middleware"
 	"github.com/Noblefel/ManorTalk/backend/internal/service/auth"
@@ -24,13 +23,12 @@ type router struct {
 
 func NewRouter(
 	c *config.AppConfig,
-	db *database.DB,
 	as auth.AuthService,
 	us user.UserService,
 	ps post.PostService,
 ) *router {
 	return &router{
-		m:    middleware.New(c, db),
+		m:    middleware.New(c),
 		auth: handlers.NewAuthHandlers(as),
 		user: handlers.NewUserHandlers(us),
 		post: handlers.NewPostHandlers(ps),
@@ -65,10 +63,6 @@ func (r *router) Routes() http.Handler {
 	r.authRouter(api)
 	r.postRouter(api)
 	r.userRouter(api)
-
-	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello"))
-	})
 
 	fileServer := http.FileServer(http.Dir("./images/"))
 	mux.Handle("/images/*", http.StripPrefix("/images", fileServer))

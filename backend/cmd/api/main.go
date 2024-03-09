@@ -37,8 +37,6 @@ func main() {
 	defer db.Sql.Close()
 	defer db.Redis.Close()
 
-	log.Println("Starting server at port:", c.Port)
-
 	userRepo := postgres.NewUserRepo(db)
 	postRepo := postgres.NewPostRepo(db)
 	cacheRepo := redis.NewRepo(db)
@@ -47,12 +45,14 @@ func main() {
 	userService := user.NewUserService(c, cacheRepo, userRepo)
 	postService := post.NewPostService(c, cacheRepo, postRepo)
 
-	router := router.NewRouter(c, db, authService, userService, postService)
+	router := router.NewRouter(c, authService, userService, postService)
 
 	server := &http.Server{
 		Addr:    fmt.Sprint("localhost:", c.Port),
 		Handler: router.Routes(),
 	}
+
+	log.Println("Starting server at port:", c.Port)
 
 	if err = server.ListenAndServe(); err != nil {
 		log.Fatal(err)

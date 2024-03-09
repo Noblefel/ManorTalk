@@ -28,7 +28,7 @@ func (s *authService) Refresh(refreshToken string) (models.User, string, error) 
 			return user, "", ErrNoUser
 		}
 
-		return user, "", fmt.Errorf("%s: %w", "Error getting user by id", err)
+		return user, "", fmt.Errorf("getting user by id: %w", err)
 	}
 
 	accessToken, err := token.Generate(token.Details{
@@ -38,7 +38,7 @@ func (s *authService) Refresh(refreshToken string) (models.User, string, error) 
 	})
 
 	if err != nil {
-		return user, "", fmt.Errorf("%s: %w", "Error generating access token", err)
+		return user, "", fmt.Errorf("generating access token: %w", err)
 	}
 
 	user.Password = ""

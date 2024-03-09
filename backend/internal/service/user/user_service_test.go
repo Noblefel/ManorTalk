@@ -22,7 +22,7 @@ func TestNewUserService(t *testing.T) {
 
 	typeString := reflect.TypeOf(service).String()
 	if typeString != "*user.userService" {
-		t.Error("NewUserService() did not get the correct type, wanted *user.userService")
+		t.Error("NewUserService() get incorrect type, wanted *user.userService")
 	}
 }
 
@@ -32,7 +32,7 @@ func TestNewMockUserService(t *testing.T) {
 	typeString := reflect.TypeOf(service).String()
 
 	if typeString != "*user.mockUserService" {
-		t.Error("NewMockUserService() did not get the correct type, wanted *user.mockUserService")
+		t.Error("NewMockUserService() get incorrect type, wanted *user.mockUserService")
 	}
 }
 
@@ -54,9 +54,9 @@ func TestUserService_CheckUsername(t *testing.T) {
 		username string
 		isError  bool
 	}{
-		{"success", repository.ErrNotFoundKeyString, false},
+		{"success", repository.NotFoundKey, false},
 		{"duplicate username", "test", true},
-		{"error getting user by username", repository.ErrUnexpectedKeyString, true},
+		{"error getting user by username", repository.UnexpectedKey, true},
 	}
 
 	for _, tt := range tests {
@@ -81,8 +81,8 @@ func TestUserService_Get(t *testing.T) {
 		isError  bool
 	}{
 		{"success", "test", false},
-		{"user not found", repository.ErrNotFoundKeyString, true},
-		{"error getting user by username", repository.ErrUnexpectedKeyString, true},
+		{"user not found", repository.NotFoundKey, true},
+		{"error getting user by username", repository.UnexpectedKey, true},
 	}
 
 	for _, tt := range tests {
@@ -116,12 +116,12 @@ func TestUserService_UpdateProfile(t *testing.T) {
 		},
 		{
 			name:     "user not found",
-			username: repository.ErrNotFoundKeyString,
+			username: repository.NotFoundKey,
 			isError:  true,
 		},
 		{
 			name:     "error getting user",
-			username: repository.ErrUnexpectedKeyString,
+			username: repository.UnexpectedKey,
 			isError:  true,
 		},
 		{
@@ -130,38 +130,28 @@ func TestUserService_UpdateProfile(t *testing.T) {
 			isError: true,
 		},
 		{
-			name: "avatar invalid type",
-			payload: models.UpdateProfileInput{
-				Avatar: bytes.NewReader(make([]byte, 1)),
-			},
+			name:    "avatar invalid type",
+			payload: models.UpdateProfileInput{Avatar: bytes.NewReader(make([]byte, 1))},
 			isError: true,
 		},
 		{
-			name: "avatar too large",
-			payload: models.UpdateProfileInput{
-				Avatar: bytes.NewReader(make([]byte, 2*1024*1024+2)),
-			},
+			name:    "avatar too large",
+			payload: models.UpdateProfileInput{Avatar: bytes.NewReader(make([]byte, 2*1024*1024+2))},
 			isError: true,
 		},
 		{
-			name: "error verifying image",
-			payload: models.UpdateProfileInput{
-				Avatar: &bytes.Reader{},
-			},
+			name:    "error verifying image",
+			payload: models.UpdateProfileInput{Avatar: &bytes.Reader{}},
 			isError: true,
 		},
 		{
-			name: "duplicate username",
-			payload: models.UpdateProfileInput{
-				Name: repository.ErrDuplicateKeyString,
-			},
+			name:    "duplicate username",
+			payload: models.UpdateProfileInput{Name: repository.DuplicateKey},
 			isError: true,
 		},
 		{
-			name: "error updating user",
-			payload: models.UpdateProfileInput{
-				Name: repository.ErrUnexpectedKeyString,
-			},
+			name:    "error updating user",
+			payload: models.UpdateProfileInput{Name: repository.UnexpectedKey},
 			isError: true,
 		},
 	}

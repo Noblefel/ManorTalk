@@ -8,117 +8,80 @@ import (
 	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/config"
-	"github.com/Noblefel/ManorTalk/backend/internal/database"
 	"github.com/Noblefel/ManorTalk/backend/internal/utils/token"
 )
 
 func TestNewMiddleware(t *testing.T) {
-	var db *database.DB
 	var c *config.AppConfig
-	middleware := New(c, db)
+	middleware := New(c)
 
 	typeString := reflect.TypeOf(middleware).String()
 	if typeString != "*middleware.Middleware" {
-		t.Error("middleware.New() did not get the correct type, wanted *middleware.Middleware")
+		t.Error("middleware.New() get incorrect type, wanted *middleware.Middleware")
 	}
 }
 
-var m = NewTest(&config.AppConfig{
+var m = New(&config.AppConfig{
 	AccessTokenKey: "test",
 	AccessTokenExp: 5 * time.Minute,
 })
 
-var sampleToken, _ = token.Generate(token.Details{
-	SecretKey: m.c.AccessTokenKey,
-	UserId:    1,
-	UniqueId:  "sxzcro2nrondoaisncd",
-	Duration:  m.c.AccessTokenExp,
-})
-
-var sampleToken2, _ = token.Generate(token.Details{
-	SecretKey: "test",
-	UserId:    2,
-	Duration:  m.c.AccessTokenExp,
-})
-
-var sampleToken3, _ = token.Generate(token.Details{
-	SecretKey: m.c.AccessTokenKey,
-	UserId:    2,
-})
-
 func TestMiddleware_Auth(t *testing.T) {
+	var sampleToken, _ = token.Generate(token.Details{
+		SecretKey: m.c.AccessTokenKey,
+		UserId:    1,
+		UniqueId:  "sxzcro2nrondoaisncd",
+		Duration:  m.c.AccessTokenExp,
+	})
+
+	var sampleToken2, _ = token.Generate(token.Details{
+		SecretKey: "test",
+		UserId:    2,
+		Duration:  m.c.AccessTokenExp,
+	})
+
+	var sampleToken3, _ = token.Generate(token.Details{
+		SecretKey: m.c.AccessTokenKey,
+		UserId:    2,
+	})
+
 	var tests = []struct {
-		name               string
-		authorization      string
-		expectedUserId     int
-		expectedErrMessage string
-		statusCode         int
+		name           string
+		authorization  string
+		expectedUserId int
+		statusCode     int
 	}{
-		{
-			name:           "middlewareAuth-ok",
-			authorization:  sampleToken,
-			expectedUserId: 1,
-			statusCode:     http.StatusOK,
-		},
-		{
-			name:           "middlewareAuth-ok-2",
-			authorization:  sampleToken2,
-			expectedUserId: 2,
-			statusCode:     http.StatusOK,
-		},
-		{
-			name:          "middlewareAuth-empty-authorization-header",
-			authorization: "",
-			// expectedErrMessage: "You need to login first",
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name:          "middlewareAuth-expired-token",
-			authorization: sampleToken3,
-			// expectedErrMessage: "Token Expired",
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name:          "middlewareAuth-invalid-token",
-			authorization: "asdcapsdjapcjsdpoajd",
-			// expectedErrMessage: "Invalid Token",
-			statusCode: http.StatusUnauthorized,
-		},
+		{"success", sampleToken, 1, http.StatusOK},
+		{"success 2", sampleToken2, 2, http.StatusOK},
+		{"empty authorization header", "", 0, http.StatusUnauthorized},
+		{"expired token", sampleToken3, 0, http.StatusUnauthorized},
+		{"invalid token", "asdcapsdjapcjsdpoajd", 0, http.StatusUnauthorized},
 	}
 
 	for _, tt := range tests {
-		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userId := r.Context().Value("user_id")
-			if userId == nil {
-				t.Error("User id not in context")
-				return
-			}
+		t.Run(tt.name, func(t *testing.T) {
+			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				userId := r.Context().Value("user_id")
+				if userId == nil {
+					t.Error("User id not in context")
+					return
+				}
 
-			if userId != tt.expectedUserId {
-				t.Error("Expected user id does not match")
-				return
+				if userId != tt.expectedUserId {
+					t.Error("Expected user id does not match")
+					return
+				}
+			})
+
+			r := httptest.NewRequest("GET", "/", nil)
+			r.Header.Set("Authorization", tt.authorization)
+			w := httptest.NewRecorder()
+			h := m.Auth(next)
+			h.ServeHTTP(w, r)
+
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
 			}
 		})
-
-		r := httptest.NewRequest("GET", "/", nil)
-		r.Header.Set("Authorization", tt.authorization)
-		w := httptest.NewRecorder()
-
-		h := m.Auth(next)
-		h.ServeHTTP(w, r)
-
-		// jsonResp := new(struct {
-		// 	Message string `json:"message"`
-		// })
-
-		// json.NewDecoder(w.Body).Decode(jsonResp)
-
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
-
-		// if jsonResp.Message != tt.expectedErrMessage {
-		// 	t.Errorf("%s returned wrong error message \n Wanted: %s \n Got: %s", tt.name, tt.expectedErrMessage, jsonResp.Message)
-		// }
 	}
 }

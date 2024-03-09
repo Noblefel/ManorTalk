@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -36,53 +37,34 @@ func TestNewUserHandlers(t *testing.T) {
 func TestUser_CheckUsername(t *testing.T) {
 	var tests = []struct {
 		name       string
-		payload    *models.CheckUsernameInput
+		username   string
 		statusCode int
 	}{
-		{
-			name:       "userCheckUsername-ok",
-			payload:    &models.CheckUsernameInput{Username: "test"},
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "userCheckUsername-error-decode-json",
-			payload:    nil,
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:       "userCheckUsername-error-validation",
-			payload:    &models.CheckUsernameInput{Username: "t"},
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name:       "userCheckUsername-error-duplicate-username",
-			payload:    &models.CheckUsernameInput{Username: service.ErrDuplicateUsername.Error()},
-			statusCode: http.StatusConflict,
-		},
-		{
-			name:       "userCheckUsername-error-unexpected",
-			payload:    &models.CheckUsernameInput{Username: "unexpected error"},
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "test", http.StatusOK},
+		{"error decoding json", "", http.StatusBadRequest},
+		{"error validation", "t", http.StatusBadRequest},
+		{"duplicate username", service.ErrDuplicateUsername.Error(), http.StatusConflict},
+		{"unexpected error", "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		var r *http.Request
-		if tt.payload == nil {
-			r = httptest.NewRequest("POST", "/users/check-username", nil)
-		} else {
-			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("POST", "/users/check-username", bytes.NewBuffer(jsonBytes))
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			var body io.Reader
+			if tt.username != "" {
+				jsonBytes, _ := json.Marshal(models.CheckUsernameInput{Username: tt.username})
+				body = bytes.NewReader(jsonBytes)
+			}
 
-		r.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.user.CheckUsername)
-		handler.ServeHTTP(w, r)
+			r := httptest.NewRequest("POST", "/users/check-username", body)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.user.CheckUsername)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -92,35 +74,25 @@ func TestUser_Get(t *testing.T) {
 		username   string
 		statusCode int
 	}{
-		{
-			name:       "userGet-ok",
-			username:   "example",
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "userGet-error-no-user",
-			username:   service.ErrNoUser.Error(),
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name:       "userGet-error-unexpected",
-			username:   "unexpected error",
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "example", http.StatusOK},
+		{"no user", service.ErrNoUser.Error(), http.StatusNotFound},
+		{"unexpected error", "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("GET", "/users/{username}", nil)
-		ctx := getCtxWithParam(r, params{"username": tt.username})
-		r = r.WithContext(ctx)
-		r.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.user.Get)
-		handler.ServeHTTP(w, r)
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/users/{username}", nil)
+			ctx := getCtxWithParam(r, params{"username": tt.username})
+			r = r.WithContext(ctx)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.user.Get)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 

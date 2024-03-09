@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -34,8 +35,7 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 	var oldImage string
 
 	if payload.Avatar != nil {
-		name := fmt.Sprintf("%s-%d", uuid.New(), authId)
-		ext, err := img.Verify(payload.Avatar, name)
+		ext, err := img.Verify(payload.Avatar)
 		if err != nil {
 			switch err {
 			case img.ErrTooLarge:
@@ -47,9 +47,10 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 			}
 		}
 
-		oldImage, user.Avatar = user.Avatar, name+ext
+		name := fmt.Sprintf("%s-%d", uuid.New(), authId) + ext
+		oldImage, user.Avatar = user.Avatar, name
 
-		err = img.Save(payload.Avatar, "images/avatar/", user.Avatar)
+		err = img.Save(payload.Avatar, filepath.Join("images", "avatar", user.Avatar))
 		if err != nil {
 			return "", fmt.Errorf("saving image: %w", err)
 		}
@@ -65,7 +66,7 @@ func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username 
 	}
 
 	if oldImage != "" {
-		if err := os.Remove("images/avatar/" + oldImage); err != nil {
+		if err := os.Remove(filepath.Join("images", "avatar", oldImage)); err != nil {
 			log.Println("unable to delete image: ", err)
 		}
 	}

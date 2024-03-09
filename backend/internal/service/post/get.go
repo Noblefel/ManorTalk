@@ -15,7 +15,7 @@ func (s *postService) Get(slug string) (models.Post, error) {
 			return post, ErrNoPost
 		}
 
-		return post, fmt.Errorf("%s: %w", "Error getting post by slug", err)
+		return post, fmt.Errorf("getting post by slug: %w", err)
 	}
 
 	return post, nil

@@ -38,7 +38,7 @@ func NewUserService(c *config.AppConfig, cr repository.CacheRepo, ur repository.
 	}
 }
 
-// mockUserService is a lightweight replicate of the user service used inside handler tests
+// mockUserService is a replica of the user service to be used inside handler tests
 type mockUserService struct {
 	cacheRepo repository.CacheRepo
 	userRepo  repository.UserRepo

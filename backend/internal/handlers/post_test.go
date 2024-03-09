@@ -91,35 +91,24 @@ func TestPost_Get(t *testing.T) {
 		slugRoute  string
 		statusCode int
 	}{
-		{
-			name:       "postGet-ok",
-			slugRoute:  "post-title",
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "postGet-error-no-post",
-			slugRoute:  service.ErrNoPost.Error(),
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name:       "postGet-error-unexpected",
-			slugRoute:  "unexpected error",
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "post-title", http.StatusOK},
+		{"no post", service.ErrNoPost.Error(), http.StatusNotFound},
+		{"unexpected error", "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/posts/{slug}", nil)
+			ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.post.Get)
+			handler.ServeHTTP(w, r)
 
-		r := httptest.NewRequest("GET", "/posts/{slug}", nil)
-		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
-		r = r.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.post.Get)
-		handler.ServeHTTP(w, r)
-
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -129,32 +118,22 @@ func TestPost_GetMany(t *testing.T) {
 		query      string
 		statusCode int
 	}{
-		{
-			name:       "postGetMany-ok",
-			query:      "page=1&limit=10",
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "postGetMany-error-no-category",
-			query:      slug.Make(service.ErrNoCategory.Error()) + "=1",
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name:       "postGetMany-error-unexpected",
-			query:      slug.Make("unexpected error") + "=1",
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "page=1&limit=10", http.StatusOK},
+		{"no category", slug.Make(service.ErrNoCategory.Error()) + "=1", http.StatusNotFound},
+		{"unexpected error", slug.Make("unexpected error") + "=1", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("GET", "/posts?"+tt.query, nil)
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.post.GetMany)
-		handler.ServeHTTP(w, r)
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/posts?"+tt.query, nil)
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.post.GetMany)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -220,41 +199,26 @@ func TestPost_Delete(t *testing.T) {
 		slugRoute  string
 		statusCode int
 	}{
-		{
-			name:       "postDelete-ok",
-			slugRoute:  "post-title",
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "postDelete-error-no-post",
-			slugRoute:  service.ErrNoPost.Error(),
-			statusCode: http.StatusNotFound,
-		},
-		{
-			name:       "postDelete-error-unauthorized",
-			slugRoute:  service.ErrUnauthorized.Error(),
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name:       "postDelete-error-unexpected",
-			slugRoute:  "unexpected error",
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "post-title", http.StatusOK},
+		{"no post", service.ErrNoPost.Error(), http.StatusNotFound},
+		{"unauthorized", service.ErrUnauthorized.Error(), http.StatusUnauthorized},
+		{"unexpected error", "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("DELETE", "/posts/{slug}", nil)
+			ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
+			ctx = context.WithValue(ctx, "user_id", 1)
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.post.Delete)
+			handler.ServeHTTP(w, r)
 
-		r := httptest.NewRequest("DELETE", "/posts/{slug}", nil)
-		ctx := getCtxWithParam(r, params{"slug": tt.slugRoute})
-		ctx = context.WithValue(ctx, "user_id", 1)
-		r = r.WithContext(ctx)
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.post.Delete)
-		handler.ServeHTTP(w, r)
-
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -263,10 +227,7 @@ func TestPost_GetCategories(t *testing.T) {
 		name       string
 		statusCode int
 	}{
-		{
-			name:       "postGetCategories-ok",
-			statusCode: http.StatusOK,
-		},
+		{"success", http.StatusOK},
 	}
 
 	for _, tt := range tests {
@@ -276,7 +237,7 @@ func TestPost_GetCategories(t *testing.T) {
 		handler.ServeHTTP(w, r)
 
 		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
+			t.Errorf("want %d, got %d", tt.statusCode, w.Code)
 		}
 	}
 }

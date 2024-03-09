@@ -27,7 +27,7 @@ func NewPostHandlers(s service.PostService) *PostHandlers {
 
 func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		res.MessageJSON(w, http.StatusBadRequest, "Error parsing form")
+		res.Message(w, http.StatusBadRequest, "Error parsing form")
 		return
 	}
 
@@ -51,7 +51,7 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		f, err := files[0].Open()
 		if err != nil {
-			res.MessageJSON(w, http.StatusBadRequest, "Error opening file")
+			res.Message(w, http.StatusBadRequest, "Error opening file")
 		}
 		defer f.Close()
 
@@ -64,17 +64,17 @@ func (h *PostHandlers) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoCategory):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		case errors.Is(err, service.ErrImageTooLarge), errors.Is(err, service.ErrImageInvalid):
-			res.MessageJSON(w, http.StatusBadRequest, err.Error())
+			res.Message(w, http.StatusBadRequest, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateTitle):
-			res.MessageJSON(w, http.StatusConflict, err.Error())
+			res.Message(w, http.StatusConflict, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems creating this post")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems creating this post")
 			return
 		}
 	}
@@ -90,11 +90,11 @@ func (h *PostHandlers) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoPost):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the post")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the post")
 			return
 		}
 	}
@@ -111,11 +111,11 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoCategory):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the posts")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the posts")
 			return
 		}
 	}
@@ -130,7 +130,7 @@ func (h *PostHandlers) GetMany(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		res.MessageJSON(w, http.StatusBadRequest, "Error parsing form")
+		res.Message(w, http.StatusBadRequest, "Error parsing form")
 		return
 	}
 
@@ -154,7 +154,7 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		f, err := files[0].Open()
 		if err != nil {
-			res.MessageJSON(w, http.StatusBadRequest, "Error opening file")
+			res.Message(w, http.StatusBadRequest, "Error opening file")
 		}
 		defer f.Close()
 
@@ -167,23 +167,23 @@ func (h *PostHandlers) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoPost):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		case errors.Is(err, service.ErrNoCategory):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		case errors.Is(err, service.ErrUnauthorized):
-			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
+			res.Message(w, http.StatusUnauthorized, err.Error())
 			return
 		case errors.Is(err, service.ErrImageTooLarge), errors.Is(err, service.ErrImageInvalid):
-			res.MessageJSON(w, http.StatusBadRequest, err.Error())
+			res.Message(w, http.StatusBadRequest, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateTitle):
-			res.MessageJSON(w, http.StatusConflict, err.Error())
+			res.Message(w, http.StatusConflict, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems updating the post")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems updating the post")
 			return
 		}
 	}
@@ -201,26 +201,26 @@ func (h *PostHandlers) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoPost):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		case errors.Is(err, service.ErrUnauthorized):
-			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
+			res.Message(w, http.StatusUnauthorized, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems deleting the post")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems deleting the post")
 			return
 		}
 	}
 
-	res.MessageJSON(w, http.StatusOK, "Post has been deleted")
+	res.Message(w, http.StatusOK, "Post has been deleted")
 }
 
 func (h *PostHandlers) GetCategories(w http.ResponseWriter, r *http.Request) {
 	categories, err := h.service.GetCategories()
 	if err != nil {
 		log.Println(err)
-		res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving categories")
+		res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving categories")
 		return
 	}
 

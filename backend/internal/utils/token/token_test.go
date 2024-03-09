@@ -17,7 +17,7 @@ var details = Details{
 func TestGenerate(t *testing.T) {
 	_, err := Generate(details)
 	if err != nil {
-		t.Error("Generate() should not return error")
+		t.Error("Generate() expecting no error")
 	}
 }
 
@@ -26,53 +26,34 @@ var expiredToken, _ = Generate(Details{
 	SecretKey: "expired",
 })
 
-var parseTests = []struct {
-	name           string
-	token          string
-	secretKey      string
-	expectedUserId int
-	isError        bool
-}{
-	{
-		name:           "parse-ok",
-		token:          sampleToken,
-		secretKey:      secretKey,
-		expectedUserId: details.UserId,
-		isError:        false,
-	},
-	{
-		name:      "parse-fail-invalid-token",
-		token:     "ascpdjapjdsacpjcdpasjcdpaj",
-		secretKey: "",
-		isError:   true,
-	},
-	{
-		name:      "parse-fail-secret-key",
-		token:     sampleToken,
-		secretKey: "",
-		isError:   true,
-	},
-	{
-		name:      "parse-fail-expired-token",
-		token:     expiredToken,
-		secretKey: "expired",
-		isError:   true,
-	},
-}
-
 func TestParse(t *testing.T) {
-	for _, tt := range parseTests {
-		td, err := Parse(tt.secretKey, tt.token)
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error: %s", tt.name, err)
-		}
+	var tests = []struct {
+		name           string
+		token          string
+		secretKey      string
+		expectedUserId int
+		isError        bool
+	}{
+		{"success", sampleToken, secretKey, details.UserId, false},
+		{"invalid token", "ascpdjapjdsacpjcdpasjcdpaj", "", 0, true},
+		{"fail secret key", sampleToken, "", 0, true},
+		{"expired token", expiredToken, "expired", 0, true},
+	}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return some error", tt.name)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			td, err := Parse(tt.secretKey, tt.token)
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got: %v", err)
+			}
 
-		if td != nil && td.UserId != tt.expectedUserId {
-			t.Errorf("%s returned incorrect user id, wanted %d got %d", tt.name, tt.expectedUserId, td.UserId)
-		}
+			if err == nil && tt.isError {
+				t.Errorf("expecting error")
+			}
+
+			if td != nil && td.UserId != tt.expectedUserId {
+				t.Errorf("want user id %d, got %d", tt.expectedUserId, td.UserId)
+			}
+		})
 	}
 }

@@ -11,7 +11,7 @@ import (
 func (s *postService) GetCategories() ([]models.Category, error) {
 	categories, err := s.postRepo.GetCategories()
 	if err != nil && !errors.Is(sql.ErrNoRows, err) {
-		return categories, fmt.Errorf("%s: %w", "Error getting categories", err)
+		return categories, fmt.Errorf("getting categories: %w", err)
 	}
 
 	return categories, nil

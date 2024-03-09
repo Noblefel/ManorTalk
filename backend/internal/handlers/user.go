@@ -28,7 +28,7 @@ func (h *UserHandlers) CheckUsername(w http.ResponseWriter, r *http.Request) {
 	var payload models.CheckUsernameInput
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		res.MessageJSON(w, http.StatusBadRequest, "Error decoding json")
+		res.Message(w, http.StatusBadRequest, "Error decoding json")
 		return
 	}
 
@@ -46,16 +46,16 @@ func (h *UserHandlers) CheckUsername(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrDuplicateUsername):
-			res.MessageJSON(w, http.StatusConflict, err.Error())
+			res.Message(w, http.StatusConflict, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems checking usernames")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems checking usernames")
 			return
 		}
 	}
 
-	res.MessageJSON(w, http.StatusOK, "Username is available")
+	res.Message(w, http.StatusOK, "Username is available")
 }
 
 func (h *UserHandlers) Get(w http.ResponseWriter, r *http.Request) {
@@ -63,11 +63,11 @@ func (h *UserHandlers) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoUser):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the user")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems retrieving the user")
 			return
 		}
 	}
@@ -79,7 +79,7 @@ func (h *UserHandlers) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		res.MessageJSON(w, http.StatusBadRequest, "Error parsing form")
+		res.Message(w, http.StatusBadRequest, "Error parsing form")
 		return
 	}
 
@@ -101,7 +101,7 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		f, err := files[0].Open()
 		if err != nil {
-			res.MessageJSON(w, http.StatusBadRequest, "Error opening file")
+			res.Message(w, http.StatusBadRequest, "Error opening file")
 		}
 		defer f.Close()
 
@@ -114,20 +114,20 @@ func (h *UserHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrNoUser):
-			res.MessageJSON(w, http.StatusNotFound, err.Error())
+			res.Message(w, http.StatusNotFound, err.Error())
 			return
 		case errors.Is(err, service.ErrUnauthorized):
-			res.MessageJSON(w, http.StatusUnauthorized, err.Error())
+			res.Message(w, http.StatusUnauthorized, err.Error())
 			return
 		case errors.Is(err, service.ErrAvatarTooLarge), errors.Is(err, service.ErrAvatarInvalid):
-			res.MessageJSON(w, http.StatusBadRequest, err.Error())
+			res.Message(w, http.StatusBadRequest, err.Error())
 			return
 		case errors.Is(err, service.ErrDuplicateUsername):
-			res.MessageJSON(w, http.StatusConflict, err.Error())
+			res.Message(w, http.StatusConflict, err.Error())
 			return
 		default:
 			log.Println(err)
-			res.MessageJSON(w, http.StatusInternalServerError, "Sorry, we had some problems updating the profile")
+			res.Message(w, http.StatusInternalServerError, "Sorry, we had some problems updating the profile")
 			return
 		}
 	}

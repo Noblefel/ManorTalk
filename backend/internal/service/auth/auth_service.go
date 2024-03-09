@@ -38,7 +38,7 @@ func NewAuthService(c *config.AppConfig, cr repository.CacheRepo, ur repository.
 	}
 }
 
-// mockAuthService is a lightweight replicate of the auth service used inside handler tests
+// mockAuthService is a replica of the auth service to be used inside handler tests
 type mockAuthService struct {
 	cacheRepo repository.CacheRepo
 	userRepo  repository.UserRepo

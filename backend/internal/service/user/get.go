@@ -15,7 +15,7 @@ func (s *userService) Get(username string) (models.User, error) {
 			return user, ErrNoUser
 		}
 
-		return user, fmt.Errorf("%s: %w", "Error getting user by username", err)
+		return user, fmt.Errorf("getting user by username: %w", err)
 	}
 
 	user.Email = ""

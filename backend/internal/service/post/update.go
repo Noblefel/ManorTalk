@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -42,8 +43,7 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string, aut
 	var oldImage string
 
 	if payload.Image != nil {
-		name := fmt.Sprintf("%s-%d", uuid.New(), authId)
-		ext, err := img.Verify(payload.Image, name)
+		ext, err := img.Verify(payload.Image)
 		if err != nil {
 			switch err {
 			case img.ErrTooLarge:
@@ -55,9 +55,10 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string, aut
 			}
 		}
 
-		oldImage, post.Image = post.Image, name+ext
+		name := fmt.Sprintf("%s-%d", uuid.New(), authId) + ext
+		oldImage, post.Image = post.Image, name
 
-		err = img.Save(payload.Image, "images/post/", post.Image)
+		err = img.Save(payload.Image, filepath.Join("images", "post", post.Image))
 		if err != nil {
 			return fmt.Errorf("saving image: %w", err)
 		}
@@ -78,7 +79,7 @@ func (s *postService) Update(payload models.PostUpdateInput, urlSlug string, aut
 	}
 
 	if oldImage != "" {
-		if err := os.Remove("images/post/" + oldImage); err != nil {
+		if err := os.Remove(filepath.Join("images", "post", oldImage)); err != nil {
 			log.Println("unable to delete image: ", err)
 		}
 	}

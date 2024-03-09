@@ -16,7 +16,7 @@ func TestVerify(t *testing.T) {
 		png.Encode(f, image.Rect(0, 0, 1, 1))
 		f.Seek(0, 0)
 
-		s, err := Verify(f, "/test.png")
+		s, err := Verify(f)
 		if err != nil {
 			t.Errorf("expecting no error, got %v", err)
 		}
@@ -28,7 +28,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("fail reading", func(t *testing.T) {
 		var b bytes.Reader
-		_, err := Verify(&b, "")
+		_, err := Verify(&b)
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -38,7 +38,7 @@ func TestVerify(t *testing.T) {
 		b := make([]byte, max+1)
 		r := bytes.NewReader(b)
 
-		_, err := Verify(r, "")
+		_, err := Verify(r)
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -48,7 +48,7 @@ func TestVerify(t *testing.T) {
 		b := make([]byte, 1)
 		r := bytes.NewReader(b)
 
-		_, err := Verify(r, "")
+		_, err := Verify(r)
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -104,7 +104,7 @@ func TestCheckType(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	t.Run("fail no path name", func(t *testing.T) {
-		err := Save(nil, "", "")
+		err := Save(nil, "")
 		if err == nil {
 			t.Error("expecting error")
 		}
@@ -116,7 +116,7 @@ func TestSave(t *testing.T) {
 		png.Encode(f, image.Rect(0, 0, 1, 1))
 		f.Seek(0, 0)
 
-		err := Save(f, "", "/test.png")
+		err := Save(f, "/test.png")
 		if err != nil {
 			t.Errorf("expecting no error, got %v", err)
 		}
@@ -127,7 +127,7 @@ func TestSave(t *testing.T) {
 		defer os.Remove(f.Name())
 		jpeg.Encode(f, image.Rect(0, 0, 1, 1), nil)
 
-		err := Save(f, "", "/test.png")
+		err := Save(f, "/test.png")
 		if err == nil {
 			t.Errorf("expecting error")
 		}
@@ -139,7 +139,7 @@ func TestSave(t *testing.T) {
 		jpeg.Encode(f, image.Rect(0, 0, 1, 1), nil)
 		f.Seek(0, 0)
 
-		err := Save(f, "", "/test.jpeg")
+		err := Save(f, "/test.jpeg")
 		if err != nil {
 			t.Errorf("expecting no error, got %v", err)
 		}
@@ -150,7 +150,7 @@ func TestSave(t *testing.T) {
 		defer os.Remove(f.Name())
 		png.Encode(f, image.Rect(0, 0, 1, 1))
 
-		err := Save(f, "", "/test.jpeg")
+		err := Save(f, "/test.jpeg")
 		if err == nil {
 			t.Errorf("expecting error")
 		}

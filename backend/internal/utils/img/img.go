@@ -2,7 +2,6 @@ package img
 
 import (
 	"errors"
-	"fmt"
 	"image/jpeg"
 	"image/png"
 	"io"
@@ -16,7 +15,7 @@ var ErrType = errors.New("invalid type")
 var max = 2 * 1024 * 1024
 
 // Verify will check the file's size and return the extension
-func Verify(r io.ReadSeeker, name string) (string, error) {
+func Verify(r io.ReadSeeker) (string, error) {
 	buff := make([]byte, max+1)
 	n, err := r.Read(buff)
 	if err != nil {
@@ -53,15 +52,14 @@ func checkType(buff []byte) (string, error) {
 }
 
 // Save will store the image locally
-func Save(r io.ReadSeeker, dir, name string) error {
-	fmt.Println(dir + name)
-	out, err := os.Create(dir + name)
+func Save(r io.ReadSeeker, path string) error {
+	out, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	if strings.HasSuffix(name, "png") {
+	if strings.HasSuffix(path, "png") {
 		img, err := png.Decode(r)
 		if err != nil {
 			return err

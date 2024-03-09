@@ -25,7 +25,7 @@ func TestNewPostService(t *testing.T) {
 	typeString := reflect.TypeOf(service).String()
 
 	if typeString != "*post.postService" {
-		t.Error("NewPostService() did not get the correct type, wanted *post.PostService")
+		t.Error("NewPostService() get incorrect type, wanted *post.PostService")
 	}
 }
 
@@ -35,7 +35,7 @@ func TestNewMockPostService(t *testing.T) {
 	typeString := reflect.TypeOf(service).String()
 
 	if typeString != "*post.mockPostService" {
-		t.Error("NewMockPostService() did not get the correct type, wanted *post.mockPostService")
+		t.Error("NewMockPostService() get incorrect type, wanted *post.mockPostService")
 	}
 }
 
@@ -60,13 +60,13 @@ func TestPostService_Create(t *testing.T) {
 		isError    bool
 	}{
 		{"success", "", 1, nil, false},
-		{"no category", "", repository.ErrNotFoundKeyInt, nil, true},
-		{"error getting category", "", repository.ErrUnexpectedKeyInt, nil, true},
+		{"no category", "", repository.NotFoundKeyInt, nil, true},
+		{"error getting category", "", repository.UnexpectedKeyInt, nil, true},
 		{"image invalid type", "", 0, bytes.NewReader(make([]byte, 1)), true},
 		{"image too large", "", 0, bytes.NewReader(make([]byte, 2*1024*1024+2)), true},
 		{"error verifying image", "", 0, &bytes.Reader{}, true},
-		{"duplicate title", repository.ErrDuplicateKeyString, 1, nil, true},
-		{"error creating post", repository.ErrUnexpectedKeyString, 1, nil, true},
+		{"duplicate title", repository.DuplicateKey, 1, nil, true},
+		{"error creating post", repository.UnexpectedKey, 1, nil, true},
 	}
 
 	for _, tt := range tests {
@@ -95,33 +95,23 @@ func TestPostService_Get(t *testing.T) {
 		slug    string
 		isError bool
 	}{
-		{
-			name:    "get-ok",
-			slug:    "example",
-			isError: false,
-		},
-		{
-			name:    "create-error-no-post",
-			slug:    repository.ErrNotFoundKeyString,
-			isError: true,
-		},
-		{
-			name:    "create-error-getting-post",
-			slug:    repository.ErrUnexpectedKeyString,
-			isError: true,
-		},
+		{"success", "example", false},
+		{"no post", repository.NotFoundKey, true},
+		{"error getting post", repository.UnexpectedKey, true},
 	}
 
 	for _, tt := range tests {
-		_, err := s.Get(tt.slug)
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := s.Get(tt.slug)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Error("expecting error")
+			}
+		})
 	}
 }
 
@@ -131,63 +121,26 @@ func TestPostService_GetMany(t *testing.T) {
 		q       url.Values
 		isError bool
 	}{
-		{
-			name: "getMany-ok",
-			q: url.Values{
-				"page":  {"1"},
-				"total": {"10"},
-			},
-			isError: false,
-		},
-		{
-			name: "getMany-error-no-category",
-			q: url.Values{
-				"category": {repository.ErrNotFoundKeyString},
-			},
-			isError: true,
-		},
-		{
-			name: "getMany-error-getting-category",
-			q: url.Values{
-				"category": {repository.ErrUnexpectedKeyString},
-			},
-			isError: true,
-		},
-		{
-			name: "getMany-error-creating-pagination-meta",
-			q: url.Values{
-				"page": {"-1"},
-			},
-			isError: true,
-		},
-		{
-			name: "getMany-error-counting-posts",
-			q: url.Values{
-				"page":  {"1"},
-				"order": {repository.ErrUnexpectedKeyString},
-			},
-			isError: true,
-		},
-		{
-			name: "getMany-error-getting-posts",
-			q: url.Values{
-				"total": {"1"},
-				"order": {repository.ErrUnexpectedKeyString},
-			},
-			isError: true,
-		},
+		{"success", url.Values{"page": {"1"}, "total": {"10"}}, false},
+		{"no category", url.Values{"category": {repository.NotFoundKey}}, true},
+		{"error getting category", url.Values{"category": {repository.UnexpectedKey}}, true},
+		{"error creating pagination meta", url.Values{"page": {"-1"}}, true},
+		{"error counting posts", url.Values{"page": {"1"}, "order": {repository.UnexpectedKey}}, true},
+		{"error getting posts", url.Values{"total": {"1"}, "order": {repository.UnexpectedKey}}, true},
 	}
 
 	for _, tt := range tests {
-		_, _, err := s.GetMany(tt.q)
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, err := s.GetMany(tt.q)
 
-		if err != nil && !tt.isError {
-			t.Errorf("%s should not return error, but got %s", tt.name, err)
-		}
+			if err != nil && !tt.isError {
+				t.Errorf("expecting no error, got %v", err)
+			}
 
-		if err == nil && tt.isError {
-			t.Errorf("%s should return error", tt.name)
-		}
+			if err == nil && tt.isError {
+				t.Error("expecting error")
+			}
+		})
 	}
 }
 
@@ -202,16 +155,16 @@ func TestPostService_Update(t *testing.T) {
 		isError    bool
 	}{
 		{"success", "", 0, nil, "", 0, false},
-		{"no post", "", 0, nil, repository.ErrNotFoundKeyString, 0, true},
-		{"error getting post", "", 0, nil, repository.ErrUnexpectedKeyString, 0, true},
+		{"no post", "", 0, nil, repository.NotFoundKey, 0, true},
+		{"error getting post", "", 0, nil, repository.UnexpectedKey, 0, true},
 		{"unauthorized", "", 0, nil, "", -1, true},
-		{"no category", "", repository.ErrNotFoundKeyInt, nil, "", 0, true},
-		{"error getting category", "", repository.ErrUnexpectedKeyInt, nil, "", 0, true},
+		{"no category", "", repository.NotFoundKeyInt, nil, "", 0, true},
+		{"error getting category", "", repository.UnexpectedKeyInt, nil, "", 0, true},
 		{"image invalid type", "", 0, bytes.NewReader(make([]byte, 1)), "", 0, true},
 		{"image too large", "", 0, bytes.NewReader(make([]byte, 2*1024*1024+2)), "", 0, true},
 		{"error verifying image", "", 0, &bytes.Reader{}, "", 0, true},
-		{"duplicate title", repository.ErrDuplicateKeyString, 0, nil, "", 0, true},
-		{"error updating post", repository.ErrUnexpectedKeyString, 0, nil, "", 0, true},
+		{"duplicate title", repository.DuplicateKey, 0, nil, "", 0, true},
+		{"error updating post", repository.UnexpectedKey, 0, nil, "", 0, true},
 	}
 
 	for _, tt := range tests {
@@ -242,8 +195,8 @@ func TestPostService_Delete(t *testing.T) {
 		isError bool
 	}{
 		{"success", "sample", 0, false},
-		{"post not found", repository.ErrNotFoundKeyString, 0, true},
-		{"error getting post", repository.ErrUnexpectedKeyString, 0, true},
+		{"post not found", repository.NotFoundKey, 0, true},
+		{"error getting post", repository.UnexpectedKey, 0, true},
 		{"unauthorized", "", -1, true},
 		{"error deleting post", "get-invalid-post", 0, true},
 	}

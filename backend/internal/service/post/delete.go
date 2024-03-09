@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func (s *postService) Delete(slug string, authId int) error {
@@ -28,7 +29,7 @@ func (s *postService) Delete(slug string, authId int) error {
 	}
 
 	if post.Image != "" {
-		err := os.Remove("images/post/" + post.Image)
+		err := os.Remove(filepath.Join("images", "post", post.Image))
 		if err != nil {
 			log.Println("removing image: ", err)
 		}

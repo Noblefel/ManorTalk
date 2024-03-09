@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -38,138 +39,82 @@ func TestAuth_Register(t *testing.T) {
 		statusCode int
 	}{
 		{
-			name: "authRegister-ok",
-			payload: &models.UserRegisterInput{
-				Username: "test",
-				Email:    "test@example.com",
-				Password: "password123",
-			},
+			name:       "success",
+			payload:    &models.UserRegisterInput{"test", "test@example.com", "password123"},
 			statusCode: http.StatusOK,
 		},
+		{"error decoding json", nil, http.StatusBadRequest},
 		{
-			name:       "authRegister-error-decode-json",
-			payload:    nil,
+			name:       "error validation",
+			payload:    &models.UserRegisterInput{"test", "not-an-email", ""},
 			statusCode: http.StatusBadRequest,
 		},
 		{
-			name: "authRegister-error-validation",
-			payload: &models.UserRegisterInput{
-				Username: "test",
-				Email:    "not-an-email",
-				Password: "",
-			},
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name: "authRegister-error-duplicate-email",
-			payload: &models.UserRegisterInput{
-				Username: "test",
-				Email:    "test@example.com",
-				Password: service.ErrDuplicateEmail.Error(),
-			},
+			name:       "duplicate email",
+			payload:    &models.UserRegisterInput{"test", "test@example.com", service.ErrDuplicateEmail.Error()},
 			statusCode: http.StatusConflict,
 		},
 		{
-			name: "authRegister-error-unexpected",
-			payload: &models.UserRegisterInput{
-				Username: "test",
-				Email:    "test@example.com",
-				Password: "unexpected error",
-			},
+			name:       "unexpected error",
+			payload:    &models.UserRegisterInput{"test", "test@example.com", "unexpected error"},
 			statusCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, tt := range tests {
-		var r *http.Request
-		if tt.payload == nil {
-			r = httptest.NewRequest("POST", "/auth/register", nil)
-		} else {
-			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBytes))
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			var body io.Reader
+			if tt.payload != nil {
+				b, _ := json.Marshal(tt.payload)
+				body = bytes.NewBuffer(b)
+			}
 
-		r.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.auth.Register)
-		handler.ServeHTTP(w, r)
+			r := httptest.NewRequest("POST", "/auth/register", body)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.auth.Register)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
 func TestAuth_Login(t *testing.T) {
 	var tests = []struct {
 		name       string
-		payload    *models.UserLoginInput
+		email      string
+		password   string
 		statusCode int
 	}{
-		{
-			name: "authLogin-ok",
-			payload: &models.UserLoginInput{
-				Email:    "test@example.com",
-				Password: "password",
-			},
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "authLogin-error-decode-json",
-			payload:    nil,
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name: "authLogin-error-validation",
-			payload: &models.UserLoginInput{
-				Email:    "not-an-email",
-				Password: "",
-			},
-			statusCode: http.StatusBadRequest,
-		},
-		{
-			name: "authLogin-error-invalid-credentials",
-			payload: &models.UserLoginInput{
-				Email:    "test@example.com",
-				Password: service.ErrInvalidCredentials.Error(),
-			},
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name: "authLogin-error-no-user",
-			payload: &models.UserLoginInput{
-				Email:    "test@example.com",
-				Password: service.ErrNoUser.Error(),
-			},
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name: "authLogin-error-unexpected",
-			payload: &models.UserLoginInput{
-				Email:    "test@example.com",
-				Password: "unexpected error",
-			},
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", "test@example.com", "password", http.StatusOK},
+		{"error decoding json", "", "", http.StatusBadRequest},
+		{"error validation", "not-an-email", "", http.StatusBadRequest},
+		{"invalid credentials", "test@example.com", service.ErrInvalidCredentials.Error(), http.StatusUnauthorized},
+		{"no user", "test@example.com", service.ErrNoUser.Error(), http.StatusUnauthorized},
+		{"unexpected error", "test@example.com", "unexpected error", http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		var r *http.Request
-		if tt.payload == nil {
-			r = httptest.NewRequest("POST", "/auth/login", nil)
-		} else {
-			jsonBytes, _ := json.Marshal(tt.payload)
-			r = httptest.NewRequest("POST", "/auth/login", bytes.NewBuffer(jsonBytes))
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			var body io.Reader
+			if tt.email != "" {
+				b, _ := json.Marshal(models.UserLoginInput{Email: tt.email, Password: tt.password})
+				body = bytes.NewBuffer(b)
+			}
 
-		r.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.auth.Login)
-		handler.ServeHTTP(w, r)
+			r := httptest.NewRequest("POST", "/auth/login", body)
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.auth.Login)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -179,60 +124,30 @@ func TestAuth_Refresh(t *testing.T) {
 		cookie     *http.Cookie
 		statusCode int
 	}{
-		{
-			name: "authRefresh-ok",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: "refresh_token",
-			},
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "authRefresh-error-missing-cookie",
-			cookie:     nil,
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name: "authRefresh-error-unauthorized",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: service.ErrUnauthorized.Error(),
-			},
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name: "authRefresh-error-no-user",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: service.ErrNoUser.Error(),
-			},
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name: "authRefresh-error-unexpected",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: "unexpected error",
-			},
-			statusCode: http.StatusInternalServerError,
-		},
+		{"success", &http.Cookie{Name: "refresh_token", Value: "refresh_token"}, http.StatusOK},
+		{"missing cookie", nil, http.StatusUnauthorized},
+		{"unauthorized", &http.Cookie{Name: "refresh_token", Value: service.ErrUnauthorized.Error()}, http.StatusUnauthorized},
+		{"no user", &http.Cookie{Name: "refresh_token", Value: service.ErrNoUser.Error()}, http.StatusUnauthorized},
+		{"unexpected error", &http.Cookie{Name: "refresh_token", Value: "unexpected error"}, http.StatusInternalServerError},
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("POST", "/auth/refresh", nil)
-		r.Header.Set("Content-Type", "application/json")
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("POST", "/auth/refresh", nil)
+			r.Header.Set("Content-Type", "application/json")
 
-		if tt.cookie != nil {
-			r.AddCookie(tt.cookie)
-		}
+			if tt.cookie != nil {
+				r.AddCookie(tt.cookie)
+			}
 
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.auth.Refresh)
-		handler.ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.auth.Refresh)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }
 
@@ -242,43 +157,27 @@ func TestAuth_Logout(t *testing.T) {
 		cookie     *http.Cookie
 		statusCode int
 	}{
-		{
-			name: "authLogout-ok",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: "refresh_token",
-			},
-			statusCode: http.StatusOK,
-		},
-		{
-			name:       "authLogout-error-missing-cookie",
-			cookie:     nil,
-			statusCode: http.StatusUnauthorized,
-		},
-		{
-			name: "authLogout-error-unauthorized",
-			cookie: &http.Cookie{
-				Name:  "refresh_token",
-				Value: service.ErrUnauthorized.Error(),
-			},
-			statusCode: http.StatusUnauthorized,
-		},
+		{"success", &http.Cookie{Name: "refresh_token", Value: "refresh_token"}, http.StatusOK},
+		{"missing cookie", nil, http.StatusUnauthorized},
+		{"unauthorized", &http.Cookie{Name: "refresh_token", Value: service.ErrUnauthorized.Error()}, http.StatusUnauthorized},
 	}
 
 	for _, tt := range tests {
-		r := httptest.NewRequest("POST", "/auth/logout", nil)
-		r.Header.Set("Content-Type", "application/json")
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest("POST", "/auth/logout", nil)
+			r.Header.Set("Content-Type", "application/json")
 
-		if tt.cookie != nil {
-			r.AddCookie(tt.cookie)
-		}
+			if tt.cookie != nil {
+				r.AddCookie(tt.cookie)
+			}
 
-		w := httptest.NewRecorder()
-		handler := http.HandlerFunc(h.auth.Logout)
-		handler.ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.auth.Logout)
+			handler.ServeHTTP(w, r)
 
-		if w.Code != tt.statusCode {
-			t.Errorf("%s returned response code of %d, wanted %d", tt.name, w.Code, tt.statusCode)
-		}
+			if w.Code != tt.statusCode {
+				t.Errorf("want %d, got %d", tt.statusCode, w.Code)
+			}
+		})
 	}
 }

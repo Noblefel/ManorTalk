@@ -44,7 +44,7 @@ func NewPostService(c *config.AppConfig, cr repository.CacheRepo, pr repository.
 	}
 }
 
-// mockPostService is a lightweight replicate of the post service used inside handler tests
+// mockPostService is a replica of the post service to be used inside handler tests
 type mockPostService struct {
 	cacheRepo repository.CacheRepo
 	postRepo  repository.PostRepo

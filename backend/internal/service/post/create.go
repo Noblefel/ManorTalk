@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/models"
@@ -25,8 +26,7 @@ func (s *postService) Create(payload models.PostCreateInput, authId int) (models
 	}
 
 	if payload.Image != nil {
-		name := fmt.Sprintf("%s-%d", uuid.New(), authId)
-		ext, err := img.Verify(payload.Image, name)
+		ext, err := img.Verify(payload.Image)
 		if err != nil {
 			switch err {
 			case img.ErrTooLarge:
@@ -37,10 +37,10 @@ func (s *postService) Create(payload models.PostCreateInput, authId int) (models
 				return post, fmt.Errorf("verifying image: %w", err)
 			}
 		}
+		name := fmt.Sprintf("%s-%d", uuid.New(), authId) + ext
+		post.Image = name
 
-		post.Image = name + ext
-
-		err = img.Save(payload.Image, "images/post/", post.Image)
+		err = img.Save(payload.Image, filepath.Join("images", "post", post.Image))
 		if err != nil {
 			return post, fmt.Errorf("saving image: %w", err)
 		}

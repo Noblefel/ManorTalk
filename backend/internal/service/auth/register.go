@@ -12,16 +12,16 @@ import (
 func (s *authService) Register(payload models.UserRegisterInput) error {
 	pw, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("%s: %w", "Error hashing password", err)
+		return fmt.Errorf("hashing password: %w", err)
 	}
 
 	_, err = s.userRepo.CreateUser(payload.Username, payload.Email, string(pw))
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
-			return ErrDuplicateEmail // Could also be ErrDuplicateUsername
+			return ErrDuplicateEmail // or ErrDuplicateUsername
 		}
 
-		return fmt.Errorf("%s: %w", "Error creating user", err)
+		return fmt.Errorf("creating user: %w", err)
 	}
 
 	return nil

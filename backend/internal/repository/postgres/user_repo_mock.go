@@ -16,11 +16,11 @@ func NewMockUserRepo() repository.UserRepo {
 }
 
 func (r *mockUserRepo) CreateUser(username, email, password string) (int, error) {
-	if email == repository.ErrDuplicateKeyString {
+	if email == repository.DuplicateKey {
 		return 0, errors.New("duplicate key value")
 	}
 
-	if email == repository.ErrUnexpectedKeyString {
+	if email == repository.UnexpectedKey {
 		return 0, errors.New("unexpected error")
 	}
 
@@ -30,11 +30,11 @@ func (r *mockUserRepo) CreateUser(username, email, password string) (int, error)
 func (r *mockUserRepo) GetUserById(id int) (models.User, error) {
 	var user models.User
 
-	if id == repository.ErrNotFoundKeyInt {
+	if id == repository.NotFoundKeyInt {
 		return user, sql.ErrNoRows
 	}
 
-	if id == repository.ErrUnexpectedKeyInt {
+	if id == repository.UnexpectedKeyInt {
 		return user, errors.New("unexpected error")
 	}
 
@@ -47,15 +47,15 @@ func (r *mockUserRepo) GetUserByEmail(email string) (models.User, error) {
 	user.Password = string(pw)
 
 	if email == "get-invalid-user" {
-		user.Id = repository.ErrUnexpectedKeyInt
+		user.Id = repository.UnexpectedKeyInt
 		return user, nil
 	}
 
-	if email == repository.ErrNotFoundKeyString {
+	if email == repository.NotFoundKey {
 		return user, sql.ErrNoRows
 	}
 
-	if email == repository.ErrUnexpectedKeyString {
+	if email == repository.UnexpectedKey {
 		return user, errors.New("unexpected error")
 	}
 
@@ -68,15 +68,15 @@ func (r *mockUserRepo) GetUserByUsername(username string) (models.User, error) {
 	user.Password = string(pw)
 
 	if username == "get-invalid-user" {
-		user.Id = repository.ErrUnexpectedKeyInt
+		user.Id = repository.UnexpectedKeyInt
 		return user, nil
 	}
 
-	if username == repository.ErrNotFoundKeyString {
+	if username == repository.NotFoundKey {
 		return user, sql.ErrNoRows
 	}
 
-	if username == repository.ErrUnexpectedKeyString {
+	if username == repository.UnexpectedKey {
 		return user, errors.New("unexpected error")
 	}
 
@@ -85,15 +85,15 @@ func (r *mockUserRepo) GetUserByUsername(username string) (models.User, error) {
 
 func (r *mockUserRepo) UpdateUser(u models.User) error {
 
-	if u.Name == repository.ErrDuplicateKeyString {
+	if u.Name == repository.DuplicateKey {
 		return errors.New("duplicate key value")
 	}
 
-	if u.Name == repository.ErrUnexpectedKeyString {
+	if u.Name == repository.UnexpectedKey {
 		return errors.New("some error")
 	}
 
-	if u.Name == repository.ErrNotFoundKeyString {
+	if u.Name == repository.NotFoundKey {
 		return sql.ErrNoRows
 	}
 

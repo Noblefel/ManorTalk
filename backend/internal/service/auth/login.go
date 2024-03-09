@@ -18,7 +18,7 @@ func (s *authService) Login(payload models.UserLoginInput) (models.User, string,
 			return user, "", "", ErrNoUser
 		}
 
-		return user, "", "", fmt.Errorf("%s: %w", "Error getting user by email", err)
+		return user, "", "", fmt.Errorf("getting user by email: %w", err)
 	}
 
 	accessTD := token.Details{
@@ -34,7 +34,7 @@ func (s *authService) Login(payload models.UserLoginInput) (models.User, string,
 
 	accessToken, err := token.Generate(accessTD)
 	if err != nil {
-		return user, "", "", fmt.Errorf("%s: %w", "Error generating access token", err)
+		return user, "", "", fmt.Errorf("generating access token: %w", err)
 	}
 
 	refreshTD := token.Details{
@@ -46,11 +46,11 @@ func (s *authService) Login(payload models.UserLoginInput) (models.User, string,
 
 	refreshToken, err := token.Generate(refreshTD)
 	if err != nil {
-		return user, "", "", fmt.Errorf("%s: %w", "Error generating refresh token", err)
+		return user, "", "", fmt.Errorf("generating refresh token: %w", err)
 	}
 
 	if err = s.cacheRepo.SetRefreshToken(refreshTD); err != nil {
-		return user, "", "", fmt.Errorf("%s: %w", "Error caching refresh token", err)
+		return user, "", "", fmt.Errorf("caching refresh token: %w", err)
 	}
 
 	user.Password = ""

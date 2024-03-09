@@ -22,7 +22,7 @@ func (s *authService) Logout(refreshToken string) error {
 	err = s.cacheRepo.DelRefreshToken(*tokenDetails)
 	if err != nil {
 		log.Println(err)
-		return fmt.Errorf("%s: %w", "Error deleting refresh token", err)
+		return fmt.Errorf("deleting refresh token: %w", err)
 	}
 
 	return nil
