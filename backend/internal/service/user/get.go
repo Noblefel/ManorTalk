@@ -9,7 +9,7 @@ import (
 )
 
 func (s *userService) Get(username string) (models.User, error) {
-	user, err := s.userRepo.GetUserByUsername(username)
+	user, err := s.userRepo.GetUser(models.UserFilters{Username: username})
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return user, ErrNoUser

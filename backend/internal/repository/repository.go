@@ -24,10 +24,7 @@ type CacheRepo interface {
 
 type UserRepo interface {
 	CreateUser(username, email, password string) (int, error)
-	GetUserById(id int) (models.User, error)
-	GetUserByEmail(email string) (models.User, error)
-	GetUserByUsername(username string) (models.User, error)
-
+	GetUser(filters models.UserFilters) (models.User, error)
 	UpdateUser(u models.User) error
 }
 

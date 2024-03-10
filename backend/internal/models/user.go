@@ -39,3 +39,9 @@ type UpdateProfileInput struct {
 	Bio      string `json:"bio" validate:"max=2000"`
 	Avatar   io.ReadSeeker
 }
+
+type UserFilters struct {
+	Id       int
+	Email    string
+	Username string
+}

@@ -27,57 +27,26 @@ func (r *mockUserRepo) CreateUser(username, email, password string) (int, error)
 	return 1, nil
 }
 
-func (r *mockUserRepo) GetUserById(id int) (models.User, error) {
+func (r *mockUserRepo) GetUser(filters models.UserFilters) (models.User, error) {
 	var user models.User
-
-	if id == repository.NotFoundKeyInt {
-		return user, sql.ErrNoRows
-	}
-
-	if id == repository.UnexpectedKeyInt {
-		return user, errors.New("unexpected error")
-	}
-
-	return user, nil
-}
-
-func (r *mockUserRepo) GetUserByEmail(email string) (models.User, error) {
-	var user models.User
-	pw, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+	pw, _ := bcrypt.GenerateFromPassword([]byte("password"), 7)
 	user.Password = string(pw)
 
-	if email == "get-invalid-user" {
-		user.Id = repository.UnexpectedKeyInt
-		return user, nil
-	}
-
-	if email == repository.NotFoundKey {
+	if filters.Id == repository.NotFoundKeyInt ||
+		filters.Email == repository.NotFoundKey ||
+		filters.Username == repository.NotFoundKey {
 		return user, sql.ErrNoRows
 	}
 
-	if email == repository.UnexpectedKey {
+	if filters.Id == repository.UnexpectedKeyInt ||
+		filters.Email == repository.UnexpectedKey ||
+		filters.Username == repository.UnexpectedKey {
 		return user, errors.New("unexpected error")
 	}
 
-	return user, nil
-}
-
-func (r *mockUserRepo) GetUserByUsername(username string) (models.User, error) {
-	var user models.User
-	pw, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
-	user.Password = string(pw)
-
-	if username == "get-invalid-user" {
+	if filters.Email == "get-invalid-user" || filters.Username == "get-invalid-user" {
 		user.Id = repository.UnexpectedKeyInt
 		return user, nil
-	}
-
-	if username == repository.NotFoundKey {
-		return user, sql.ErrNoRows
-	}
-
-	if username == repository.UnexpectedKey {
-		return user, errors.New("unexpected error")
 	}
 
 	return user, nil

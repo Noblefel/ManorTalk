@@ -13,9 +13,8 @@ A mini-forum application built in Go 1.20
 - [slug](https://github.com/gosimple/slug)
 
 ### TODO 
-1. Refactor JSON response to separate pagination metadata from the main data. 
-2. Improve database queries in post repo.
-3. Fix migration to run from specific version/steps, instead of migrating up/down everything.
+1. Refactor JSON response to separate pagination metadata from the main data.
+2. Fix migration to run from specific version/steps, instead of migrating up/down everything.
 
 ## Installation
 ```bash

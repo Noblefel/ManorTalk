@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"database/sql"
+	"strconv"
 	"time"
 
 	"github.com/Noblefel/ManorTalk/backend/internal/database"
@@ -42,50 +42,53 @@ func (r *PostRepo) GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters
 			COALESCE(u.avatar, '')
 		FROM posts p
 		LEFT JOIN categories c ON (p.category_id = c.id)
-		LEFT JOIN users u ON (p.user_id = u.id)	
-		`
+		LEFT JOIN users u ON (p.user_id = u.id)`
+
+	var args []interface{}
+	query += "\nWHERE 1 = 1" // placeholder
 
 	if filters.Category != "" {
-		query += "WHERE c.slug = $3\n"
-	} else {
-		query += "WHERE c.slug != $3\n"
+		args = append(args, filters.Category)
+		query += "\nAND c.slug = $" + strconv.Itoa(len(args))
 	}
 
 	if filters.Search != "" {
-		query += "AND p.title LIKE CONCAT('%', $4::text, '%')\n"
-	} else {
-		query += "AND p.title != $4\n"
+		args = append(args, filters.Search)
+		query += "\nAND p.title LIKE CONCAT('%', $" + strconv.Itoa(len(args)) + "::text, '%')"
 	}
 
 	if filters.UserId != 0 {
-		query += "AND p.user_id = $5\n"
-	} else {
-		query += "AND p.user_id != $5\n"
+		args = append(args, filters.UserId)
+		query += "\nAND p.user_id = $" + strconv.Itoa(len(args))
 	}
-
-	var rows *sql.Rows
-	var err error
 
 	if filters.Cursor != 0 {
-		query += "AND p.id >= $1 LIMIT $2"
-		rows, err = r.db.Sql.Query(query,
-			filters.Cursor,
-			filters.Limit,
-			filters.Category,
-			filters.Search,
-			filters.UserId,
-		)
+		args = append(args, filters.Cursor)
+		if filters.Order == "asc" {
+			query += "\nAND p.id " + ">" + " $" + strconv.Itoa(len(args))
+		} else {
+			if filters.Cursor == 1 {
+				args = args[:len(args)-1]
+			} else {
+				query += "\nAND p.id " + "<" + " $" + strconv.Itoa(len(args))
+			}
+			query += "\nORDER BY p.id DESC"
+		}
 	} else {
-		query += "OFFSET $1 LIMIT $2"
-		rows, err = r.db.Sql.Query(query,
-			pgMeta.Offset,
-			filters.Limit,
-			filters.Category,
-			filters.Search,
-			filters.UserId,
-		)
+		if filters.Order == "asc" {
+			query += "\nORDER BY p.id ASC"
+		} else {
+			query += "\nORDER BY p.id DESC"
+		}
+
+		args = append(args, pgMeta.Offset)
+		query += "\nOFFSET $" + strconv.Itoa(len(args))
 	}
 
+	args = append(args, filters.Limit)
+	query += "\nLIMIT $" + strconv.Itoa(len(args))
+
+	rows, err := r.db.Sql.Query(query, args...)
 	if err != nil {
 		return posts, err
 	}

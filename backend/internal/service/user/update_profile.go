@@ -15,7 +15,7 @@ import (
 )
 
 func (s *userService) UpdateProfile(payload models.UpdateProfileInput, username string, authId int) (string, error) {
-	user, err := s.userRepo.GetUserByUsername(username)
+	user, err := s.userRepo.GetUser(models.UserFilters{Username: username})
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return "", ErrNoUser

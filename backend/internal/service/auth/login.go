@@ -12,7 +12,7 @@ import (
 )
 
 func (s *authService) Login(payload models.UserLoginInput) (models.User, string, string, error) {
-	user, err := s.userRepo.GetUserByEmail(payload.Email)
+	user, err := s.userRepo.GetUser(models.UserFilters{Email: payload.Email})
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return user, "", "", ErrNoUser

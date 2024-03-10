@@ -22,7 +22,7 @@ func (s *authService) Refresh(refreshToken string) (models.User, string, error) 
 		return user, "", ErrUnauthorized
 	}
 
-	user, err = s.userRepo.GetUserById(tokenDetails.UserId)
+	user, err = s.userRepo.GetUser(models.UserFilters{Id: tokenDetails.UserId})
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return user, "", ErrNoUser

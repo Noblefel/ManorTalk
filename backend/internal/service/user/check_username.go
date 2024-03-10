@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Noblefel/ManorTalk/backend/internal/models"
 	"github.com/gosimple/slug"
 )
 
 func (s *userService) CheckUsername(username string) error {
-	_, err := s.userRepo.GetUserByUsername(username)
+	_, err := s.userRepo.GetUser(models.UserFilters{Username: username})
 	if err != nil {
 		if errors.Is(sql.ErrNoRows, err) {
 			return nil

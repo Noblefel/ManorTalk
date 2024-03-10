@@ -117,10 +117,10 @@ export const usePostStore = defineStore("post", () => {
     cursor: Ref<Number>
   ) {
     let uId = userStore.viewedUser?.id;
-    const params = `?cursor=${cursor.value}&user=${uId}&limit=9`;
+    const params = `?cursor=${cursor.value}&user=${uId}&limit=8&order=desc`;
     postStore.fetchPosts(rr, params).then(() => {
       const newPosts = (rr.data as any).posts as Post[];
-      cursor.value = (newPosts.slice(-1)[0].id || 0) + 1;
+      cursor.value = (newPosts.slice(-1)[0].id || 0);
       posts.value = [...posts.value, ...newPosts];
     });
   }
