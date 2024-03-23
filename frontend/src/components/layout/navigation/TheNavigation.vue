@@ -6,7 +6,7 @@ import DesktopMenu from "./DesktopMenu.vue";
 import TheThemeSwitch from "@/components/TheThemeSwitch.vue";
 import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore()
+const as = useAuthStore()
 </script>
 
 <template>
@@ -38,7 +38,7 @@ const authStore = useAuthStore()
       <div class="l">
         <button class="menu-button background">
           <img
-            :src="getAvatar(authStore.authUser)"
+            :src="getAvatar(as.authUser)"
             class="circle medium"
             alt="Profile avatar"
           />

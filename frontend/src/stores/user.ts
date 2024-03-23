@@ -1,10 +1,11 @@
-import type { RequestResponse } from "@/utils/api";
+import { Api, type RequestResponse } from "@/utils/api";
 import { toast } from "@/utils/helper";
 import { Validator } from "@/utils/validator";
 import { defineStore } from "pinia";
 import { type RouteLocation, useRouter } from "vue-router";
 import { useAuthStore } from "./auth";
-import { ref } from "vue";
+import { ref, type Ref } from "vue";
+import type { Post } from "./post";
 
 export interface User {
   id: number;
@@ -17,6 +18,7 @@ export interface User {
   updated_at?: string;
   posts_count?: number;
   bio?: string;
+  posts?: Post[];
 }
 
 export interface UpdateForm {
@@ -31,8 +33,7 @@ export const useUserStore = defineStore("user", () => {
   const authStore = useAuthStore();
   const viewedUser = ref<User | null>(null);
 
-  /** checkUsername validates the username and send request to check its availability */
-  function checkUsername(username: string, rr: RequestResponse) {
+  async function checkUsername(username: string, rr: RequestResponse) {
     const f = new Validator({ username: username })
       .required("username")
       .strMinLength("username", 3)
@@ -43,34 +44,44 @@ export const useUserStore = defineStore("user", () => {
       return;
     }
 
-    rr.useApi("post", "/users/check-username", f.form).then(() => {
-      if (rr.status != 200) return;
+    rr.loading = true;
+    try {
+      const res = await Api.post("/users/check-username", f.form);
       rr.errors = null;
-
-      if (rr.message) toast(rr.message, "green white-text");
-    });
+      toast(res.data.message, "green white-text");
+    } catch (e) {
+      rr.handleErr(e);
+    } finally {
+      rr.loading = false;
+    }
   }
 
-  /** fetchProfile will get the user data and cache it as viewedUser */
-  function fetchProfile(to: RouteLocation, rr: RequestResponse) {
+  async function fetchProfile(rr: Ref<RequestResponse>, to: RouteLocation) {
     if (viewedUser.value?.username == to.params.username) {
-      return Promise.resolve();
+      return;
     }
 
-    if (to.params.username == authStore.authUser?.username) {
+    if (authStore.authUser?.username == to.params.username) {
       viewedUser.value = authStore.authUser;
-      return Promise.resolve();
+      return;
     }
 
-    return rr.useApi("GET", "/users/" + to.params.username).then(() => {
-      if (rr.status !== 200) return;
-
-      viewedUser.value = rr.data as any;
-    });
+    rr.value.loading = true;
+    try {
+      const res = await Api.get("/users/" + to.params.username);
+      viewedUser.value = res.data.data;
+    } catch (e) {
+      rr.value.handleErr(e);
+    } finally {
+      rr.value.loading = false;
+    }
   }
 
-  /** update validates the form and updates the user profile */
-  function update(form: UpdateForm, rr: RequestResponse, username: string) {
+  async function update(
+    form: UpdateForm,
+    rr: RequestResponse,
+    to: RouteLocation
+  ) {
     const f = new Validator(form)
       .required("username")
       .strMinLength("username", 3)
@@ -84,25 +95,25 @@ export const useUserStore = defineStore("user", () => {
       return;
     }
 
-    rr.useApi(
-      "patch",
-      `/users/${username}`,
-      form,
-      true,
-      "multipart/form-data"
-    ).then(() => {
-      if (rr.status != 200) return;
+    rr.loading = true;
+    try {
+      const res = await Api.patch("/users/" + to.params.username, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       authStore!.authUser!.name = form.name;
       authStore!.authUser!.username = form.username;
       authStore!.authUser!.bio = form.bio;
-      authStore!.authUser!.avatar = rr.data as any;
+      authStore!.authUser!.avatar = res.data.data;
       authStore.setAuthStorage();
 
-      if (rr.message) toast(rr.message, "green white-text");
-
+      toast(res.data.message, "green white-text");
       router.push({ name: "profile", params: { username: form.username } });
-    });
+    } catch (e) {
+      rr.handleErr(e);
+    } finally {
+      rr.loading = false;
+    }
   }
 
   return {

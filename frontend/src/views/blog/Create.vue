@@ -6,9 +6,8 @@ import { RequestResponse } from "@/utils/api";
 import { verifyImage } from "@/utils/helper";
 import Actions from "@/components/blog/Actions.vue";
 
-const postStore = usePostStore();
+const ps = usePostStore();
 const rr = ref(new RequestResponse());
-const rr2 = ref(new RequestResponse());
 
 const form = ref<CreatePost>({
   title: "",
@@ -21,7 +20,7 @@ const form = ref<CreatePost>({
 const render = ref(false);
 
 onMounted(() => {
-  postStore.fetchCategories(rr2.value);
+  ps.fetchCategories();
 });
 
 const shownImage = ref("");
@@ -38,7 +37,7 @@ function onFileChange(event: Event) {
 </script>
 
 <template>
-  <form class="grid" @submit.prevent="postStore.create(form, rr)">
+  <form class="grid" @submit.prevent="ps.create(form, rr)">
     <div class="s12 m12 l9">
       <h3 class="center-align">Create Post 🎨</h3>
 
@@ -84,9 +83,16 @@ function onFileChange(event: Event) {
       <div class="space"></div>
 
       <label for="category" class="font-size-1-25 font-600">Category</label>
-      <div v-if="postStore.categories" class="field border no-margin suffix">
+      <div
+        v-if="!ps.categories.length"
+        class="center-align small-opacity surface padding"
+      >
+        <i>error</i>
+        <p>Cannot load categories</p>
+      </div>
+      <div v-else class="field border no-margin suffix">
         <select name="category" id="category" v-model="form.category_id">
-          <option v-for="c in postStore.categories" :value="c.id">
+          <option v-for="c in ps.categories" :value="c.id">
             {{ c.name }}
           </option>
         </select>

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { usePostStore } from "@/stores/post";
-import { RequestResponse } from "@/utils/api";
 import { changeParam } from "@/utils/helper";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-const rr = ref(new RequestResponse());
-const postStore = usePostStore();
+const ps = usePostStore();
 const router = useRouter();
 const search = ref("");
 
@@ -39,11 +37,7 @@ defineProps({ loading: Boolean });
         </menu>
       </button>
 
-      <button
-        class="inverted"
-        @click="postStore.fetchCategories(rr)"
-        :disabled="loading"
-      >
+      <button class="inverted" :disabled="loading">
         <i>category</i>
         <span class="capitalize">
           {{
@@ -53,7 +47,7 @@ defineProps({ loading: Boolean });
         </span>
         <i>arrow_drop_down</i>
 
-        <menu class="center-align" v-if="rr.errors || rr.loading">
+        <menu class="center-align" v-if="!ps.categories.length">
           <div class="space"></div>
           <i>error</i>
           <div class="space"></div>
@@ -61,7 +55,7 @@ defineProps({ loading: Boolean });
         <menu v-else>
           <a @click="changeParam(router, 'category', '')">All</a>
           <a
-            v-for="c in postStore.categories"
+            v-for="c in ps.categories"
             :key="c.slug"
             @click="changeParam(router, 'category', c.slug)"
           >

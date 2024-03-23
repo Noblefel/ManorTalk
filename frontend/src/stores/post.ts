@@ -1,4 +1,4 @@
-import type { RequestResponse } from "@/utils/api";
+import { RequestResponse, Api } from "@/utils/api";
 import { defineStore } from "pinia";
 import { ref, type Ref } from "vue";
 import { type User, useUserStore } from "./user";
@@ -76,68 +76,87 @@ export const usePostStore = defineStore("post", () => {
   const viewedPost = ref<Post | null>(null);
   const categories = ref([] as Category[]);
   const userStore = useUserStore();
-  const postStore = usePostStore();
   const router = useRouter();
 
-  /** fetchHomePosts will get newest posts and save it into the store */
-  function fetchHomePosts(rr: RequestResponse) {
-    if (latestPosts.value.length != 0) return;
-    rr.useApi("get", "/posts?order=desc&limit=5&total=5").then(() => {
-      if (rr.status != 200) return;
-
-      const posts = (rr.data as unknown as { posts: Post[] }).posts;
-      latestPosts.value = posts;
-    });
+  async function fetchHomePosts(rr: Ref<RequestResponse>) {
+    rr.value.loading = true;
+    try {
+      const res = await Api.get("/posts?order=desc&limit=5&total=5");
+      latestPosts.value = res.data.data.posts;
+    } catch (e) {
+      rr.value.handleErr(e);
+    } finally {
+      rr.value.loading = false;
+    }
   }
 
-  /** fetchPost will get the post and cache it as viewedPost */
-  function fetchPost(rr: RequestResponse, to: RouteLocation) {
+  async function fetchPosts(rr: Ref<RequestResponse>, path = "") {
+    if (path) path = path.slice(path.indexOf("?") + 1);
+    rr.value.loading = true;
+    try {
+      const res = await Api.get("/posts?" + path);
+      rr.value.data = res.data.data;
+    } catch (e) {
+      rr.value.handleErr(e);
+    } finally {
+      rr.value.loading = false;
+    }
+  }
+
+  async function fetchPost(rr: Ref<RequestResponse>, to: RouteLocation) {
     if (viewedPost.value?.slug == to.params.slug) {
-      return Promise.resolve();
+      return;
     }
 
-    return rr.useApi("get", "/posts/" + to.params.slug).then(() => {
-      if (rr.status !== 200) return;
-
-      viewedPost.value = rr.data as any;
-    });
+    rr.value.loading = true;
+    try {
+      const res = await Api.get("/posts/" + to.params.slug);
+      viewedPost.value = res.data.data;
+    } catch (e) {
+      rr.value.handleErr(e);
+    } finally {
+      rr.value.loading = false;
+    }
   }
 
-  /** fetchPosts will get posts with query parameters filter */
-  function fetchPosts(rr: RequestResponse, path: string) {
-    let query;
-    if (path) query = path.slice(path.indexOf("?") + 1);
-    return rr.useApi("get", "/posts?" + query);
-  }
-
-  /** fetchProfilePosts will get user's posts with cursor */
-  function fetchProfilePosts(
-    rr: RequestResponse,
-    posts: Ref<Post[]>,
+  async function fetchProfilePosts(
+    rr: Ref<RequestResponse>,
     cursor: Ref<Number>
   ) {
-    let uId = userStore.viewedUser?.id;
-    const params = `?cursor=${cursor.value}&user=${uId}&limit=8&order=desc`;
-    postStore.fetchPosts(rr, params).then(() => {
-      const newPosts = (rr.data as any).posts as Post[];
-      cursor.value = (newPosts.slice(-1)[0].id || 0);
-      posts.value = [...posts.value, ...newPosts];
-    });
+    const id = userStore.viewedUser?.id;
+    const params = `?cursor=${cursor.value}&user=${id}&limit=8&order=desc`;
+    rr.value.loading = true;
+    try {
+      const res = await Api.get("/posts" + params);
+      const next = res.data.data.posts;
+      const prev = userStore.viewedUser?.posts;
+      if (prev) {
+        userStore.viewedUser!.posts = [...prev, ...next];
+      } else {
+        userStore.viewedUser!.posts = next;
+      }
+
+      cursor.value = next.slice(-1)[0].id || 0;
+    } catch (e) {
+      rr.value.handleErr(e);
+    } finally {
+      rr.value.loading = false;
+    }
   }
 
-  /** fetchCategories will get all categories and save it into the store */
-  function fetchCategories(rr: RequestResponse) {
+  async function fetchCategories() {
     if (categories.value.length != 0) return;
 
-    rr.useApi("get", "/posts/categories").then(() => {
-      if (rr.status != 200) return;
-
-      categories.value = rr.data as unknown as Category[];
-    });
+    const rr = new RequestResponse();
+    try {
+      const res = await Api.get("/posts/categories");
+      categories.value = res.data.data;
+    } catch (e) {
+      rr.handleErr(e);
+    }
   }
 
-  /** create will validates the form and stores the new post  */
-  function create(form: CreatePost, rr: RequestResponse) {
+  async function create(form: CreatePost, rr: RequestResponse) {
     const f = new Validator(form)
       .required("title", "content")
       .strMinLength("title", 10)
@@ -150,16 +169,25 @@ export const usePostStore = defineStore("post", () => {
       return;
     }
 
-    rr.useApi("post", "/posts", form, true, "multipart/form-data").then(() => {
-      if (rr.status != 201) return;
-      if (rr.message) toast(rr.message, "green white-text");
-      const slug = (rr.data as any as Post).slug;
-      router.push({ name: "blog.show", params: { slug: slug } });
-    });
+    rr.loading = true;
+    try {
+      const res = await Api.post("/posts", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast(res.data.message, "green white-text");
+      router.push({
+        name: "blog.show",
+        params: { slug: res.data.data.slug },
+      });
+    } catch (e) {
+      rr.handleErr(e);
+    } finally {
+      rr.loading = false;
+    }
   }
 
-  /** update will validates the form and updates the post  */
-  function update(form: CreatePost, rr: RequestResponse) {
+  async function update(form: CreatePost, rr: RequestResponse) {
     const f = new Validator(form)
       .required("title", "content")
       .strMinLength("title", 10)
@@ -172,29 +200,39 @@ export const usePostStore = defineStore("post", () => {
       return;
     }
 
-    rr.useApi(
-      "patch",
-      "/posts/" + viewedPost.value?.slug,
-      form,
-      true,
-      "multipart/form-data"
-    ).then(() => {
-      if (rr.status !== 200) return;
-      if (rr.message) toast(rr.message, "green white-text");
+    rr.loading = true;
+    try {
+      const res = await Api.patch("/posts/" + viewedPost.value?.slug, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       viewedPost.value = null;
-      const slug = rr.data as any as string;
-      router.push({ name: "blog.show", params: { slug: slug } });
-    });
+      toast(res.data.message, "green white-text");
+      router.push({
+        name: "blog.show",
+        params: { slug: res.data.data },
+      });
+    } catch (e) {
+      rr.handleErr(e);
+    } finally {
+      rr.loading = false;
+    }
   }
 
-  function deletePost(rr: RequestResponse) {
+  async function deletePost(rr: RequestResponse) {
     if (!confirm("Are you sure? ")) return;
-    rr.useApi("delete", "/posts/" + viewedPost.value?.slug).then(() => {
-      if (rr.status !== 200) return;
-      router.push({name: "blog"})
-      if (rr.message) toast(rr.message, "green white-text");
-      viewedPost.value = null;
-    });
+
+    rr.loading = true
+    try {
+      const res = await Api.delete("/posts/" + viewedPost.value?.slug) 
+      viewedPost.value = null
+      toast(res.data.message, "green white-text")
+      router.push({name: "blog"})      
+    } catch (e) {
+      rr.handleErr(e)
+    } finally {
+      rr.loading = false
+    }
   }
 
   return {

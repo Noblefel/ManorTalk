@@ -8,24 +8,24 @@ import { onBeforeRouteUpdate, useRoute } from "vue-router";
 import { usePostStore } from "@/stores/post";
 
 const rr = ref(new RequestResponse());
-const postStore = usePostStore();
+const ps = usePostStore();
 const route = useRoute();
 
 onMounted(() => {
   window.scrollTo(0, 0);
-  postStore.fetchPost(rr.value, route);
+  ps.fetchPost(rr, route);
 });
 
 onBeforeRouteUpdate((to) => {
   window.scrollTo(0, 0);
-  postStore.fetchPost(rr.value, to);
+  ps.fetchPost(rr, to);
 });
 </script>
 
 <template>
   <div class="wrapper">
-    <main v-if="postStore.viewedPost" id="post">
-      <Post :post="postStore.viewedPost" />
+    <main v-if="ps.viewedPost" id="post">
+      <Post :post="ps.viewedPost" />
 
       <div class="large-space"></div>
       <div class="divider"></div>
@@ -36,7 +36,7 @@ onBeforeRouteUpdate((to) => {
           <i>chevron_left</i>
           Previous post
 
-          <PostCard :with-excerpt="true" :post="postStore.viewedPost" />
+          <PostCard :with-excerpt="true" :post="ps.viewedPost" />
         </article>
         <article class="max glow s12 m6 l6 no-margin">
           <div class="right-align">
@@ -44,7 +44,7 @@ onBeforeRouteUpdate((to) => {
             <i>chevron_right</i>
           </div>
 
-          <PostCard :with-excerpt="true" :post="postStore.viewedPost" />
+          <PostCard :with-excerpt="true" :post="ps.viewedPost" />
         </article>
       </div>
     </main>

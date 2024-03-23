@@ -7,17 +7,18 @@ import Filters from "@/components/blog/Filters.vue";
 import PostList from "@/components/blog/PostList.vue";
 import ResponseCard from "@/components/ResponseCard.vue";
 
-const postStore = usePostStore();
+const ps = usePostStore();
 const rr = ref(new RequestResponse());
 const route = useRoute();
 
 onMounted(() => {
   window.scrollTo(0, 0);
-  postStore.fetchPosts(rr.value, route.fullPath);
+  ps.fetchPosts(rr, route.fullPath);
+  ps.fetchCategories(ref(new RequestResponse()));
 });
 
 onBeforeRouteUpdate((to) => {
-  postStore.fetchPosts(rr.value, to.fullPath);
+  ps.fetchPosts(rr, to.fullPath);
 });
 </script>
 

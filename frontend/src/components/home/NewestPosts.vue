@@ -6,10 +6,10 @@ import { usePostStore } from "@/stores/post";
 import { onMounted, ref } from "vue";
 
 const rr = ref(new RequestResponse());
-const postStore = usePostStore();
+const ps = usePostStore();
 
 onMounted(() => {
-  postStore.fetchHomePosts(rr.value);
+  ps.fetchHomePosts(rr)
 });
 </script>
 
@@ -31,7 +31,7 @@ onMounted(() => {
       </div>
       <div class="row scroll" v-else>
         <PostCard
-          v-for="post in postStore.latestPosts"
+          v-for="post in ps.latestPosts"
           class="s6 m4 l3"
           :key="post.id"
           :post="post"

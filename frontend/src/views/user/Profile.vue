@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { useUserStore } from "@/stores/user";
 import Header from "@/components/user/Header.vue";
+import { useUserStore } from "@/stores/user";
 import { RequestResponse } from "@/utils/api";
 import { onMounted, ref } from "vue";
 import { onBeforeRouteUpdate, useRoute } from "vue-router";
-const userStore = useUserStore();
+const as = useUserStore();
 
 const rr = ref(new RequestResponse());
 const route = useRoute();
 
 onMounted(() => {
-  userStore.fetchProfile(route, rr.value);
+  as.fetchProfile(rr, route);
 });
 
 onBeforeRouteUpdate((to) => {
-  userStore.fetchProfile(to, rr.value);
+  as.fetchProfile(rr, to);
 });
 </script>
 
@@ -22,7 +22,7 @@ onBeforeRouteUpdate((to) => {
   <Header :rr="rr">
     <div class="grid">
       <div class="s12 m12 l4">
-        <article v-if="userStore.viewedUser">
+        <article v-if="as.viewedUser">
           <div class="row">
             <div class="chip circle primary no-border large">
               <p class="font-size-1-5">📋</p>
@@ -33,24 +33,24 @@ onBeforeRouteUpdate((to) => {
           <div class="item">
             <i>person</i>
             <p>Full Name:</p>
-            <p>{{ userStore.viewedUser.name }}</p>
+            <p>{{ as.viewedUser.name }}</p>
           </div>
           <div class="item">
             <i>account_circle</i>
             <p>Username:</p>
-            <p>{{ userStore.viewedUser.username }}</p>
+            <p>{{ as.viewedUser.username }}</p>
           </div>
           <div class="item">
             <i>article</i>
             <p>Post Created:</p>
-            <p>{{ userStore.viewedUser.posts_count ?? 0 }} posts</p>
+            <p>{{ as.viewedUser.posts_count ?? 0 }} posts</p>
           </div>
           <div class="item">
             <i>calendar_month</i>
             <p>Joined:</p>
             <p>
               {{
-                new Date(userStore.viewedUser.created_at || "").toUTCString()
+                new Date(as.viewedUser.created_at || "").toUTCString()
               }}
             </p>
           </div>
@@ -66,7 +66,7 @@ onBeforeRouteUpdate((to) => {
           </div>
 
           <div
-            v-if="!userStore.viewedUser?.bio"
+            v-if="!as.viewedUser?.bio"
             class="center-align small-opacity font-500"
           >
             <div class="large-space"></div>
@@ -75,7 +75,7 @@ onBeforeRouteUpdate((to) => {
             <div class="large-space"></div>
           </div>
           <div v-else>
-            <p v-for="p in userStore.viewedUser.bio.split('\n')">
+            <p v-for="p in as.viewedUser.bio.split('\n')">
               {{ p == "" ? "&nbsp;" : p }}
             </p>
           </div>

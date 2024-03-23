@@ -3,11 +3,11 @@ import AuthCard from "@/components/auth/AuthCard.vue";
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { RequestResponse } from "@/utils/api";
-import { useAuthStore, type RegisterForm } from "@/stores/auth";
+import { type RegisterForm, useAuthStore } from "@/stores/auth";
 import { useUserStore } from "@/stores/user";
 
-const authStore = useAuthStore();
-const userStore = useUserStore();
+const as = useAuthStore();
+const us = useUserStore();
 const showPassword = ref(false);
 
 const form = ref<RegisterForm>({
@@ -23,7 +23,7 @@ const rrCheck = ref(new RequestResponse());
 
 <template>
   <AuthCard title="Create new account 🎉">
-    <form @submit.prevent="authStore.register(form, rr)"> 
+    <form @submit.prevent="as.register(form, rr)"> 
       <div class="padding">
         <label for="email" class="font-size-0-9 font-600">Username</label>
         <div class="field border no-margin prefix suffix">
@@ -38,7 +38,7 @@ const rrCheck = ref(new RequestResponse());
           />
           <i 
             class="cursor-pointer z-2" 
-            @click="userStore.checkUsername(form.username, rrCheck)"
+            @click="us.checkUsername(form.username, rrCheck)"
             v-if="!rrCheck.loading"
           >
           search

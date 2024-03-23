@@ -5,7 +5,7 @@ import { RouterLink } from "vue-router";
 import { RequestResponse } from "@/utils/api";
 import { type LoginForm, useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore();
+const as = useAuthStore();
 const showPassword = ref(false);
 
 const form = ref<LoginForm>({
@@ -19,7 +19,7 @@ const rr = ref(new RequestResponse());
 
 <template>
   <AuthCard title="Sign in to continue 📝">
-    <form @submit.prevent="authStore.login(form, rr)">
+    <form @submit.prevent="as.login(form, rr)">
       <div class="space"></div>
 
       <div class="padding">

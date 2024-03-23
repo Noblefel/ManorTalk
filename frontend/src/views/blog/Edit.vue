@@ -9,23 +9,24 @@ import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { getImage, verifyImage } from "@/utils/helper";
 
-const postStore = usePostStore();
-const authStore = useAuthStore();
+const ps = usePostStore();
+const as = useAuthStore();
 const rr = ref(new RequestResponse()); // form
-const rr2 = ref(new RequestResponse()); // categories
-const rr3 = ref(new RequestResponse()); // viewedPost
-const rr4 = ref(new RequestResponse()); // delete
+const rr2 = ref(new RequestResponse()); // viewedPost
+const rr3 = ref(new RequestResponse()); // delete
 const route = useRoute();
 const form = ref({} as CreatePost);
 const shownImage = ref("");
 
 function reset() {
-  form.value.title = postStore.viewedPost?.title ?? "";
-  form.value.excerpt = postStore.viewedPost?.excerpt ?? "";
-  form.value.content = postStore.viewedPost?.content ?? "";
-  form.value.category_id = postStore.viewedPost?.category_id ?? 1;
+  form.value.title = ps.viewedPost?.title ?? "";
+  form.value.excerpt = ps.viewedPost?.excerpt ?? "";
+  form.value.content = ps.viewedPost?.content ?? "";
+  form.value.category_id = ps.viewedPost?.category_id ?? 1;
   form.value.image = null;
-  shownImage.value = getImage("post/" + postStore.viewedPost?.image ?? "");
+  if (ps.viewedPost?.image) {
+    shownImage.value = getImage("post/" + ps.viewedPost.image);
+  }
 }
 
 function onFileChange(event: Event) {
@@ -41,24 +42,19 @@ function onFileChange(event: Event) {
 const render = ref(false);
 
 onMounted(() => {
-  postStore.fetchPost(rr3.value, route).then(() => {
-    reset();
-  });
-  postStore.fetchCategories(rr2.value);
+  ps.fetchPost(rr2, route).then(() => reset());
+  ps.fetchCategories();
 });
 </script>
 
 <template>
-  <form @submit.prevent="postStore.update(form, rr)">
+  <form @submit.prevent="ps.update(form, rr)">
     <ResponseCard
-      v-if="
-        postStore.viewedPost &&
-        postStore.viewedPost?.user_id != authStore.authUser?.id
-      "
+      v-if="ps.viewedPost && ps.viewedPost?.user_id != as.authUser?.id"
       message="You have no permission to view this"
       icon="warning"
     />
-    <div class="grid" v-else-if="postStore.viewedPost">
+    <div class="grid" v-else-if="ps.viewedPost">
       <div class="s12 m12 l9">
         <h3 class="center-align">Edit Post 🎨</h3>
 
@@ -104,9 +100,16 @@ onMounted(() => {
         <div class="space"></div>
 
         <label for="category" class="font-size-1-25 font-600">Category</label>
-        <div v-if="postStore.categories" class="field border no-margin suffix">
+        <div
+          v-if="!ps.categories.length"
+          class="center-align small-opacity surface padding"
+        >
+          <i>error</i>
+          <p>Cannot load categories</p>
+        </div>
+        <div v-else class="field border no-margin suffix">
           <select name="category" id="category" v-model="form.category_id">
-            <option v-for="c in postStore.categories" :value="c.id">
+            <option v-for="c in ps.categories" :value="c.id">
               {{ c.name }}
             </option>
           </select>
@@ -153,15 +156,15 @@ onMounted(() => {
         <Actions
           :on-file-change="onFileChange"
           :on-reset="reset"
-          :on-delete="postStore.deletePost"
-          :rr-delete="rr4"
+          :on-delete="ps.deletePost"
+          :rr-delete="rr3"
           :rr-submit="rr"
         />
       </div>
     </div>
     <ResponseCard
-      v-else-if="rr3.errors"
-      :message="`Unable to get post (${rr3.status})`"
+      v-else-if="rr2.errors"
+      :message="`Unable to get post (${rr2.status})`"
       icon="error"
     />
     <ResponseCard v-else :loading="true" />

@@ -2,7 +2,7 @@
 import Header from "@/components/user/Header.vue";
 import PostCard from "@/components/PostCard.vue";
 import ResponseCard from "@/components/ResponseCard.vue";
-import { usePostStore, type Post } from "@/stores/post";
+import { usePostStore } from "@/stores/post";
 import { RequestResponse } from "@/utils/api";
 import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/user";
@@ -12,24 +12,23 @@ import { useAuthStore } from "@/stores/auth";
 const route = useRoute();
 const rr = ref(new RequestResponse());
 const rrPosts = ref(new RequestResponse());
-const posts = ref<Post[]>([]);
 const cursor = ref(1);
-const postStore = usePostStore();
-const userStore = useUserStore();
-const authStore = useAuthStore();
+const ps = usePostStore();
+const us = useUserStore();
+const as = useAuthStore();
 
 onMounted(() => {
-  userStore.fetchProfile(route, rr.value)?.then(() => {
+  us.fetchProfile(rr, route)?.then(() => {
     load();
   });
 });
 
 onBeforeRouteUpdate((to) => {
-  userStore.fetchProfile(to, rr.value);
+  us.fetchProfile(rr, to);
 });
 
 function load() {
-  postStore.fetchProfilePosts(rrPosts.value, posts, cursor);
+  ps.fetchProfilePosts(rrPosts, cursor);
 }
 </script>
 
@@ -40,14 +39,14 @@ function load() {
       <RouterLink
         :to="{ name: 'blog.create' }"
         class="button large"
-        v-if="authStore.authUser?.username == $route.params.username"
+        v-if="as.authUser?.username == $route.params.username"
       >
         Create Posts&nbsp; ✏️
       </RouterLink>
     </div>
-    <div v-if="posts && posts.length">
+    <div v-if="us.viewedUser?.posts?.length">
       <div class="grid">
-        <div class="s12 m6 l6" v-for="post in posts">
+        <div class="s12 m6 l6" v-for="post in us.viewedUser.posts">
           <PostCard
             :post="post"
             :with-excerpt="true"

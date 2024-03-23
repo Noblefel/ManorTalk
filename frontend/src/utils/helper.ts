@@ -1,5 +1,4 @@
 import type { User } from "@/stores/user";
-import type { Ref } from "vue";
 import { useRoute, type Router } from "vue-router";
 
 /**  activeRoute returns "active" if the current route name match  .*/
@@ -30,7 +29,7 @@ export const toast = (messages: string, className: string = "error") => {
 };
 
 export const getImage = (path: string) => {
-  return "http://localhost:8080/images/" + path;
+  return path ? "http://localhost:8080/images/" + path : "";
 };
 
 /** getAvatar will return image url based on user's name/username.

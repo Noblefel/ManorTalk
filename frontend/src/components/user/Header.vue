@@ -9,7 +9,7 @@ const props = defineProps({
   rr: { type: Object as PropType<RequestResponse>, required: true },
 });
 
-const authStore = useAuthStore();
+const as = useAuthStore();
 const userStore = useUserStore();
 </script>
 
@@ -46,7 +46,7 @@ const userStore = useUserStore();
         <button
           class="inverted"
           :disabled="props.rr.loading"
-          v-if="authStore.authUser?.username == $route.params.username"
+          v-if="as.authUser?.username == $route.params.username"
         >
           <i>edit</i>
           Edit
@@ -56,7 +56,7 @@ const userStore = useUserStore();
         <button
           class="inverted"
           :disabled="props.rr.loading"
-          v-if="authStore.authUser?.username == $route.params.username"
+          v-if="as.authUser?.username == $route.params.username"
         >
           <i>settings</i>
           Settings

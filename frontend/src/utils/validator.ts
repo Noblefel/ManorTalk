@@ -10,7 +10,6 @@ export class Validator {
     this.errors = {};
   }
 
-  /** required will checks the given fields if they are empty */
   required(...fields: string[]) {
     for (const field of fields) {
       if (this.form[field] == "" || this.form[field] == undefined) {
@@ -20,7 +19,6 @@ export class Validator {
     return this;
   }
 
-  /** email checks if the field value contains "@" symbol */
   email(field: string) {
     const email = this.form[field] as String;
     if (!email.includes("@")) {
@@ -29,7 +27,6 @@ export class Validator {
     return this;
   }
 
-  /** strMinLength checks if the field value is less than the given number */
   strMinLength(field: string, n: number) {
     const str = this.form[field] as String;
     if (str?.length < n) {
@@ -38,7 +35,6 @@ export class Validator {
     return this;
   }
 
-  /** strMaxLength checks if the field value is more than the given number */
   strMaxLength(field: string, n: number) {
     const str = this.form[field] as String;
     if (str?.length > n) {
@@ -47,7 +43,6 @@ export class Validator {
     return this;
   }
 
-  /** equal checks if a field has similar value to another*/
   equal(field: string, target: string) {
     if (this.form[field] != this.form[target]) {
       this.addError(field, `${field} does not match with ${target}`);
@@ -55,7 +50,6 @@ export class Validator {
     return this;
   }
 
-  /** isValid will check if the form contains any error */
   isValid() {
     return Object.keys(this.errors).length == 0;
   }

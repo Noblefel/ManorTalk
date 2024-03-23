@@ -3,7 +3,7 @@ import { activeRoute } from "@/utils/helper";
 import Profile from "./Profile.vue";
 import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore();
+const as = useAuthStore();
 </script>
 
 <template>
@@ -59,7 +59,7 @@ const authStore = useAuthStore();
 
     <div class="space"></div>
 
-    <div v-if="!authStore.isAuth">
+    <div v-if="!as.isAuth">
       <RouterLink
         :to="{ name: 'register' }"
         class="button responsive no-margin inverted"

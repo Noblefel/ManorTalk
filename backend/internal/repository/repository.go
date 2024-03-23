@@ -30,14 +30,10 @@ type UserRepo interface {
 
 type PostRepo interface {
 	CreatePost(p models.Post) (models.Post, error)
-	// GetPosts will return paginated posts using offset & limit method.
-	// Including optional filters as the arguments
 	GetPosts(pgMeta *pagination.Meta, filters models.PostsFilters) ([]models.Post, error)
 	GetPostBySlug(slug string) (models.Post, error)
 	UpdatePost(p models.Post) error
 	DeletePost(id int) error
-	// CountPosts returns total rows from posts table.
-	// Including optional filters as the arguments
 	CountPosts(filters models.PostsFilters) (int, error)
 
 	GetCategories() ([]models.Category, error)

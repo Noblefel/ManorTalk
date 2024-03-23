@@ -3,14 +3,14 @@ import { RouterLink } from "vue-router";
 import Profile from "./Profile.vue";
 import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore();
+const as = useAuthStore();
 </script>
 
 <template>
   <menu id="nav-menu" class="left">
     <Profile />
 
-    <RouterLink :to="{name: 'blog.create'}"  v-if="authStore.isAuth">
+    <RouterLink :to="{name: 'blog.create'}"  v-if="as.isAuth">
       <button class="responsive no-margin secondary">
         Create Post
         <i>edit</i>
@@ -21,7 +21,7 @@ const authStore = useAuthStore();
     <div class="divider"></div>
     <div class="space"></div>
 
-    <div v-if="!authStore.isAuth">
+    <div v-if="!as.isAuth">
       <RouterLink
         :to="{ name: 'register' }"
         class="button responsive no-margin inverted"

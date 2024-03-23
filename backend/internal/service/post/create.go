@@ -46,6 +46,7 @@ func (s *postService) Create(payload models.PostCreateInput, authId int) (models
 		}
 	}
 
+	post.UserId = authId
 	post.Title = payload.Title
 	post.Slug = slug.Make(payload.Title)
 	post.Excerpt = payload.Excerpt

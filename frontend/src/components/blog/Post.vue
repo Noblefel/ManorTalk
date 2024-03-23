@@ -5,7 +5,7 @@ import { type PropType } from "vue";
 import Markdown from "../Markdown.vue";
 import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore();
+const as = useAuthStore();
 
 defineProps({
   post: { type: Object as PropType<Post>, required: true },
@@ -40,7 +40,7 @@ defineProps({
     </div>
     <div
       class="max right-align"
-      v-if="authStore.authUser?.username == post.user?.username"
+      v-if="as.authUser?.username == post.user?.username"
     >
       <RouterLink
         :to="{ name: 'blog.edit', params: $route.params }"

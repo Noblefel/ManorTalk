@@ -1,10 +1,10 @@
-import type { AxiosHeaders, AxiosInstance } from "axios";
+import type { AxiosInstance } from "axios";
 import axios from "axios";
 import type { FormErrors } from "./validator";
 import { toast } from "./helper";
 import { useAuthStore } from "@/stores/auth";
 
-const Api: AxiosInstance = axios.create({
+export const Api: AxiosInstance = axios.create({
   baseURL: "http://localhost:8080/api",
   withCredentials: true,
 });
@@ -46,7 +46,6 @@ Api.interceptors.response.use(
   }
 );
 
-/** RequestResponse is a utility class for handling states while using the  API */
 export class RequestResponse {
   data: null;
   errors: FormErrors | null;
@@ -62,62 +61,22 @@ export class RequestResponse {
     this.loading = false;
   }
 
-  /** ======== Need improvements ======== */
-  async useApi(
-    method: string,
-    url: string,
-    body: any = null,
-    errToast: boolean = true,
-    contentType: string = "application/json"
-  ) {
-    this.loading = true;
-
-    let req;
-    switch (method) {
-      case "post":
-        req = Api.post(url, body, {
-          headers: { "Content-Type": contentType },
-        });
-        break;
-      case "patch":
-        req = Api.patch(url, body, {
-          headers: { "Content-Type": contentType },
-        });
-        break;
-      case "delete":
-        req = Api.delete(url, body);
-        break;
-      default:
-        req = Api.get(url);
-        break;
+  public handleErr(e: any, showToast = true) {
+    console.log(e);
+    if (e.response) {
+      this.message = e.response.data.message;
+      this.status = e.response.status;
+      this.errors = e.response.data.errors ?? 1;
+    } else if (e.request) {
+      this.message = e.message;
+      this.errors = e;
+    } else {
+      this.message = "Unexpected Error";
+      this.errors = e;
     }
-
-    return await req
-      .then((res) => {
-        this.data = res.data.data;
-        this.message = res.data.message;
-        this.status = res.status;
-      })
-      .catch((e) => {
-        console.log(e);
-        if (e.response) {
-          this.message = e.response.data.message;
-          this.status = e.response.status;
-          this.errors = e.response.data.errors ?? 1;
-        } else if (e.request) {
-          this.message = e.message;
-          this.errors = e;
-        } else {
-          this.message = "Unexpected Error";
-          this.errors = e;
-        }
-
-        if (errToast && this.message && this.message != "Token Expired") {
-          toast(this.message);
-        }
-      })
-      .finally(() => {
-        this.loading = false;
-      });
-  }
+  
+    if (showToast && this.message && this.message != "Token Expired") {
+      toast(this.message);
+    }
+  } 
 }

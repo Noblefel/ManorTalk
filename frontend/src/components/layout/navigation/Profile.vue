@@ -3,14 +3,14 @@ import { useAuthStore } from "@/stores/auth";
 import { getAvatar } from "@/utils/helper";
 import { RouterLink } from "vue-router";
 
-const authStore = useAuthStore();
+const as = useAuthStore();
 </script>
 
 <template>
   <div class="nav-profile">
     <div class="row responsive">
       <img
-        :src="getAvatar(authStore.authUser)"
+        :src="getAvatar(as.authUser)"
         alt="Profile avatar"
         width="50px"
         height="50px"
@@ -20,10 +20,10 @@ const authStore = useAuthStore();
         <RouterLink
           :to="{
             name: 'profile',
-            params: { username: authStore.authUser?.username },
+            params: { username: as.authUser?.username },
           }"
           class="button no-margin circle secondary"
-          v-if="authStore.isAuth"
+          v-if="as.isAuth"
           data-ui="#nav-mobile-menu"
         >
           <i class="fill">manage_accounts</i>
@@ -34,12 +34,12 @@ const authStore = useAuthStore();
         </button>
       </div>
     </div>
-    <div v-if="authStore.isAuth">
-      <p class="no-margin" v-if="authStore.authUser?.name">
-        {{ authStore.authUser.name }}
+    <div v-if="as.isAuth">
+      <p class="no-margin" v-if="as.authUser?.name">
+        {{ as.authUser.name }}
       </p>
       <p class="no-margin font-size-0-9 small-opacity">
-        #{{ authStore.authUser?.username }}
+        #{{ as.authUser?.username }}
       </p>
     </div>
     <div v-else>

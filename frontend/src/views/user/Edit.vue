@@ -6,27 +6,25 @@ import { useAuthStore } from "@/stores/auth";
 import { useUserStore, type UpdateForm } from "@/stores/user";
 import { getAvatar, verifyImage } from "@/utils/helper";
 
-const authStore = useAuthStore();
-const userStore = useUserStore();
-
-const u = authStore.authUser;
+const as = useAuthStore();
+const us = useUserStore();
 
 const form = ref<UpdateForm>({
-  name: u?.name,
-  username: u?.username ?? "",
+  name: as.authUser?.name,
+  username: as.authUser?.username ?? "",
   avatar: null,
-  bio: u?.bio,
+  bio: as.authUser?.bio,
 });
 
 const rr = ref(new RequestResponse());
 const rrCheck = ref(new RequestResponse());
-const shownImage = ref(getAvatar(u));
+const shownImage = ref(getAvatar(as.authUser));
 
 function onFileChange(event: Event) {
   form.value.avatar = null;
-  shownImage.value = getAvatar(u);
+  shownImage.value = getAvatar(as.authUser);
   const files = (event.target as HTMLInputElement).files;
-  const img = verifyImage(files) 
+  const img = verifyImage(files);
   if (img && files) {
     form.value.avatar = files[0];
     shownImage.value = URL.createObjectURL(files[0]);
@@ -37,9 +35,7 @@ function onFileChange(event: Event) {
 <template>
   <AuthCard title="Edit Profile 📝">
     <form
-      @submit.prevent="
-        userStore.update(form, rr, $route.params.username as string)
-      "
+      @submit.prevent="us.update(form, rr, $route)"
       enctype="multipart/form-data"
     >
       <div class="space"></div>
@@ -80,8 +76,8 @@ function onFileChange(event: Event) {
             class="cursor-pointer z-2"
             @click="
               () => {
-                if (u?.username == form.username) return;
-                userStore.checkUsername(form.username, rrCheck);
+                if (as.authUser?.username == form.username) return;
+                us.checkUsername(form.username, rrCheck);
               }
             "
             v-if="!rrCheck.loading"
@@ -133,7 +129,11 @@ function onFileChange(event: Event) {
             <textarea id="bio" name="bio" v-model="form.bio"></textarea>
           </div>
           <div class="row right-align">
-            <button class="secondary" type="button" @click="form.bio = u?.bio">
+            <button
+              class="secondary"
+              type="button"
+              @click="form.bio = as.authUser?.bio"
+            >
               <i>undo</i>
               Undo
             </button>
