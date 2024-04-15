@@ -4,7 +4,6 @@ A mini-forum application built in Go 1.20
 ### Dependencies
 - [Chi Router](https://github.com/go-chi/chi)
 - [pgx - PostgreSQL Driver and Toolkit](https://github.com/jackc/pgx)
-- [Migrate](https://github.com/golang-migrate/migrate)
 - [GoDotEnv](https://github.com/joho/godotenv)
 - [go-validator](https://github.com/go-playground/validator)
 - [jwt-go](https://github.com/golang-jwt/jwt)
@@ -14,7 +13,6 @@ A mini-forum application built in Go 1.20
 
 ### TODO 
 1. Refactor JSON response to separate pagination metadata from the main data.
-2. Fix migration to run from specific version/steps, instead of migrating up/down everything.
 
 ## Installation
 ```bash
@@ -56,17 +54,6 @@ go mod download
 
 ### .env
 Configure the environment variables inside the backend directory 
-
-### Migrations
-Run the migrations if you haven't already, this will create a users table and it's sample users:
-```sh
-go run cmd/migrate/main.go -production=false up
-``` 
-
-to revert the migrations:
-```sh
-go run cmd/migrate/main.go -production=false down
-``` 
 
 ### Start the server
 Simply run:
